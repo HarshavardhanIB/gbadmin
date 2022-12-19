@@ -1,0 +1,12 @@
+{
+  "ids": {
+    "Todo": 5,
+    "User": 8,
+    "UserCredentials": 8
+  },
+  "models": {
+    "Todo": {},
+    "User": {},
+    "UserCredentials": {}
+  }
+}

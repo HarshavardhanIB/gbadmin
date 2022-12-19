@@ -1,0 +1,33 @@
+//Registration
+
+export const ERRORS: any = {
+  recaptcha: `Invalid Recaptcha`,
+  quebec: `We are not currently operating in Quebec. Please check back with us in 2023`,
+  email: `Please enter valid email`,
+  firstName: `Firstname must be only alphabets with minimum of 2 characters and max of 40`,
+  lastName: `Lastname must be only alphabets with minimum of 2 characters and max of 40`,
+  phone: `Phone number is minimum of 10 digits`,
+  apt: `Please enter valid Apartment / suite number`,
+  postalCode: `Please enter valid postal code`,
+  minAge: `Registrant age must be {{minAge}} or greater`,
+  maxAge: `Registrant age must be {{maxAge}} or below`,
+  minWorkingHours: `Hours per week should be more than {{minWorkingHours}}`,
+  maxWorkingHours: `Hours per week should be less than {{maxWorkingHours}}`,
+  bankCode: `Bank code must be only numbers of length 3 `,
+  branchCode: `Branch code must be only numbers of length 5`,
+  accountNo: `Account number must be only numbers of length between 5 and 12`,
+  missingDetails: `Input details are insufficient`,
+  invalidBankDetails: `Invalid bank details`
+}
+
+export const MAIL: any = {
+  SENT: "Mail sent successfully",
+  NOT_SENT: "Sending mail failed"
+}
+
+
+export const EMAIL_EXISTS: any = {
+  ACCESSIBLE_ACCOUNT: `The email address already exists.Please contact your broker for assistance at {{broker_mail}}`,
+  INACCESSIBLE_ACCOUNT: `The email address already exists.Please contact GroupBenefitz Admin at {{admin_mail}}`
+
+}
