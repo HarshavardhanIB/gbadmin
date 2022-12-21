@@ -7,6 +7,7 @@ export async function getActivationCode() {
   return genCrypt();
 
 }
+
 export function countDuplicate(array: string[], element: any) {
 
   let i = 0;

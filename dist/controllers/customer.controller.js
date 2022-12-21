@@ -9,8 +9,11 @@ const authentication_1 = require("@loopback/authentication");
 const rest_1 = require("@loopback/rest");
 const repository_1 = require("@loopback/repository");
 const repositories_1 = require("../repositories");
+const authorization_1 = require("@loopback/authorization");
+const auth_midd_1 = require("../middleware/auth.midd");
+const security_1 = require("@loopback/security");
 let customerController = class customerController {
-    constructor(usersRepository, ContactInformationRepository, CustomerContactInfoRepository, CustomerPlanOptionsValuesRepository, CustomerPlansRepository, CustomerRelativesRepository, CustomerRepository, CustomerSignupRepository, response) {
+    constructor(usersRepository, ContactInformationRepository, CustomerContactInfoRepository, CustomerPlanOptionsValuesRepository, CustomerPlansRepository, CustomerRelativesRepository, CustomerRepository, CustomerSignupRepository, response, user) {
         this.usersRepository = usersRepository;
         this.ContactInformationRepository = ContactInformationRepository;
         this.CustomerContactInfoRepository = CustomerContactInfoRepository;
@@ -20,6 +23,7 @@ let customerController = class customerController {
         this.CustomerRepository = CustomerRepository;
         this.CustomerSignupRepository = CustomerSignupRepository;
         this.response = response;
+        this.user = user;
     }
     // @get('/customerInfo/{id}')
     // @response(200, {
@@ -32,15 +36,16 @@ let customerController = class customerController {
     //   console.log(coustmers);
     //   return coustmers;
     // }
-    async customersCounr() {
+    async customersCount(currentUserProfile) {
         let customerCount = await this.CustomerRepository.count();
         let activeCoustomers = await this.CustomerRepository.count({ status: 'active' });
         console.log(activeCoustomers);
+        console.log("role>>", currentUserProfile.role);
         let response = {
             "statusCode": 200,
             "message": "Count of the customers ",
             "totalCustomersCount": customerCount.count,
-            "activeCustomersCount": activeCoustomers.count
+            "activeCustomersCount": activeCoustomers.count,
         };
         return response;
     }
@@ -174,10 +179,11 @@ tslib_1.__decorate([
     (0, rest_1.response)(200, {
         description: 'customers count',
     }),
+    tslib_1.__param(0, (0, core_1.inject)(security_1.SecurityBindings.USER)),
     tslib_1.__metadata("design:type", Function),
-    tslib_1.__metadata("design:paramtypes", []),
+    tslib_1.__metadata("design:paramtypes", [Object]),
     tslib_1.__metadata("design:returntype", Promise)
-], customerController.prototype, "customersCounr", null);
+], customerController.prototype, "customersCount", null);
 tslib_1.__decorate([
     (0, rest_1.get)('/admin/customers/list'),
     (0, rest_1.response)(200, {
@@ -197,6 +203,10 @@ tslib_1.__decorate([
 ], customerController.prototype, "allCustmerDetails", null);
 customerController = tslib_1.__decorate([
     (0, authentication_1.authenticate)('jwt'),
+    (0, authorization_1.authorize)({
+        allowedRoles: ['BROKER'],
+        voters: [auth_midd_1.basicAuthorization]
+    }),
     tslib_1.__param(0, (0, repository_1.repository)(repositories_1.UsersRepository)),
     tslib_1.__param(1, (0, repository_1.repository)(repositories_1.ContactInformationRepository)),
     tslib_1.__param(2, (0, repository_1.repository)(repositories_1.CustomerContactInfoRepository)),
@@ -206,6 +216,7 @@ customerController = tslib_1.__decorate([
     tslib_1.__param(6, (0, repository_1.repository)(repositories_1.CustomerRepository)),
     tslib_1.__param(7, (0, repository_1.repository)(repositories_1.CustomerSignupRepository)),
     tslib_1.__param(8, (0, core_1.inject)(rest_1.RestBindings.Http.RESPONSE)),
+    tslib_1.__param(9, (0, core_1.inject)(security_1.SecurityBindings.USER, { optional: true })),
     tslib_1.__metadata("design:paramtypes", [repositories_1.UsersRepository,
         repositories_1.ContactInformationRepository,
         repositories_1.CustomerContactInfoRepository,
@@ -213,7 +224,7 @@ customerController = tslib_1.__decorate([
         repositories_1.CustomerPlansRepository,
         repositories_1.CustomerRelativesRepository,
         repositories_1.CustomerRepository,
-        repositories_1.CustomerSignupRepository, Object])
+        repositories_1.CustomerSignupRepository, Object, Object])
 ], customerController);
 exports.customerController = customerController;
 //# sourceMappingURL=customer.controller.js.map

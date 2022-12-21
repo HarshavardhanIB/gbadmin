@@ -28,9 +28,17 @@ import {
 } from '@loopback/repository';
 import { Users, ContactInformation, CustomerContactInfo, CustomerPlanOptionsValues, CustomerPlans, CustomerRelatives, CustomerSignup, Customer } from '../models';
 import { UsersRepository, ContactInformationRepository, CustomerContactInfoRepository, CustomerPlanOptionsValuesRepository, CustomerPlansRepository, CustomerRelativesRepository, CustomerRepository, CustomerSignupRepository } from '../repositories';
+import { authorize } from '@loopback/authorization';
+import { basicAuthorization } from '../middleware/auth.midd';
+import { SecurityBindings, securityId, UserProfile } from '@loopback/security';
 @authenticate('jwt')
+@authorize({
+  allowedRoles: ['BROKER'],
+  voters: [basicAuthorization]
+})
 export class customerController {
   constructor(
+
     @repository(UsersRepository)
     public usersRepository: UsersRepository,
     @repository(ContactInformationRepository)
@@ -47,8 +55,9 @@ export class customerController {
     public CustomerRepository: CustomerRepository,
     @repository(CustomerSignupRepository)
     public CustomerSignupRepository: CustomerSignupRepository,
-    @inject(RestBindings.Http.RESPONSE) private response: Response
-
+    @inject(RestBindings.Http.RESPONSE) private response: Response,
+    @inject(SecurityBindings.USER, { optional: true })
+    public user: UserProfile,
   ) { }
   // @get('/customerInfo/{id}')
   // @response(200, {
@@ -65,15 +74,17 @@ export class customerController {
   @response(200, {
     description: 'customers count',
   })
-  async customersCounr(): Promise<any> {
+  async customersCount(@inject(SecurityBindings.USER)
+  currentUserProfile: UserProfile): Promise<any> {
     let customerCount = await this.CustomerRepository.count();
     let activeCoustomers = await this.CustomerRepository.count({ status: 'active' })
     console.log(activeCoustomers);
+    console.log("role>>", currentUserProfile.role);
     let response = {
       "statusCode": 200,
       "message": "Count of the customers ",
       "totalCustomersCount": customerCount.count,
-      "activeCustomersCount": activeCoustomers.count
+      "activeCustomersCount": activeCoustomers.count,
     }
     return response;
 

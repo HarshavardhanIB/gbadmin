@@ -149,7 +149,6 @@ export class AuthController {
     const token = await this.jwtService.generateToken(userProfile);
     return { token };
   }
-
   @authenticate('jwt')
   @get('/user/whoAmI', {
     responses: {
@@ -169,7 +168,7 @@ export class AuthController {
     @inject(SecurityBindings.USER)
     currentUserProfile: UserProfile,
   ): Promise<string> {
-
+    console.log(currentUserProfile);
     return currentUserProfile[securityId];
   }
   @post('/auth/signup', {
@@ -198,32 +197,41 @@ export class AuthController {
     })
     newUserRequest: NewUserRequest,
   ): Promise<any> {
+    let res: any = {};
+    let emailCount = await this.usersRepository.count({ where: { email: newUserRequest.email } });
+    if (emailCount.count <= 0) {
+      console.log(newUserRequest.password);
+      const password = await hash(newUserRequest.password, await genSalt());
+      // const savedUser = await this.userRepository.create(
+      //   _.omit(newUserRequest, 'password'),
+      // );
+      // await this.userRepository.userCredentials(savedUser.id).create({ password });
 
-    console.log(newUserRequest.password);
-    const password = await hash(newUserRequest.password, await genSalt());
-    // const savedUser = await this.userRepository.create(
-    //   _.omit(newUserRequest, 'password'),
-    // );
-    // await this.userRepository.userCredentials(savedUser.id).create({ password });
-
-    const saveAdmin = await this.adminRepository.create(newUserRequest);
-    const newUser: Users = new Users();
-    console.log(newUserRequest);
-    let userModel = newUserRequest;
-    newUser.registrationDate = moment().format('YYYY-MM-DD')
-    newUser.activation = await randomString(10, 'abcde');
-    newUser.username = newUserRequest.email;
-    newUser.password = password;
-    const saveusers = await this.usersRepository.create(newUser);
-    await this.usersRepository.updateById(saveusers.id, { password: password });
-    await this.adminRepository.updateById(saveAdmin.id, { "password": password });
-
-    return {
-      "statusCode": 200,
-      "message": "Registration successfully done",
-      "username": saveAdmin.username,
-      "email": saveAdmin.email
-    };
+      const saveAdmin = await this.adminRepository.create(newUserRequest);
+      const newUser: Users = new Users();
+      console.log(newUserRequest);
+      let userModel = newUserRequest;
+      newUser.registrationDate = moment().format('YYYY-MM-DD')
+      newUser.activation = await randomString(10, 'abcde');
+      newUser.username = newUserRequest.email;
+      newUser.password = password;
+      const saveusers = await this.usersRepository.create(newUser);
+      await this.usersRepository.updateById(saveusers.id, { password: password });
+      await this.adminRepository.updateById(saveAdmin.id, { "password": password });
+      res = {
+        "statusCode": 200,
+        "message": "Registration successfully done",
+        "username": saveAdmin.username,
+        "email": saveAdmin.email
+      };
+    }
+    else {
+      res = {
+        "statusCode": 201,
+        "message": "email already exits"
+      };
+    }
+    return res;
   }
   @post('/auth/signin')
   async userLogin(@requestBody(CredentialsRequestBody) credentials: Credentials,): Promise<any> {
@@ -254,7 +262,7 @@ export class AuthController {
         }
         else {
           // const token = await this.jwtService.generateToken(customers);
-          let token = jwt.sign({ adminid: user.id, role: user.username }, constants.secret, { expiresIn: constants.expiresIn, algorithm: constants.algorithm });
+          let token = jwt.sign({ id: user.id, role: user.role, name: user.username }, constants.secret, { expiresIn: constants.expiresIn, algorithm: constants.algorithm });
           // const userProfile = this.userService.convertToUserProfile(credentials);
           response = {
             "statusCode": 200,
@@ -334,21 +342,19 @@ export class AuthController {
     console.log(activeStatus);
     if (activeStatus) {
       let id = activeStatus.id;
-      let HTMLcontentFile = process.env.APP_URL + "/user_activation.html?key=" + activeStatus.activation;
+      let HTMLcontentFile = (process.env.APP_URL ?? "https://devresources.aitestpro.com/apps/temp") + "/gb_user_activation.html?key=" + activeStatus.activation;
 
       let inActiveUser = activeStatus.block;
       // const active_buffer = Buffer.from(activeStatus.block);
       // const active_boolean = Boolean(active_buffer.readInt8());
       let userNewPassword = await generateRandomPassword();
       let encryptPswd = await encryptPassword(userNewPassword);
-      var htmlContent = `<h2>Hello </h2>
-      <br></br>
-      <p>This is your temporary password to use login : "${userNewPassword}"</p>`;
+      var htmlContent = `<h3>Hello </h3>
+      <p>This is your temporary password to login : "${userNewPassword}"</p>`;
       if (inActiveUser) {
         htmlContent +=
-          `<p>Please active your account</p>
-        <br></br>
-        <a href="${HTMLcontentFile}"> Click here to activate your account "</a>`;
+          `<p>To active your account </p>
+        <a href="${HTMLcontentFile}"> Click here</a>`;
       }
       await this.usersRepository.updateById(id, { password: encryptPswd });
       await mail("", userEnterEmailId, "Admin Portal Forgot Password Link", htmlContent, "click on the link and reset your password", "");
@@ -450,6 +456,6 @@ export class AuthController {
     };
     return responseData;
   }
-  
+
 }
 

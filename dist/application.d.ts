@@ -275,5 +275,6 @@ export declare class GroupBenfitsAdminPortalApplication extends GroupBenfitsAdmi
   
     */
     protected configureFileUpload(destination?: string): void;
+    private setUpBindings;
     private setupLogging;
 }

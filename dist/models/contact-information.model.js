@@ -46,7 +46,7 @@ tslib_1.__decorate([
 ], ContactInformation.prototype, "contactType", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
-        type: 'Buffer',
+        type: 'string',
         length: 45,
         generated: 0,
         mysql: { columnName: 'country', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },

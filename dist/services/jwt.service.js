@@ -33,7 +33,8 @@ class JWTService {
         let userProfile;
         try {
             const decryptedToken = jwt.verify(token, this.jwtSecret);
-            userProfile = Object.assign({ [security_1.securityId]: '', id: '', name: '' }, { [security_1.securityId]: decryptedToken.id, id: decryptedToken.id, name: decryptedToken.name });
+            console.log("decryptedToken>>>", decryptedToken);
+            userProfile = Object.assign({ [security_1.securityId]: '', id: '', name: '', role: '' }, { [security_1.securityId]: decryptedToken.adminid, id: decryptedToken.id, name: decryptedToken.name, role: decryptedToken.role });
         }
         catch (err) {
             throw new rest_1.HttpErrors.Unauthorized(`Error verifying token:${err}`);

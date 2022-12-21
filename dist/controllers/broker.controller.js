@@ -15,7 +15,7 @@ const MESSAGE = tslib_1.__importStar(require("../messages"));
 const models_1 = require("../models");
 const common_functions_1 = require("../common-functions");
 let BrokerController = class BrokerController {
-    constructor(BrokerRepository, BrokerLicensedStatesAndProvincesRepository, BrokerSignupFormsPlansRepository, BrokerSignupformsPlanlevelsRepository, TieredRebatesDataRepository, TieredRebatesRepository, UsersRepository, ContactInformationRepository, SignupFormsRepository, StatesAndProvincesRepository, CustomerSignupRepository, CustomerRepository, InsurancePlansRepository, PlanLevelRepository, response, handler) {
+    constructor(BrokerRepository, BrokerLicensedStatesAndProvincesRepository, BrokerSignupFormsPlansRepository, BrokerSignupformsPlanlevelsRepository, TieredRebatesDataRepository, TieredRebatesRepository, UsersRepository, ContactInformationRepository, SignupFormsRepository, StatesAndProvincesRepository, CustomerSignupRepository, CustomerRepository, InsurancePlansRepository, PlanLevelRepository, BrokerEoInsuranceRepository, response, handler) {
         this.BrokerRepository = BrokerRepository;
         this.BrokerLicensedStatesAndProvincesRepository = BrokerLicensedStatesAndProvincesRepository;
         this.BrokerSignupFormsPlansRepository = BrokerSignupFormsPlansRepository;
@@ -30,6 +30,7 @@ let BrokerController = class BrokerController {
         this.CustomerRepository = CustomerRepository;
         this.InsurancePlansRepository = InsurancePlansRepository;
         this.PlanLevelRepository = PlanLevelRepository;
+        this.BrokerEoInsuranceRepository = BrokerEoInsuranceRepository;
         this.response = response;
         this.handler = handler;
     }
@@ -454,18 +455,22 @@ let BrokerController = class BrokerController {
                             if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
                                 //get executive plan ids ---> package_id=5
                                 let executivePlans = await this.InsurancePlansRepository.find({ where: { packageId: CONST.EXECUTIVE_PACKAGE_ID } });
-                                let executivePlanlevel = new models_1.BrokerSignupformsPlanlevels();
-                                executivePlanlevel.formId = signupForm.id || 0;
+                                let executivePlanlevelObj = new models_1.BrokerSignupformsPlanlevels();
+                                executivePlanlevelObj.formId = signupForm.id || 0;
+                                let executivePlanlevelArray = [];
                                 for (const executivePlan of executivePlans) {
                                     signupFormPlans.planId = executivePlan.id || 0;
                                     // console.log(`before push`)
                                     // console.log(signupFormPlans);
                                     signupFormPlansArray.push(signupFormPlans);
                                     await this.BrokerSignupFormsPlansRepository.create(signupFormPlans);
+                                    if (!executivePlanlevelArray.includes(executivePlan.planLevel)) {
+                                        executivePlanlevelArray.push(executivePlan.planLevel);
+                                    }
                                 }
-                                for (const executivePlan of executivePlans) {
-                                    executivePlanlevel.planlevelId = executivePlan.id || 0;
-                                    await this.BrokerSignupformsPlanlevelsRepository.create(executivePlanlevel);
+                                for (const executivePlanLevel of executivePlanlevelArray) {
+                                    executivePlanlevelObj.planlevelId = executivePlanLevel;
+                                    await this.BrokerSignupformsPlanlevelsRepository.create(executivePlanlevelObj);
                                 }
                                 console.log(`signupFormPlansArray: ${signupFormPlansArray.length}`);
                             }
@@ -811,7 +816,7 @@ let BrokerController = class BrokerController {
                 //   include: [{relation: 'languageTokens'}]
                 // });
                 data['default_language'] = languageDetails.slug; //term
-                data['default_language_details'] = languageDetails;
+                // data['default_language_details'] = languageDetails
                 console.log(`lang: ${lang}`);
                 if (lang) {
                     // languageDetails = await this.translationLanguagesRepository.findOne({
@@ -822,8 +827,8 @@ let BrokerController = class BrokerController {
                     //   include: [{relation: 'languageTokens'}]
                     // });
                 }
-                data['language'] = languageDetails.slug; //.term //CONST.DEFAULT_LANGAUGE;
-                data['language_details'] = languageDetails;
+                // data['language'] = languageDetails.slug //.term //CONST.DEFAULT_LANGAUGE;
+                // data['language_details'] = languageDetails
                 //let lang = def_lang.slug.split("-")[0] || "en"
                 // let links = {
                 //   "langTokens": LANG_TOKENS.replaceAll("{lang}", data['language']),
@@ -937,80 +942,86 @@ let BrokerController = class BrokerController {
     async modifyForm(formid, requestBody) {
         let planlevel = requestBody.planlevel;
         let newType = requestBody.newType;
+        let oldType = requestBody.oldType;
         let message, statusCode, status, data = {};
         try {
-            let formData = await this.SignupFormsRepository.findOne({ where: { id: formid } });
-            if (!formData) {
+            // let formData = await this.SignupFormsRepository.findOne({ where: { id: formid } })
+            // if (!formData) {
+            //   status = 201;
+            //   message = "Enter valid form id";
+            // }
+            // else {
+            if (oldType == newType) {
                 status = 201;
-                message = "Enter valid form id";
+                message = "the form is already is same ";
             }
             else {
-                if (newType == formData.formType) {
-                    status = 201;
-                    message = "the form is already is regular";
-                }
+                let signUpform = new models_1.SignupForms();
+                signUpform.id = formid;
+                // signUpform.brokerId = formData.brokerId;
                 if (newType == CONST.SIGNUP_FORM.REGULAR) {
-                    let signUpform = new models_1.SignupForms();
-                    signUpform.id = formData.id;
-                    signUpform.brokerId = formData.brokerId;
+                    // let signUpform: SignupForms = new SignupForms();
+                    // signUpform.id = formid;
+                    // signUpform.brokerId = formData.brokerId;
                     signUpform.formType = CONST.SIGNUP_FORM.REGULAR;
                     signUpform.name = CONST.signupForm.name;
-                    signUpform.published = formData.published;
-                    signUpform.description = formData.description;
-                    signUpform.keywords = formData.keywords;
-                    signUpform.link = formData.link;
-                    signUpform.alias = formData.alias;
+                    // signUpform.published = formData.published;
+                    // signUpform.description = formData.description;
+                    // signUpform.keywords = formData.keywords;
+                    // signUpform.link = formData.link;
+                    // signUpform.alias = formData.alias;
                     signUpform.requireDentalHealthCoverage = true;
                     signUpform.requireSpouseEmail = false;
                     signUpform.warnRequiredDependantMedicalExam = false;
-                    signUpform.useCreditCardPaymentMethod = formData.useCreditCardPaymentMethod;
-                    signUpform.usePadPaymentMethod = formData.usePadPaymentMethod;
-                    signUpform.isDemoForm = formData.isDemoForm;
-                    await this.SignupFormsRepository.updateById(formData.id, signUpform);
-                    await this.BrokerSignupformsPlanlevelsRepository.deleteAll({ where: { formid: formData.id } });
+                    // signUpform.useCreditCardPaymentMethod = formData.useCreditCardPaymentMethod;
+                    // signUpform.usePadPaymentMethod = formData.usePadPaymentMethod;
+                    // signUpform.isDemoForm = formData.isDemoForm;
+                    await this.SignupFormsRepository.updateById(formid, signUpform);
+                    await this.BrokerSignupformsPlanlevelsRepository.deleteAll({ where: { formid: formid } });
                 }
                 else if (newType == CONST.SIGNUP_FORM.EXECUTIVE) {
-                    let signUpform = new models_1.SignupForms();
-                    signUpform.brokerId = formData.brokerId;
+                    // let signUpform: SignupForms = new SignupForms();
+                    // signUpform.brokerId = formData.brokerId;
                     signUpform.formType = CONST.SIGNUP_FORM.EXECUTIVE;
                     signUpform.name = CONST.signupForm.name;
-                    signUpform.published = formData.published;
-                    signUpform.description = formData.description;
-                    signUpform.keywords = formData.keywords;
-                    signUpform.link = formData.link;
-                    signUpform.alias = formData.alias;
+                    // signUpform.published = formData.published;
+                    // signUpform.description = formData.description;
+                    // signUpform.keywords = formData.keywords;
+                    // signUpform.link = formData.link;
+                    // signUpform.alias = formData.alias;
                     signUpform.requireDentalHealthCoverage = false;
                     signUpform.requireSpouseEmail = true;
                     signUpform.warnRequiredDependantMedicalExam = true;
-                    signUpform.useCreditCardPaymentMethod = formData.useCreditCardPaymentMethod;
-                    signUpform.usePadPaymentMethod = formData.usePadPaymentMethod;
-                    signUpform.isDemoForm = formData.isDemoForm;
-                    let newform = await this.SignupFormsRepository.create(signUpform);
+                    // signUpform.useCreditCardPaymentMethod = formData.useCreditCardPaymentMethod;
+                    // signUpform.usePadPaymentMethod = formData.usePadPaymentMethod;
+                    // signUpform.isDemoForm = formData.isDemoForm;
+                    let newform = await this.SignupFormsRepository.updateById(formid, signUpform);
+                    await this.BrokerSignupformsPlanlevelsRepository.deleteAll({ where: { formid: formid } });
                     let brokerSignUpformlevel = new models_1.BrokerSignupformsPlanlevels();
-                    brokerSignUpformlevel.formId = newform.id || 0;
+                    brokerSignUpformlevel.formId = formid || 0;
                     let planlevels = CONST.EXECUTIVE_CARE_COMPLETE_PLAN_LEVELS.concat(CONST.EXECUTIVE_HEALTH_PLAN_LEVELS);
-                    await this.BrokerSignupformsPlanlevelsRepository.create({});
                     for (const planLevel of planlevels) {
                         brokerSignUpformlevel.planlevelId = planLevel;
                         await this.BrokerSignupformsPlanlevelsRepository.create(brokerSignUpformlevel);
                     }
                 }
                 else {
-                    let signUpform = new models_1.SignupForms();
-                    signUpform.brokerId = formData.brokerId;
+                    // let signUpform: SignupForms = new SignupForms();
+                    // signUpform.brokerId = formData.brokerId;
                     signUpform.formType = CONST.SIGNUP_FORM.EXECUTIVE;
-                    signUpform.published = formData.published;
-                    signUpform.description = formData.description;
-                    signUpform.keywords = formData.keywords;
-                    signUpform.link = formData.link;
-                    signUpform.alias = formData.alias;
+                    // signUpform.published = formData.published;
+                    // signUpform.description = formData.description;
+                    // signUpform.keywords = formData.keywords;
+                    // signUpform.link = formData.link;
+                    // signUpform.alias = formData.alias;
                     signUpform.requireDentalHealthCoverage = true;
                     signUpform.requireSpouseEmail = false;
                     signUpform.warnRequiredDependantMedicalExam = false;
-                    signUpform.useCreditCardPaymentMethod = formData.useCreditCardPaymentMethod;
-                    signUpform.usePadPaymentMethod = formData.usePadPaymentMethod;
-                    signUpform.isDemoForm = formData.isDemoForm;
-                    let newform = await this.SignupFormsRepository.create(signUpform);
+                    // signUpform.useCreditCardPaymentMethod = formData.useCreditCardPaymentMethod;
+                    // signUpform.usePadPaymentMethod = formData.usePadPaymentMethod;
+                    // signUpform.isDemoForm = formData.isDemoForm;
+                    let newform = await this.SignupFormsRepository.updateById(formid, signUpform);
+                    await this.BrokerSignupformsPlanlevelsRepository.deleteAll({ where: { formid: formid } });
                     if (planlevel.length >= 0) {
                         for (const pl of planlevel) {
                             let plkanLevels = await this.PlanLevelRepository.find({
@@ -1029,7 +1040,7 @@ let BrokerController = class BrokerController {
                             }
                             else {
                                 let brokerSignUpformlevel = new models_1.BrokerSignupformsPlanlevels();
-                                brokerSignUpformlevel.formId = newform.id || 0;
+                                brokerSignUpformlevel.formId = formid || 0;
                                 for (const planlevel of plkanLevels) {
                                     brokerSignUpformlevel.planlevelId = planlevel.id || 0;
                                     await this.BrokerSignupformsPlanlevelsRepository.create(brokerSignUpformlevel);
@@ -1041,6 +1052,7 @@ let BrokerController = class BrokerController {
                 status = 200;
                 message = "Form modified successfully";
             }
+            // }
         }
         catch (error) {
             status = 404;
@@ -1051,13 +1063,67 @@ let BrokerController = class BrokerController {
         });
         return this.response;
     }
-    async updateContact(ContactInformation) {
+    async updateContact(id, ContactInformation) {
+        let statusCode, response, message = {};
+        console.log(ContactInformation);
+        let broker = await this.BrokerRepository.findOne({ where: { id: id }, fields: { contactId: true } });
+        if (broker) {
+            await this.ContactInformationRepository.updateAll(broker.contactId, ContactInformation);
+            statusCode = 200;
+            message = "Contact information updated successfully";
+        }
+        else {
+            statusCode = 201;
+            message = "No info found";
+        }
+        this.response.status(statusCode).send({
+            statusCode, message, date: new Date()
+        });
+        return this.response;
+    }
+    async updateLiceceState(requestBody) {
+        let status, message, date = {};
+        if (requestBody.states.length > 0) {
+        }
+        else {
+            status = 201;
+            message = "Send states";
+        }
+    }
+    async updateEO(BrokerEoInsurance) {
+    }
+    async updateLiceceNum() {
+    }
+    async deleteBroker(brokerId) {
+        let statusCode, message = {};
+        let broker = await this.BrokerRepository.findById(brokerId);
+        if (broker) {
+            let signUpForms = await this.SignupFormsRepository.find({ where: { brokerId: brokerId } });
+            for (const signupForm of signUpForms) {
+                await this.BrokerSignupformsPlanlevelsRepository.deleteAll({ where: { formId: signupForm.id } });
+            }
+            await this.ContactInformationRepository.deleteAll({ where: { id: brokerId } });
+            await this.BrokerLicensedStatesAndProvincesRepository.deleteAll({ where: { brokerId: brokerId } });
+            await this.BrokerEoInsuranceRepository.deleteAll({ where: { brokerId: brokerId } });
+            await this.SignupFormsRepository.deleteAll({ where: { brokerId: brokerId } });
+            await this.BrokerRepository.deleteById(brokerId);
+            statusCode = 200;
+            message = "Broker details deleted successfull";
+        }
+        else {
+            statusCode = 201;
+            message = "No broker details found";
+        }
+        this.response.status(statusCode).send({
+            statusCode, message, date: new Date()
+        });
+        return this.response;
     }
 };
 tslib_1.__decorate([
     (0, rest_1.get)('/admin/broker'),
     (0, rest_1.response)(200, {
-        description: 'List of customers list',
+        description: 'List of customers',
     }),
     tslib_1.__metadata("design:type", Function),
     tslib_1.__metadata("design:paramtypes", []),
@@ -1364,7 +1430,7 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], BrokerController.prototype, "formConfig", null);
 tslib_1.__decorate([
-    (0, rest_1.post)('/broker/form/{formid}/modif'),
+    (0, rest_1.post)('/broker/form/{formid}/modify'),
     (0, rest_1.response)(200, {
         content: {
             'application/json': {
@@ -1389,7 +1455,30 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], BrokerController.prototype, "modifyForm", null);
 tslib_1.__decorate([
-    (0, rest_1.put)('/broker/updateContactInfo/{id}'),
+    (0, rest_1.put)('/broker/{brokerId}/updateContactInfo'),
+    (0, rest_1.response)(200, {
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object'
+                }
+            }
+        }
+    }),
+    tslib_1.__param(0, rest_1.param.path.number('brokerId')),
+    tslib_1.__param(1, (0, rest_1.requestBody)({
+        content: {
+            'application/json': {
+                schema: (0, rest_1.getModelSchemaRef)(models_1.ContactInformation, { exclude: ['id', 'fusebillId'] })
+            }
+        }
+    })),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Number, Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], BrokerController.prototype, "updateContact", null);
+tslib_1.__decorate([
+    (0, rest_1.put)('/broker/updateLicence/State'),
     (0, rest_1.response)(200, {
         content: {
             'application/json': {
@@ -1402,14 +1491,71 @@ tslib_1.__decorate([
     tslib_1.__param(0, (0, rest_1.requestBody)({
         content: {
             'application/json': {
-                schema: (0, rest_1.getModelSchemaRef)(models_1.ContactInformation, { exclude: ['id'] })
+                schema: {
+                    type: 'object'
+                }
             }
         }
     })),
     tslib_1.__metadata("design:type", Function),
     tslib_1.__metadata("design:paramtypes", [Object]),
     tslib_1.__metadata("design:returntype", Promise)
-], BrokerController.prototype, "updateContact", null);
+], BrokerController.prototype, "updateLiceceState", null);
+tslib_1.__decorate([
+    (0, rest_1.put)('/broker/updateLicenceEO'),
+    (0, rest_1.response)(200, {
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object'
+                }
+            }
+        }
+    }),
+    tslib_1.__param(0, (0, rest_1.requestBody)({
+        content: {
+            'application/json': {
+                schema: (0, rest_1.getModelSchemaRef)(models_1.BrokerEoInsurance, {
+                    exclude: ['id']
+                })
+            }
+        }
+    })),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], BrokerController.prototype, "updateEO", null);
+tslib_1.__decorate([
+    (0, rest_1.put)('/broker/updateLicence/State'),
+    (0, rest_1.response)(200, {
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object'
+                }
+            }
+        }
+    }),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", []),
+    tslib_1.__metadata("design:returntype", Promise)
+], BrokerController.prototype, "updateLiceceNum", null);
+tslib_1.__decorate([
+    (0, rest_1.del)('/broker/{brokerId}'),
+    (0, rest_1.response)(200, {
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object'
+                }
+            }
+        }
+    }),
+    tslib_1.__param(0, rest_1.param.path.number('brokerId')),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Number]),
+    tslib_1.__metadata("design:returntype", Promise)
+], BrokerController.prototype, "deleteBroker", null);
 BrokerController = tslib_1.__decorate([
     tslib_1.__param(0, (0, repository_1.repository)(repositories_1.BrokerRepository)),
     tslib_1.__param(1, (0, repository_1.repository)(repositories_1.BrokerLicensedStatesAndProvincesRepository)),
@@ -1425,8 +1571,9 @@ BrokerController = tslib_1.__decorate([
     tslib_1.__param(11, (0, repository_1.repository)(repositories_1.CustomerRepository)),
     tslib_1.__param(12, (0, repository_1.repository)(repositories_1.InsurancePlansRepository)),
     tslib_1.__param(13, (0, repository_1.repository)(repositories_1.PlanLevelRepository)),
-    tslib_1.__param(14, (0, core_1.inject)(rest_1.RestBindings.Http.RESPONSE)),
-    tslib_1.__param(15, (0, core_1.inject)(keys_1.FILE_UPLOAD_SERVICE)),
+    tslib_1.__param(14, (0, repository_1.repository)(repositories_1.BrokerEoInsuranceRepository)),
+    tslib_1.__param(15, (0, core_1.inject)(rest_1.RestBindings.Http.RESPONSE)),
+    tslib_1.__param(16, (0, core_1.inject)(keys_1.FILE_UPLOAD_SERVICE)),
     tslib_1.__metadata("design:paramtypes", [repositories_1.BrokerRepository,
         repositories_1.BrokerLicensedStatesAndProvincesRepository,
         repositories_1.BrokerSignupFormsPlansRepository,
@@ -1440,7 +1587,8 @@ BrokerController = tslib_1.__decorate([
         repositories_1.CustomerSignupRepository,
         repositories_1.CustomerRepository,
         repositories_1.InsurancePlansRepository,
-        repositories_1.PlanLevelRepository, Object, Function])
+        repositories_1.PlanLevelRepository,
+        repositories_1.BrokerEoInsuranceRepository, Object, Function])
 ], BrokerController);
 exports.BrokerController = BrokerController;
 //# sourceMappingURL=broker.controller.js.map

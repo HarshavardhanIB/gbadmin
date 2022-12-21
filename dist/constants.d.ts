@@ -149,3 +149,4 @@ export declare const ACH_PAYMENT_STATUS: {
 export declare const ACH_PAYMENT_STATUS_LIST: any;
 export declare const PAD_CLIENT_ID: string;
 export declare const PAD_CLIENT_SECRET: string;
+export declare const MAINAPI_DOMAIN: string;

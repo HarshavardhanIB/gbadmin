@@ -15,4 +15,5 @@ tslib_1.__exportStar(require("./customer-customer-signup.controller"), exports);
 tslib_1.__exportStar(require("./broker.controller"), exports);
 // export * from './broker-users.controller';
 tslib_1.__exportStar(require("./corporate.controller"), exports);
+tslib_1.__exportStar(require("./admin-corporate.controller"), exports);
 //# sourceMappingURL=index.js.map

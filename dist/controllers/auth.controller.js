@@ -99,32 +99,44 @@ let AuthController = class AuthController {
         return { token };
     }
     async whoAmI(currentUserProfile) {
+        console.log(currentUserProfile);
         return currentUserProfile[security_1.securityId];
     }
     async signUp(newUserRequest) {
-        console.log(newUserRequest.password);
-        const password = await (0, bcryptjs_1.hash)(newUserRequest.password, await (0, bcryptjs_1.genSalt)());
-        // const savedUser = await this.userRepository.create(
-        //   _.omit(newUserRequest, 'password'),
-        // );
-        // await this.userRepository.userCredentials(savedUser.id).create({ password });
-        const saveAdmin = await this.adminRepository.create(newUserRequest);
-        const newUser = new models_1.Users();
-        console.log(newUserRequest);
-        let userModel = newUserRequest;
-        newUser.registrationDate = (0, moment_1.default)().format('YYYY-MM-DD');
-        newUser.activation = await (0, common_services_1.randomString)(10, 'abcde');
-        newUser.username = newUserRequest.email;
-        newUser.password = password;
-        const saveusers = await this.usersRepository.create(newUser);
-        await this.usersRepository.updateById(saveusers.id, { password: password });
-        await this.adminRepository.updateById(saveAdmin.id, { "password": password });
-        return {
-            "statusCode": 200,
-            "message": "Registration successfully done",
-            "username": saveAdmin.username,
-            "email": saveAdmin.email
-        };
+        let res = {};
+        let emailCount = await this.usersRepository.count({ where: { email: newUserRequest.email } });
+        if (emailCount.count <= 0) {
+            console.log(newUserRequest.password);
+            const password = await (0, bcryptjs_1.hash)(newUserRequest.password, await (0, bcryptjs_1.genSalt)());
+            // const savedUser = await this.userRepository.create(
+            //   _.omit(newUserRequest, 'password'),
+            // );
+            // await this.userRepository.userCredentials(savedUser.id).create({ password });
+            const saveAdmin = await this.adminRepository.create(newUserRequest);
+            const newUser = new models_1.Users();
+            console.log(newUserRequest);
+            let userModel = newUserRequest;
+            newUser.registrationDate = (0, moment_1.default)().format('YYYY-MM-DD');
+            newUser.activation = await (0, common_services_1.randomString)(10, 'abcde');
+            newUser.username = newUserRequest.email;
+            newUser.password = password;
+            const saveusers = await this.usersRepository.create(newUser);
+            await this.usersRepository.updateById(saveusers.id, { password: password });
+            await this.adminRepository.updateById(saveAdmin.id, { "password": password });
+            res = {
+                "statusCode": 200,
+                "message": "Registration successfully done",
+                "username": saveAdmin.username,
+                "email": saveAdmin.email
+            };
+        }
+        else {
+            res = {
+                "statusCode": 201,
+                "message": "email already exits"
+            };
+        }
+        return res;
     }
     async userLogin(credentials) {
         let response;
@@ -154,7 +166,7 @@ let AuthController = class AuthController {
                 }
                 else {
                     // const token = await this.jwtService.generateToken(customers);
-                    let token = jwt.sign({ adminid: user.id, role: user.username }, constants.secret, { expiresIn: constants.expiresIn, algorithm: constants.algorithm });
+                    let token = jwt.sign({ id: user.id, role: user.role, name: user.username }, constants.secret, { expiresIn: constants.expiresIn, algorithm: constants.algorithm });
                     // const userProfile = this.userService.convertToUserProfile(credentials);
                     response = {
                         "statusCode": 200,
@@ -221,26 +233,25 @@ let AuthController = class AuthController {
     }
     // @get('/auth/forgotPassword/{mailid}')
     async forgotPassword(email) {
+        var _a;
         let response;
         let userEnterEmailId = email.email;
         let activeStatus = await this.usersRepository.findOne({ where: { username: userEnterEmailId }, fields: { block: true, activation: true, id: true } });
         console.log(activeStatus);
         if (activeStatus) {
             let id = activeStatus.id;
-            let HTMLcontentFile = process.env.APP_URL + "/user_activation.html?key=" + activeStatus.activation;
+            let HTMLcontentFile = ((_a = process.env.APP_URL) !== null && _a !== void 0 ? _a : "https://devresources.aitestpro.com/apps/temp") + "/gb_user_activation.html?key=" + activeStatus.activation;
             let inActiveUser = activeStatus.block;
             // const active_buffer = Buffer.from(activeStatus.block);
             // const active_boolean = Boolean(active_buffer.readInt8());
             let userNewPassword = await (0, common_services_1.generateRandomPassword)();
             let encryptPswd = await (0, common_services_1.encryptPassword)(userNewPassword);
-            var htmlContent = `<h2>Hello </h2>
-      <br></br>
-      <p>This is your temporary password to use login : "${userNewPassword}"</p>`;
+            var htmlContent = `<h3>Hello </h3>
+      <p>This is your temporary password to login : "${userNewPassword}"</p>`;
             if (inActiveUser) {
                 htmlContent +=
-                    `<p>Please active your account</p>
-        <br></br>
-        <a href="${HTMLcontentFile}"> Click here to activate your account "</a>`;
+                    `<p>To active your account </p>
+        <a href="${HTMLcontentFile}"> Click here</a>`;
             }
             await this.usersRepository.updateById(id, { password: encryptPswd });
             await (0, email_services_1.mail)("", userEnterEmailId, "Admin Portal Forgot Password Link", htmlContent, "click on the link and reset your password", "");

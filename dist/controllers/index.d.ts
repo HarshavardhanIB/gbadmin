@@ -7,3 +7,4 @@ export * from './customer-customer-plans.controller';
 export * from './customer-customer-signup.controller';
 export * from './broker.controller';
 export * from './corporate.controller';
+export * from './admin-corporate.controller';

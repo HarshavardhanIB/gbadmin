@@ -13,3 +13,4 @@ export * from './customer-customer-signup.controller';
 export * from './broker.controller';
 // export * from './broker-users.controller';
 export * from './corporate.controller';
+export * from './admin-corporate.controller';

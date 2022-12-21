@@ -15,7 +15,7 @@ import { ServiceMixin } from '@loopback/service-proxy';
 import morgan from 'morgan';
 import path from 'path';
 import { MySequence } from './sequence';
-import { AuthenticationComponent } from '@loopback/authentication';
+import { AuthenticationComponent, registerAuthenticationStrategy } from '@loopback/authentication';
 import { JWTService } from './services/jwt.service'
 import {
   JWTAuthenticationComponent,
@@ -29,6 +29,8 @@ import multer from 'multer';
 import { DbDataSource } from './datasources';
 import { FILE_UPLOAD_SERVICE, STORAGE_DIRECTORY, TokenServiceBindings, TokenServiceConstants } from './keys';
 import { ErrorHandlerMiddlewareProvider } from './middleware/error-handler.middleware'
+import { JWTAuthenticationStrategy } from './authentication.stratageys/jwt.strategy';
+import { AuthorizationComponent } from '@loopback/authorization';
 export { ApplicationConfig };
 
 export class GroupBenfitsAdminPortalApplication extends BootMixin(
@@ -61,24 +63,25 @@ export class GroupBenfitsAdminPortalApplication extends BootMixin(
     };
 
     this.setupLogging();
-    this.component(AuthenticationComponent);
+    // this.component(AuthenticationComponent);
+    // this.component(AuthorizationComponent);
     // Mount jwt component
     this.component(JWTAuthenticationComponent);
     // Bind datasource
     this.dataSource(DbDataSource, UserServiceBindings.DATASOURCE_NAME);
-    this.bind(TokenServiceBindings.TOKEN_SERVICE).toClass(JWTService);
-    this.bind(TokenServiceBindings.TOKEN_SECRET).to(TokenServiceConstants.TOKEN_SECRET_VALUE)
-    this.bind(TokenServiceBindings.TOKEN_EXPIRES_IN).to(TokenServiceConstants.TOKEN_EXPIRES_IN_VALUE);
+    // this.bind(TokenServiceBindings.TOKEN_SERVICE).toClass(JWTService);
+    // this.bind(TokenServiceBindings.TOKEN_SECRET).to(TokenServiceConstants.TOKEN_SECRET_VALUE)
+    // this.bind(TokenServiceBindings.TOKEN_EXPIRES_IN).to(TokenServiceConstants.TOKEN_EXPIRES_IN_VALUE);
     this.add(createBindingFromClass(ErrorHandlerMiddlewareProvider));
     this.component(RestExplorerComponent);
+    this.component(AuthenticationComponent);
+    this.component(AuthorizationComponent);
+    this.add(createBindingFromClass(JWTAuthenticationStrategy));
+    registerAuthenticationStrategy(this, JWTAuthenticationStrategy);
     // Configure file upload with multer options
-
     this.configureFileUpload(options.fileStorageDirectory);
     // Set up default home page
-
     this.static('/', path.join(__dirname, '../public'));
-
-
 
     // this.static('/app/externalData', path.join(__dirname, '../support/extdata'));
 
@@ -91,10 +94,9 @@ export class GroupBenfitsAdminPortalApplication extends BootMixin(
     this.static('/app/temp/externalData', path.join(__dirname, '../support/extdata'));
 
     this.static('/app/temp/bankCheque/', path.join(__dirname, '../support/customer/bank'));
-
-
-
     this.static('/tmp', path.join(__dirname, '../uploads'));
+
+    this.setUpBindings();
   }
   /**
 
@@ -146,7 +148,11 @@ export class GroupBenfitsAdminPortalApplication extends BootMixin(
 
 
   }
-
+  private setUpBindings() {
+    this.bind(TokenServiceBindings.TOKEN_SERVICE).toClass(JWTService);
+    this.bind(TokenServiceBindings.TOKEN_SECRET).to(TokenServiceConstants.TOKEN_SECRET_VALUE)
+    this.bind(TokenServiceBindings.TOKEN_EXPIRES_IN).to(TokenServiceConstants.TOKEN_EXPIRES_IN_VALUE);
+  }
   private setupLogging() {
     // Register `morgan` express middleware
     // Create a middleware factory wrapper for `morgan(format, options)`
@@ -154,6 +160,7 @@ export class GroupBenfitsAdminPortalApplication extends BootMixin(
       this.debug('Morgan configuration', config);
       return morgan('combined', config);
     };
+
 
     // Print out logs using `debug`
     const defaultConfig: morgan.Options<Request, Response> = {

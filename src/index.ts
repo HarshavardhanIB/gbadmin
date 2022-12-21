@@ -20,7 +20,6 @@ export async function main(options: ApplicationConfig = {}) {
   const app = new GroupBenfitsAdminPortalApplication(options);
   await app.boot();
   await app.start();
-
   // console.log(">>>>", process.env.PORT);
   // console.log(">>>>", process.env.dburl);
   const url = app.restServer.url;

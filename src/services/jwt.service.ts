@@ -44,9 +44,10 @@ export class JWTService {
     let userProfile: UserProfile;
     try {
       const decryptedToken: any = jwt.verify(token, this.jwtSecret);
+      console.log("decryptedToken>>>", decryptedToken);
       userProfile = Object.assign(
-        { [securityId]: '', id: '', name: '' },
-        { [securityId]: decryptedToken.id, id: decryptedToken.id, name: decryptedToken.name }
+        { [securityId]: '', id: '', name: '', role: '' },
+        { [securityId]: decryptedToken.adminid, id: decryptedToken.id, name: decryptedToken.name, role: decryptedToken.role }
       );
     }
     catch (err) {

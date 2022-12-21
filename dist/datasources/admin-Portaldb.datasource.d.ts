@@ -11,6 +11,7 @@ export declare class GbadminDataSource extends juggler.DataSource implements Lif
         user: string;
         password: string;
         database: string;
+        dateStrings: string[];
     };
     constructor(dsConfig?: object);
 }
