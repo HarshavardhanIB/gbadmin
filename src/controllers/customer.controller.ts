@@ -206,7 +206,6 @@ export class customerController {
       for (let j = 0; j < contactInfoRes.length; j++) {
         contactInfo.push(contactInfoRes[j]);
       }
-
     }
     // let customerPlansObj = await this.CustomerPlansRepository.find({ where: { customerId: id } });
     let custmerPlanOpt = await this.CustomerPlanOptionsValuesRepository.find({ where: { customerId: id } });
@@ -221,7 +220,7 @@ export class customerController {
     //   signupdetails['working_20hours'] = false;
     // }
 
-    finalObjforCustmr = { "customerDetails": customers, "contactInfo": contactInfo, "customer plan values": custmerPlanOpt };
+    finalObjforCustmr = { "customerDetails": customers, "contactInfo": contactInfo, "customerPlanValues": custmerPlanOpt };
     let response = {
       "statusCode": 200,
       "message": "Customer details",

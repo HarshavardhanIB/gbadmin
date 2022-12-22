@@ -44,7 +44,7 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'string',
-        required: true,
+        required: false,
         length: 35,
         generated: 0,
         mysql: { columnName: 'license_number', dataType: 'varchar', dataLength: 35, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
@@ -54,7 +54,7 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'string',
-        required: true,
+        required: false,
         length: 35,
         generated: 0,
         mysql: { columnName: 'license_coverage', dataType: 'enum', dataLength: 11, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },

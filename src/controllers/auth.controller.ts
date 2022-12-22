@@ -198,7 +198,7 @@ export class AuthController {
     newUserRequest: NewUserRequest,
   ): Promise<any> {
     let res: any = {};
-    let emailCount = await this.usersRepository.count({ where: { email: newUserRequest.email } });
+    let emailCount = await this.usersRepository.count({ where: { username: newUserRequest.email } });
     if (emailCount.count <= 0) {
       console.log(newUserRequest.password);
       const password = await hash(newUserRequest.password, await genSalt());
@@ -348,7 +348,9 @@ export class AuthController {
       // const active_buffer = Buffer.from(activeStatus.block);
       // const active_boolean = Boolean(active_buffer.readInt8());
       let userNewPassword = await generateRandomPassword();
-      let encryptPswd = await encryptPassword(userNewPassword);
+
+      // let encryptPswd = await encryptPassword(userNewPassword);
+      const encryptPswd = await hash(userNewPassword, await genSalt());
       var htmlContent = `<h3>Hello </h3>
       <p>This is your temporary password to login : "${userNewPassword}"</p>`;
       if (inActiveUser) {
@@ -392,7 +394,7 @@ export class AuthController {
     }
     return response;
   }
-  @authenticate('jwt')
+  @authenticate.skip()
   @post('/user/changePassword')
   async chnagePasswords(@requestBody(
     {
@@ -408,7 +410,9 @@ export class AuthController {
     let oldpassword = requestBody.oldpassword;
     let newpassword = requestBody.newpassword;
     let hashOldPswrd = await hash(oldpassword, await genSalt())
+    console.log(hashOldPswrd);
     let user = await this.usersRepository.findOne({ where: { password: hashOldPswrd } });
+    console.log(user);
     if (user) {
       let hashNewPswrd = await hash(newpassword, await genSalt());
       await this.usersRepository.updateById(user.id, { password: hashNewPswrd });

@@ -1,5 +1,20 @@
-#ADMINPORTAL
+#GBPORTAL
+0.4.1
+added broker licence, licence states, e&o insurence update services in broker controller
+in licence states are delete in database and create new state given in the input
+
+0.4.0
+
+added jwt authenrication stratagy and auth middleware
+changes are added role in jwt signin and get that role in jwt verification.
+
+0.3.1
+
+added admin corporate controller in that controller added login and signupn services added
+--> In there signup services only for broker
+
 0.3.0
+
 added corpotate controller
 and write the corporate logo service and for logo based on the broker name and sending the logo path in the response
 

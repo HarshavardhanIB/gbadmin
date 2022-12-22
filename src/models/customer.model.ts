@@ -3,6 +3,9 @@ import { Users } from './users.model';
 import { CustomerRelatives } from './customer-relatives.model';
 import { CustomerPlans } from './customer-plans.model';
 import { CustomerSignup } from './customer-signup.model';
+import { ContactInformation } from './contact-information.model';
+import { CustomerContactInfo } from './customer-contact-info.model';
+import { InsurancePlans } from './insurance-plans.model';
 
 @model({
   settings: {
@@ -259,6 +262,10 @@ export class Customer extends Entity {
 
   @hasOne(() => CustomerSignup, { keyTo: 'customer_id' })
   customerSignup: CustomerSignup;
+  @hasMany(() => ContactInformation, { through: { model: () => CustomerContactInfo, keyFrom: 'customer_id', keyTo: 'contact_id' } })
+  contactInformations: ContactInformation[];
+  @hasMany(() => InsurancePlans, { through: { model: () => CustomerPlans, keyFrom: 'customer_id', keyTo: 'plan_id' } })
+  subscriptionPlans: InsurancePlans[];
   // Define well-known properties here
 
   // Indexer property to allow additional data

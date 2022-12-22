@@ -104,7 +104,7 @@ let AuthController = class AuthController {
     }
     async signUp(newUserRequest) {
         let res = {};
-        let emailCount = await this.usersRepository.count({ where: { email: newUserRequest.email } });
+        let emailCount = await this.usersRepository.count({ where: { username: newUserRequest.email } });
         if (emailCount.count <= 0) {
             console.log(newUserRequest.password);
             const password = await (0, bcryptjs_1.hash)(newUserRequest.password, await (0, bcryptjs_1.genSalt)());
@@ -245,7 +245,8 @@ let AuthController = class AuthController {
             // const active_buffer = Buffer.from(activeStatus.block);
             // const active_boolean = Boolean(active_buffer.readInt8());
             let userNewPassword = await (0, common_services_1.generateRandomPassword)();
-            let encryptPswd = await (0, common_services_1.encryptPassword)(userNewPassword);
+            // let encryptPswd = await encryptPassword(userNewPassword);
+            const encryptPswd = await (0, bcryptjs_1.hash)(userNewPassword, await (0, bcryptjs_1.genSalt)());
             var htmlContent = `<h3>Hello </h3>
       <p>This is your temporary password to login : "${userNewPassword}"</p>`;
             if (inActiveUser) {
@@ -293,7 +294,9 @@ let AuthController = class AuthController {
         let oldpassword = requestBody.oldpassword;
         let newpassword = requestBody.newpassword;
         let hashOldPswrd = await (0, bcryptjs_1.hash)(oldpassword, await (0, bcryptjs_1.genSalt)());
+        console.log(hashOldPswrd);
         let user = await this.usersRepository.findOne({ where: { password: hashOldPswrd } });
+        console.log(user);
         if (user) {
             let hashNewPswrd = await (0, bcryptjs_1.hash)(newpassword, await (0, bcryptjs_1.genSalt)());
             await this.usersRepository.updateById(user.id, { password: hashNewPswrd });
@@ -438,7 +441,7 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], AuthController.prototype, "activeuser", null);
 tslib_1.__decorate([
-    (0, authentication_1.authenticate)('jwt'),
+    authentication_1.authenticate.skip(),
     (0, rest_1.post)('/user/changePassword'),
     tslib_1.__param(0, (0, rest_1.requestBody)({
         content: {

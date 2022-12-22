@@ -2,6 +2,8 @@ import { Entity } from '@loopback/repository';
 import { CustomerRelatives } from './customer-relatives.model';
 import { CustomerPlans } from './customer-plans.model';
 import { CustomerSignup } from './customer-signup.model';
+import { ContactInformation } from './contact-information.model';
+import { InsurancePlans } from './insurance-plans.model';
 export declare class Customer extends Entity {
     user_id: number;
     ccExpiry?: string;
@@ -35,6 +37,8 @@ export declare class Customer extends Entity {
     customerRelativeRelation: CustomerRelatives[];
     customerPlans: CustomerPlans[];
     customerSignup: CustomerSignup;
+    contactInformations: ContactInformation[];
+    subscriptionPlans: InsurancePlans[];
     [prop: string]: any;
     constructor(data?: Partial<Customer>);
 }

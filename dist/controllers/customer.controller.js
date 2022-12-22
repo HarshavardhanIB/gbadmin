@@ -165,7 +165,7 @@ let customerController = class customerController {
         // else {
         //   signupdetails['working_20hours'] = false;
         // }
-        finalObjforCustmr = { "customerDetails": customers, "contactInfo": contactInfo, "customer plan values": custmerPlanOpt };
+        finalObjforCustmr = { "customerDetails": customers, "contactInfo": contactInfo, "customerPlanValues": custmerPlanOpt };
         let response = {
             "statusCode": 200,
             "message": "Customer details",

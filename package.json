@@ -1,7 +1,7 @@
 {
-  "name": "admin_portal",
-  "description": "Admin Portal ",
-  "version": "1.0.0",
+  "name": "gbapi",
+  "description": "GB Portal ",
+  "version": "1.4.1",
   "keywords": [
     "loopback",
     "LoopBack",

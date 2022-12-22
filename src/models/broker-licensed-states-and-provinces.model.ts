@@ -38,7 +38,7 @@ export class BrokerLicensedStatesAndProvinces extends Entity {
   stateId: number;
   @property({
     type: 'string',
-    required: true,
+    required: false,
     length: 35,
     generated: 0,
     mysql: { columnName: 'license_number', dataType: 'varchar', dataLength: 35, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
@@ -47,7 +47,7 @@ export class BrokerLicensedStatesAndProvinces extends Entity {
 
   @property({
     type: 'string',
-    required: true,
+    required: false,
     length: 35,
     generated: 0,
     mysql: { columnName: 'license_coverage', dataType: 'enum', dataLength: 11, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },

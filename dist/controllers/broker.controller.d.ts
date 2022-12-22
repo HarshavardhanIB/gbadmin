@@ -39,10 +39,12 @@ export declare class BrokerController {
         oldType: string;
     }): Promise<Response>;
     updateContact(id: number, ContactInformation: Omit<ContactInformation, 'id'>): Promise<any>;
-    updateLiceceState(requestBody: {
+    updateLiceceState(brokerId: number, requestBody: {
         states: Array<number>;
     }): Promise<any>;
     updateEO(BrokerEoInsurance: Omit<BrokerEoInsurance, 'id'>): Promise<any>;
-    updateLiceceNum(): Promise<any>;
+    updateLiceceNum(brokerId: number, requestBody: {
+        licenceNum: number;
+    }): Promise<any>;
     deleteBroker(brokerId: number): Promise<Response<any, Record<string, any>>>;
 }

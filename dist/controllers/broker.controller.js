@@ -247,6 +247,7 @@ let BrokerController = class BrokerController {
         p.then(async (value) => {
             var _a, _b, _c, _d, _e, _f, _g;
             let brokerId;
+            console.log("entry");
             if (!value.fields) {
                 this.response.status(422).send({
                     status: '422',
@@ -344,6 +345,7 @@ let BrokerController = class BrokerController {
                     brokerData.userId = user.id;
                     brokerData.contactId = contactInfoHOME.id;
                     brokerData.brokerType = apiRequest.brokerType || CONST.broker.brokerType;
+                    brokerData.discoverable = true;
                     const broker = await this.BrokerRepository.create(brokerData);
                     //brokerData.logo=?
                     brokerId = broker.id;
@@ -473,6 +475,29 @@ let BrokerController = class BrokerController {
                                     await this.BrokerSignupformsPlanlevelsRepository.create(executivePlanlevelObj);
                                 }
                                 console.log(`signupFormPlansArray: ${signupFormPlansArray.length}`);
+                            }
+                            if (formDetails.formType == CONST.SIGNUP_FORM.CUSTOME) {
+                                let planLevels = formDetails.planLevels;
+                                let executivePlanlevelObj = new models_1.BrokerSignupformsPlanlevels();
+                                executivePlanlevelObj.formId = signupForm.id || 0;
+                                for (const pl of planLevels) {
+                                    let plkanLevels = await this.PlanLevelRepository.find({
+                                        where: {
+                                            and: [
+                                                { or: [{ id: pl }, { parentId: pl }] },
+                                                { published: '1' }
+                                            ]
+                                        }, fields: {
+                                            id: true
+                                        }
+                                    });
+                                    if (plkanLevels) {
+                                        for (const planlevel of plkanLevels) {
+                                            executivePlanlevelObj.planlevelId = planlevel.id || 0;
+                                            await this.BrokerSignupformsPlanlevelsRepository.create(executivePlanlevelObj);
+                                        }
+                                    }
+                                }
                             }
                         } //forms
                     }
@@ -630,25 +655,47 @@ let BrokerController = class BrokerController {
                 if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
                     //get executive plan ids ---> package_id=5
                     let executivePlans = await this.InsurancePlansRepository.find({ where: { packageId: CONST.EXECUTIVE_PACKAGE_ID } });
-                    let executivePlanlevel = new models_1.BrokerSignupformsPlanlevels();
-                    executivePlanlevel.formId = signupForm.id || 0;
+                    let executivePlanlevelObj = new models_1.BrokerSignupformsPlanlevels();
+                    executivePlanlevelObj.formId = signupForm.id || 0;
+                    let executivePlanlevelArray = [];
                     for (const executivePlan of executivePlans) {
                         signupFormPlans.planId = executivePlan.id || 0;
                         // console.log(`before push`)
                         // console.log(signupFormPlans);
                         signupFormPlansArray.push(signupFormPlans);
                         await this.BrokerSignupFormsPlansRepository.create(signupFormPlans);
+                        if (!executivePlanlevelArray.includes(executivePlan.planLevel)) {
+                            executivePlanlevelArray.push(executivePlan.planLevel);
+                        }
                     }
-                    for (const executivePlan of executivePlans) {
-                        executivePlanlevel.planlevelId = executivePlan.id || 0;
-                        await this.BrokerSignupformsPlanlevelsRepository.create(executivePlanlevel);
+                    for (const executivePlanLevel of executivePlanlevelArray) {
+                        executivePlanlevelObj.planlevelId = executivePlanLevel;
+                        await this.BrokerSignupformsPlanlevelsRepository.create(executivePlanlevelObj);
                     }
                     console.log(`signupFormPlansArray: ${signupFormPlansArray.length}`);
-                    // if (signupFormPlansArray.length > 0) {
-                    //   console.log(signupFormPlansArray[0])
-                    //   console.log(signupFormPlansArray[1])
-                    //   await this.brokerSignupFormPlansRepository.create(signupFormPlansArray);
-                    // }
+                }
+                if (formDetails.formType == CONST.SIGNUP_FORM.CUSTOME) {
+                    let planLevels = formDetails.planLevels;
+                    let executivePlanlevelObj = new models_1.BrokerSignupformsPlanlevels();
+                    executivePlanlevelObj.formId = signupForm.id || 0;
+                    for (const pl of planLevels) {
+                        let plkanLevels = await this.PlanLevelRepository.find({
+                            where: {
+                                and: [
+                                    { or: [{ id: pl }, { parentId: pl }] },
+                                    { published: '1' }
+                                ]
+                            }, fields: {
+                                id: true
+                            }
+                        });
+                        if (plkanLevels) {
+                            for (const planlevel of plkanLevels) {
+                                executivePlanlevelObj.planlevelId = planlevel.id || 0;
+                                await this.BrokerSignupformsPlanlevelsRepository.create(executivePlanlevelObj);
+                            }
+                        }
+                    }
                 }
             } //forms
             message = `Signup Form for ${broker.name} is created successfully`;
@@ -699,52 +746,6 @@ let BrokerController = class BrokerController {
         }
         await this.SignupFormsRepository.deleteAll({ where: { brokerId: id } });
     }
-    // @post('/broker/updateLogo')
-    // async brokerLogoUpdate(
-    //   @requestBody({
-    //     description: "Registration details of a broker",
-    //     content: {
-    //       'multipart/form-data': {
-    //         // Skip body parsing
-    //         'x-parser': 'stream',
-    //         schema: {
-    //           type: 'object',
-    //           properties: {
-    //             logo: {
-    //               type: 'string',
-    //               format: 'binary'
-    //             },
-    //           }
-    //         }
-    //       }
-    //     }
-    //   })
-    //   request: Request,
-    //   @inject(RestBindings.Http.RESPONSE) response: Response,
-    // ): Promise<any> {
-    //   let message: string, status: string, statusCode: number, data: any = {};
-    //   let p = new Promise<any>((resolve, reject) => {
-    //     this.handler(request, response, err => {
-    //       if (err) reject(err);
-    //       else {
-    //         resolve(FilesController.getFilesAndFields(request, 'brokerLogoUpload', {}));
-    //         // const upload = FilesController.getFilesAndFields(request, 'brokerLogoUpload', { brokerid: broker_id });
-    //       }
-    //     });
-    //   });
-    //   p.then(async value => {
-    //   });
-    //   p.catch(onrejected => {
-    //     message = 'Broker logo is not set'
-    //     status = '202'
-    //     this.response.status(parseInt(status)).send({
-    //       status: status,
-    //       message: message,
-    //       date: new Date(),
-    //       data: data
-    //     });
-    //   })
-    // }
     async formConfig(
     // @param.path.string('formLink') formLink: string
     formLink, lang) {
@@ -1081,18 +1082,71 @@ let BrokerController = class BrokerController {
         });
         return this.response;
     }
-    async updateLiceceState(requestBody) {
+    async updateLiceceState(brokerId, requestBody) {
         let status, message, date = {};
+        let states = requestBody.states;
         if (requestBody.states.length > 0) {
+            await this.BrokerLicensedStatesAndProvincesRepository.deleteById(brokerId);
+            let BrokerLicensedStatesAndProvince = new models_1.BrokerLicensedStatesAndProvinces();
+            BrokerLicensedStatesAndProvince.brokerId = brokerId;
+            for (const state of states) {
+                BrokerLicensedStatesAndProvince.stateId = state;
+                await this.BrokerLicensedStatesAndProvincesRepository.create(BrokerLicensedStatesAndProvince);
+            }
+            status = 200;
+            message = "Licence states updated successfully";
         }
         else {
             status = 201;
             message = "Send states";
         }
+        this.response.status(status).send({
+            status, message, date: new Date()
+        });
+        return this.response;
     }
     async updateEO(BrokerEoInsurance) {
+        let status, message, data = {};
+        console.log(BrokerEoInsurance);
+        let brokerId = BrokerEoInsurance.brokerId;
+        if (!brokerId) {
+            status = 201;
+            message = "Send proper input";
+        }
+        else {
+            await this.BrokerEoInsuranceRepository.updateAll(BrokerEoInsurance, { where: { brokerId: brokerId } });
+            status = 200;
+            message = "E&O insurence Updated succesfully";
+        }
+        this.response.status(status).send({
+            status, message, date: new Date()
+        });
+        return this.response;
     }
-    async updateLiceceNum() {
+    async updateLiceceNum(brokerId, requestBody) {
+        let licenceNum = requestBody.licenceNum;
+        let status, message, data = {};
+        if (licenceNum.length > 0) {
+            let brokerLicecs = await this.BrokerLicensedStatesAndProvincesRepository.find({ where: { brokerId: brokerId } });
+            if (brokerLicecs) {
+                let brokerLicecne = new models_1.BrokerLicensedStatesAndProvinces();
+                await this.BrokerLicensedStatesAndProvincesRepository.updateAll({ licenseNumber: licenceNum }, { where: { brokerId: brokerId } });
+                status = 200;
+                message = "Licence number updated succesfully";
+            }
+            else {
+                status = 201;
+                message = "No broker licences found";
+            }
+        }
+        else {
+            status = 201;
+            message = "Send licence number";
+        }
+        this.response.status(status).send({
+            status, message, date: new Date()
+        });
+        return this.response;
     }
     async deleteBroker(brokerId) {
         let statusCode, message = {};
@@ -1405,7 +1459,7 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], BrokerController.prototype, "deleteForm", null);
 tslib_1.__decorate([
-    (0, rest_1.del)('/broker/brokerForm'),
+    (0, rest_1.del)('/broker/brokerForm/{id}'),
     tslib_1.__param(0, rest_1.param.path.number('id')),
     tslib_1.__metadata("design:type", Function),
     tslib_1.__metadata("design:paramtypes", [Number]),
@@ -1478,7 +1532,7 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], BrokerController.prototype, "updateContact", null);
 tslib_1.__decorate([
-    (0, rest_1.put)('/broker/updateLicence/State'),
+    (0, rest_1.put)('/broker/updateLicence/State/{brokerId}'),
     (0, rest_1.response)(200, {
         content: {
             'application/json': {
@@ -1488,7 +1542,8 @@ tslib_1.__decorate([
             }
         }
     }),
-    tslib_1.__param(0, (0, rest_1.requestBody)({
+    tslib_1.__param(0, rest_1.param.path.number('brokerId')),
+    tslib_1.__param(1, (0, rest_1.requestBody)({
         content: {
             'application/json': {
                 schema: {
@@ -1498,7 +1553,7 @@ tslib_1.__decorate([
         }
     })),
     tslib_1.__metadata("design:type", Function),
-    tslib_1.__metadata("design:paramtypes", [Object]),
+    tslib_1.__metadata("design:paramtypes", [Number, Object]),
     tslib_1.__metadata("design:returntype", Promise)
 ], BrokerController.prototype, "updateLiceceState", null);
 tslib_1.__decorate([
@@ -1526,7 +1581,7 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], BrokerController.prototype, "updateEO", null);
 tslib_1.__decorate([
-    (0, rest_1.put)('/broker/updateLicence/State'),
+    (0, rest_1.put)('/broker/{brokerId}/updateLicence'),
     (0, rest_1.response)(200, {
         content: {
             'application/json': {
@@ -1536,8 +1591,18 @@ tslib_1.__decorate([
             }
         }
     }),
+    tslib_1.__param(0, rest_1.param.path.number('brokerId')),
+    tslib_1.__param(1, (0, rest_1.requestBody)({
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object'
+                }
+            }
+        }
+    })),
     tslib_1.__metadata("design:type", Function),
-    tslib_1.__metadata("design:paramtypes", []),
+    tslib_1.__metadata("design:paramtypes", [Number, Object]),
     tslib_1.__metadata("design:returntype", Promise)
 ], BrokerController.prototype, "updateLiceceNum", null);
 tslib_1.__decorate([

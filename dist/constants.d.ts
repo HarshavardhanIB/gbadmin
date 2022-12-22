@@ -54,6 +54,7 @@ export declare const DEFAULT_COUNTRY: {
 export declare const SIGNUP_FORM: {
     REGULAR: string;
     EXECUTIVE: string;
+    CUSTOME: string;
 };
 export declare const FORM_TYPE_ARRAY: string[];
 export declare const BROKER: {

@@ -17,6 +17,7 @@ import { encryptPassword, generateFormLink, generateRandomPassword, getActivatio
 import { query } from "express";
 import { request, STATUS_CODES } from "http";
 import { authenticate } from "@loopback/authentication";
+import { MessageChannel } from "worker_threads";
 export class BrokerController {
   constructor(
     @repository(BrokerRepository)
@@ -366,7 +367,6 @@ export class BrokerController {
     },
   })
   async broker_registration(
-
     @requestBody({
       description: "Registration details of a broker",
       content: {
@@ -536,7 +536,7 @@ export class BrokerController {
     });
     p.then(async value => {
       let brokerId;
-
+      console.log("entry")
       if (!value.fields) {
         this.response.status(422).send({
           status: '422',
@@ -567,9 +567,7 @@ export class BrokerController {
 
           //validations
           const emailExists = await this.UsersRepository.findOne({ where: { username: apiRequest.email } });
-
           if (emailExists) {
-
             this.response.status(409).send({
               error: `User with this email ${apiRequest.email} is already registered`,
               message: 'Account already exists, please contact the provider',
@@ -578,7 +576,6 @@ export class BrokerController {
             });
             return this.response;
           }
-
           const todayDate = new Date().toISOString().slice(0, 10);
           //User
           let userData: Users = new Users();
@@ -592,7 +589,6 @@ export class BrokerController {
           userData.registrationDate = todayDate;
           const user = await this.UsersRepository.create(userData);
           console.log(`user - ${user.id}`)
-
           //Contact Info
           let contactInfoData: ContactInformation = new ContactInformation();
           contactInfoData.primaryEmail = apiRequest.email
@@ -609,7 +605,6 @@ export class BrokerController {
           contactInfoData.postalCode = apiRequest.postal_code
           contactInfoData.contactType = CONST.CONTACT_TYPE.BROKER;
           contactInfoData.addressType = CONST.ADDRESS_TYPE.HOME_ADDRESS;
-
           const contactInfoHOME = await this.ContactInformationRepository.create(contactInfoData);
           console.log(`contactInfoHOME - ${contactInfoHOME.id}`)
           //broker
@@ -641,23 +636,17 @@ export class BrokerController {
                 brokerData.logo = parentBroker.logo;
                 brokerData.link = parentBroker.link;
               }
-
-
             }
-
-
           }
-
           brokerData.name = apiRequest.name;
           brokerData.salesTrackingCode = apiRequest.sales_tracking_code
-
           brokerData.useCreditCardPaymentMethod = true;
           brokerData.usePadPaymentMethod = true;
           brokerData.published = true;
-
           brokerData.userId = user.id;
           brokerData.contactId = contactInfoHOME.id;
           brokerData.brokerType = apiRequest.brokerType || CONST.broker.brokerType
+          brokerData.discoverable = true;
           const broker = await this.BrokerRepository.create(brokerData);
           //brokerData.logo=?
 
@@ -814,6 +803,31 @@ export class BrokerController {
                 }
                 console.log(`signupFormPlansArray: ${signupFormPlansArray.length}`)
               }
+              if (formDetails.formType == CONST.SIGNUP_FORM.CUSTOME) {
+                let planLevels = formDetails.planLevels;
+                let executivePlanlevelObj: BrokerSignupformsPlanlevels = new BrokerSignupformsPlanlevels();
+                executivePlanlevelObj.formId = signupForm.id || 0;
+                for (const pl of planLevels) {
+                  let plkanLevels = await this.PlanLevelRepository.find({
+                    where: {
+                      and: [
+                        { or: [{ id: pl }, { parentId: pl }] },
+                        { published: '1' }
+                      ]
+                    }, fields: {
+                      id: true
+                    }
+                  });
+                  if (plkanLevels) {
+                    for (const planlevel of plkanLevels) {
+                      executivePlanlevelObj.planlevelId = planlevel.id || 0;
+                      await this.BrokerSignupformsPlanlevelsRepository.create(executivePlanlevelObj);
+                    }
+                  }
+                }
+
+              }
+
             }//forms
 
           }
@@ -1041,31 +1055,50 @@ export class BrokerController {
         let signupFormPlansArray: BrokerSignupFormsPlans[] = [];
         let signupFormPlans: BrokerSignupFormsPlans = new BrokerSignupFormsPlans();
         signupFormPlans.formId = signupForm.id || 0;
-
         if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
           //get executive plan ids ---> package_id=5
-
           let executivePlans = await this.InsurancePlansRepository.find({ where: { packageId: CONST.EXECUTIVE_PACKAGE_ID } })
-          let executivePlanlevel: BrokerSignupformsPlanlevels = new BrokerSignupformsPlanlevels();
-          executivePlanlevel.formId = signupForm.id || 0;
+          let executivePlanlevelObj: BrokerSignupformsPlanlevels = new BrokerSignupformsPlanlevels();
+          executivePlanlevelObj.formId = signupForm.id || 0;
+          let executivePlanlevelArray: any = [];
           for (const executivePlan of executivePlans) {
             signupFormPlans.planId = executivePlan.id || 0
             // console.log(`before push`)
             // console.log(signupFormPlans);
             signupFormPlansArray.push(signupFormPlans)
             await this.BrokerSignupFormsPlansRepository.create(signupFormPlans);
+            if (!executivePlanlevelArray.includes(executivePlan.planLevel)) {
+              executivePlanlevelArray.push(executivePlan.planLevel);
+            }
           }
-          for (const executivePlan of executivePlans) {
-            executivePlanlevel.planlevelId = executivePlan.id || 0;
-            await this.BrokerSignupformsPlanlevelsRepository.create(executivePlanlevel);
+          for (const executivePlanLevel of executivePlanlevelArray) {
+            executivePlanlevelObj.planlevelId = executivePlanLevel;
+            await this.BrokerSignupformsPlanlevelsRepository.create(executivePlanlevelObj);
           }
           console.log(`signupFormPlansArray: ${signupFormPlansArray.length}`)
-
-          // if (signupFormPlansArray.length > 0) {
-          //   console.log(signupFormPlansArray[0])
-          //   console.log(signupFormPlansArray[1])
-          //   await this.brokerSignupFormPlansRepository.create(signupFormPlansArray);
-          // }
+        }
+        if (formDetails.formType == CONST.SIGNUP_FORM.CUSTOME) {
+          let planLevels = formDetails.planLevels;
+          let executivePlanlevelObj: BrokerSignupformsPlanlevels = new BrokerSignupformsPlanlevels();
+          executivePlanlevelObj.formId = signupForm.id || 0;
+          for (const pl of planLevels) {
+            let plkanLevels = await this.PlanLevelRepository.find({
+              where: {
+                and: [
+                  { or: [{ id: pl }, { parentId: pl }] },
+                  { published: '1' }
+                ]
+              }, fields: {
+                id: true
+              }
+            });
+            if (plkanLevels) {
+              for (const planlevel of plkanLevels) {
+                executivePlanlevelObj.planlevelId = planlevel.id || 0;
+                await this.BrokerSignupformsPlanlevelsRepository.create(executivePlanlevelObj);
+              }
+            }
+          }
 
         }
       }//forms
@@ -1136,7 +1169,7 @@ export class BrokerController {
       console.log(error);
     }
   }
-  @del('/broker/brokerForm')
+  @del('/broker/brokerForm/{id}')
   async deleteBrokerForm(@param.path.number('id') id: number): Promise<any> {
     let brokerForms = await this.SignupFormsRepository.find({ where: { brokerId: id } });
     for (const form of brokerForms) {
@@ -1144,57 +1177,6 @@ export class BrokerController {
     }
     await this.SignupFormsRepository.deleteAll({ where: { brokerId: id } });
   }
-  // @post('/broker/updateLogo')
-  // async brokerLogoUpdate(
-  //   @requestBody({
-  //     description: "Registration details of a broker",
-  //     content: {
-  //       'multipart/form-data': {
-  //         // Skip body parsing
-  //         'x-parser': 'stream',
-  //         schema: {
-  //           type: 'object',
-  //           properties: {
-  //             logo: {
-  //               type: 'string',
-  //               format: 'binary'
-  //             },
-
-  //           }
-
-  //         }
-  //       }
-  //     }
-
-  //   })
-  //   request: Request,
-  //   @inject(RestBindings.Http.RESPONSE) response: Response,
-  // ): Promise<any> {
-  //   let message: string, status: string, statusCode: number, data: any = {};
-  //   let p = new Promise<any>((resolve, reject) => {
-  //     this.handler(request, response, err => {
-  //       if (err) reject(err);
-  //       else {
-  //         resolve(FilesController.getFilesAndFields(request, 'brokerLogoUpload', {}));
-  //         // const upload = FilesController.getFilesAndFields(request, 'brokerLogoUpload', { brokerid: broker_id });
-
-  //       }
-  //     });
-  //   });
-  //   p.then(async value => {
-  //   });
-  //   p.catch(onrejected => {
-  //     message = 'Broker logo is not set'
-  //     status = '202'
-  //     this.response.status(parseInt(status)).send({
-  //       status: status,
-  //       message: message,
-  //       date: new Date(),
-  //       data: data
-  //     });
-  //   })
-
-  // }
   @get('/formConfigurations')
   @response(200, {
 
@@ -1843,7 +1825,7 @@ export class BrokerController {
     });
     return this.response;
   }
-  @put('/broker/updateLicence/State')
+  @put('/broker/updateLicence/State/{brokerId}')
   @response(200, {
     content: {
       'application/json': {
@@ -1853,7 +1835,7 @@ export class BrokerController {
       }
     }
   })
-  async updateLiceceState(@requestBody({
+  async updateLiceceState(@param.path.number('brokerId') brokerId: number, @requestBody({
     content: {
       'application/json': {
         schema: {
@@ -1865,13 +1847,27 @@ export class BrokerController {
     states: Array<number>,
   }): Promise<any> {
     let status, message, date: any = {};
+    let states: any = requestBody.states;
     if (requestBody.states.length > 0) {
+      await this.BrokerLicensedStatesAndProvincesRepository.deleteById(brokerId);
+      let BrokerLicensedStatesAndProvince: BrokerLicensedStatesAndProvinces = new BrokerLicensedStatesAndProvinces();
+      BrokerLicensedStatesAndProvince.brokerId = brokerId;
 
+      for (const state of states) {
+        BrokerLicensedStatesAndProvince.stateId = state;
+        await this.BrokerLicensedStatesAndProvincesRepository.create(BrokerLicensedStatesAndProvince)
+      }
+      status = 200;
+      message = "Licence states updated successfully"
     }
     else {
       status = 201;
       message = "Send states"
     }
+    this.response.status(status).send({
+      status, message, date: new Date()
+    });
+    return this.response;
 
   }
   @put('/broker/updateLicenceEO')
@@ -1893,9 +1889,24 @@ export class BrokerController {
       }
     }
   }) BrokerEoInsurance: Omit<BrokerEoInsurance, 'id'>): Promise<any> {
-
+    let status, message, data: any = {}
+    console.log(BrokerEoInsurance);
+    let brokerId = BrokerEoInsurance.brokerId;
+    if (!brokerId) {
+      status = 201;
+      message = "Send proper input"
+    }
+    else {
+      await this.BrokerEoInsuranceRepository.updateAll(BrokerEoInsurance, { where: { brokerId: brokerId } })
+      status = 200;
+      message = "E&O insurence Updated succesfully"
+    }
+    this.response.status(status).send({
+      status, message, date: new Date()
+    });
+    return this.response;
   }
-  @put('/broker/updateLicence/State')
+  @put('/broker/{brokerId}/updateLicence')
   @response(200, {
     content: {
       'application/json': {
@@ -1905,8 +1916,42 @@ export class BrokerController {
       }
     }
   })
-  async updateLiceceNum(): Promise<any> {
+  async updateLiceceNum(@param.path.number('brokerId') brokerId: number, @requestBody({
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object'
+        }
+      }
+    }
 
+  }) requestBody: {
+    licenceNum: number
+  }): Promise<any> {
+    let licenceNum: any = requestBody.licenceNum;
+    let status, message, data: any = {};
+    if (licenceNum.length > 0) {
+      let brokerLicecs = await this.BrokerLicensedStatesAndProvincesRepository.find({ where: { brokerId: brokerId } });
+      if (brokerLicecs) {
+        let brokerLicecne: BrokerLicensedStatesAndProvinces = new BrokerLicensedStatesAndProvinces();
+        await this.BrokerLicensedStatesAndProvincesRepository.updateAll({ licenseNumber: licenceNum }, { where: { brokerId: brokerId } })
+        status = 200;
+        message = "Licence number updated succesfully";
+      }
+      else {
+        status = 201;
+        message = "No broker licences found"
+      }
+
+    }
+    else {
+      status = 201;
+      message = "Send licence number"
+    }
+    this.response.status(status).send({
+      status, message, date: new Date()
+    });
+    return this.response;
   }
   @del('/broker/{brokerId}')
   @response(200, {

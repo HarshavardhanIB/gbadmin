@@ -3,7 +3,6 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-export * from './todo.controller';
 export * from './auth.controller';
 export * from './customer.controller';
 export * from './customer-relatives-customer.controller';

@@ -4,7 +4,7 @@ exports.SYS_ADMIN = exports.email = exports.aws = exports.outlook = exports.gmai
 exports.app = {
     name: process.env.APP_NAME || "GroupBenefitz Admin API",
     company: process.env.COMPANY_NAME || "The Groupbenefitz Platform Inc.",
-    version: "v0.3.0",
+    version: "v1.4.1",
     env: process.env.NODE_ENV || "local",
 };
 exports.mail = {
