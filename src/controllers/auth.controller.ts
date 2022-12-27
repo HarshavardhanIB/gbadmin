@@ -245,8 +245,8 @@ export class AuthController {
     if (user) {
       let HTMLcontentFile = process.env.ACTIVATIONPATH + "?key=" + user.activation;
       let userMail: any = user.username;
-      let userPass: any = user.password;
-      let matchpass = await compare(userEnterPaswrd, userPass);
+      let dbPassword: any = user.password;
+      let matchpass = await compare(userEnterPaswrd, dbPassword);
       if (matchpass) {
         if (user.block) {
           // var htmlContent = `<h2>Hello </h2>
@@ -394,7 +394,7 @@ export class AuthController {
     }
     return response;
   }
-  @authenticate.skip()
+  @authenticate('jwt')
   @post('/user/changePassword')
   async chnagePasswords(@requestBody(
     {
@@ -405,29 +405,48 @@ export class AuthController {
   ) requestBody: {
     oldpassword: string;
     newpassword: string;
-  }): Promise<any> {
+  }, @inject(SecurityBindings.USER)
+    currentUserProfile: UserProfile): Promise<any> {
     let response: any;
     let oldpassword = requestBody.oldpassword;
     let newpassword = requestBody.newpassword;
-    let hashOldPswrd = await hash(oldpassword, await genSalt())
-    console.log(hashOldPswrd);
-    let user = await this.usersRepository.findOne({ where: { password: hashOldPswrd } });
-    console.log(user);
-    if (user) {
-      let hashNewPswrd = await hash(newpassword, await genSalt());
-      await this.usersRepository.updateById(user.id, { password: hashNewPswrd });
-      let userwithNewPswrd = await this.usersRepository.findById(user.id, { fields: { role: true, id: true } })
-      const token = jwt.sign(userwithNewPswrd, constants.secret, { expiresIn: constants.expiresIn, algorithm: constants.algorithm });
-      response = {
-        "statusCode": 200,
-        "message": "Password chnaged successfully",
-        "token": token
+    try {
+      let hashOldPswrd = await hash(oldpassword, await genSalt())
+      console.log(hashOldPswrd);
+      let user: any = await this.usersRepository.findOne({ where: { id: currentUserProfile[securityId] } });
+      console.log(user);
+      if (user) {
+        let matchPass = await compare(oldpassword, user.password)
+        if (matchPass) {
+          let hashNewPswrd = await hash(newpassword, await genSalt());
+          await this.usersRepository.updateById(user.id, { password: hashNewPswrd });
+          let userwithNewPswrd = await this.usersRepository.findById(user.id, { fields: { role: true, id: true } })
+          const token = jwt.sign({ id: userwithNewPswrd.id, role: userwithNewPswrd.role, name: userwithNewPswrd.username }, constants.secret, { expiresIn: constants.expiresIn, algorithm: constants.algorithm });
+          response = {
+            "statusCode": 200,
+            "message": "Password chnaged successfully",
+            "token": token
+          }
+        }
+        else {
+          response = {
+            "statusCode": 201,
+            "message": "Please enter valid Oldpassword"
+          }
+        }
+      }
+      else {
+        response = {
+          "statusCode": 201,
+          "message": "Please enter valid Oldpassword"
+        }
       }
     }
-    else {
+    catch (error) {
+      console.log(error);
       response = {
-        "statusCode": 201,
-        "message": "Please enter valid password"
+        "statusCode": 400,
+        "message": "Error when changing the password"
       }
     }
     return response;

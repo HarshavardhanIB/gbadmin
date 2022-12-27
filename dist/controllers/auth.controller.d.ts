@@ -46,7 +46,7 @@ export declare class AuthController {
     chnagePasswords(requestBody: {
         oldpassword: string;
         newpassword: string;
-    }): Promise<any>;
+    }, currentUserProfile: UserProfile): Promise<any>;
     app(): Promise<any>;
     ip(): Promise<any>;
 }

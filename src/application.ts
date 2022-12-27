@@ -82,17 +82,10 @@ export class GroupBenfitsAdminPortalApplication extends BootMixin(
     this.configureFileUpload(options.fileStorageDirectory);
     // Set up default home page
     this.static('/', path.join(__dirname, '../public'));
-
     // this.static('/app/externalData', path.join(__dirname, '../support/extdata'));
-
     this.static('/app/server', path.join(__dirname, '../public/server'));
-
     this.static('/app/resources', path.join(__dirname, '../public/resources'));
-
-
-
     this.static('/app/temp/externalData', path.join(__dirname, '../support/extdata'));
-
     this.static('/app/temp/bankCheque/', path.join(__dirname, '../support/customer/bank'));
     this.static('/tmp', path.join(__dirname, '../uploads'));
 

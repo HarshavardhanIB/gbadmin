@@ -1,4 +1,8 @@
 #GBPORTAL
+
+0.4.2
+changes in changepassword service.
+
 0.4.1
 added broker licence, licence states, e&o insurence update services in broker controller
 in licence states are delete in database and create new state given in the input

@@ -41,25 +41,6 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", Number)
 ], BrokerSignupformsPlanlevels.prototype, "planlevelId", void 0);
-tslib_1.__decorate([
-    (0, repository_1.property)({
-        type: 'number',
-        precision: 10,
-        scale: 0,
-        generated: 0,
-        mysql: { columnName: 'rebate_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0 },
-    }),
-    tslib_1.__metadata("design:type", Number)
-], BrokerSignupformsPlanlevels.prototype, "rebateId", void 0);
-tslib_1.__decorate([
-    (0, repository_1.property)({
-        type: 'number',
-        precision: 12,
-        generated: 0,
-        mysql: { columnName: 'covered_percentage', dataType: 'float', dataLength: null, dataPrecision: 12, dataScale: null, nullable: 'Y', generated: 0 },
-    }),
-    tslib_1.__metadata("design:type", Number)
-], BrokerSignupformsPlanlevels.prototype, "coveredPercentage", void 0);
 BrokerSignupformsPlanlevels = tslib_1.__decorate([
     (0, repository_1.model)({
         settings: {

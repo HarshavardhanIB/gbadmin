@@ -3,7 +3,7 @@
 // import {inject} from '@loopback/core';
 import { inject } from '@loopback/core';
 import { repository } from '@loopback/repository';
-import { get, param, Response, RestBindings } from '@loopback/rest';
+import { get, param, requestBody, response, Response, RestBindings } from '@loopback/rest';
 import { request } from 'http';
 import { nextTick } from 'process';
 
@@ -42,7 +42,31 @@ export class CorporateController {
     });
     return this.response;
   }
+  @get('/broker/{brokerId}')
+  @response(200, {
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object'
+        }
+      }
+    }
+  })
+  async brokerDetails(@param.path.number('brokerId') brokerId: number) {
+    try {
+      let broketDetails = await this.BrokerRepository.find({
+        where: { id: brokerId, brokerType: 'ADMINISTRATOR' }, fields: { name: true, }, include: [{
+          relation: 'user',
+          scope: {
+            fields: { username: true }
+          }
+        }]
+      });
+      
+    } catch (error) {
 
+    }
+  }
 }
 
 

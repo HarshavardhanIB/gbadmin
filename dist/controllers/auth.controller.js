@@ -149,8 +149,8 @@ let AuthController = class AuthController {
         if (user) {
             let HTMLcontentFile = process.env.ACTIVATIONPATH + "?key=" + user.activation;
             let userMail = user.username;
-            let userPass = user.password;
-            let matchpass = await (0, bcryptjs_1.compare)(userEnterPaswrd, userPass);
+            let dbPassword = user.password;
+            let matchpass = await (0, bcryptjs_1.compare)(userEnterPaswrd, dbPassword);
             if (matchpass) {
                 if (user.block) {
                     // var htmlContent = `<h2>Hello </h2>
@@ -289,29 +289,47 @@ let AuthController = class AuthController {
         }
         return response;
     }
-    async chnagePasswords(requestBody) {
+    async chnagePasswords(requestBody, currentUserProfile) {
         let response;
         let oldpassword = requestBody.oldpassword;
         let newpassword = requestBody.newpassword;
-        let hashOldPswrd = await (0, bcryptjs_1.hash)(oldpassword, await (0, bcryptjs_1.genSalt)());
-        console.log(hashOldPswrd);
-        let user = await this.usersRepository.findOne({ where: { password: hashOldPswrd } });
-        console.log(user);
-        if (user) {
-            let hashNewPswrd = await (0, bcryptjs_1.hash)(newpassword, await (0, bcryptjs_1.genSalt)());
-            await this.usersRepository.updateById(user.id, { password: hashNewPswrd });
-            let userwithNewPswrd = await this.usersRepository.findById(user.id, { fields: { role: true, id: true } });
-            const token = jwt.sign(userwithNewPswrd, constants.secret, { expiresIn: constants.expiresIn, algorithm: constants.algorithm });
-            response = {
-                "statusCode": 200,
-                "message": "Password chnaged successfully",
-                "token": token
-            };
+        try {
+            let hashOldPswrd = await (0, bcryptjs_1.hash)(oldpassword, await (0, bcryptjs_1.genSalt)());
+            console.log(hashOldPswrd);
+            let user = await this.usersRepository.findOne({ where: { id: currentUserProfile[security_1.securityId] } });
+            console.log(user);
+            if (user) {
+                let matchPass = await (0, bcryptjs_1.compare)(oldpassword, user.password);
+                if (matchPass) {
+                    let hashNewPswrd = await (0, bcryptjs_1.hash)(newpassword, await (0, bcryptjs_1.genSalt)());
+                    await this.usersRepository.updateById(user.id, { password: hashNewPswrd });
+                    let userwithNewPswrd = await this.usersRepository.findById(user.id, { fields: { role: true, id: true } });
+                    const token = jwt.sign({ id: userwithNewPswrd.id, role: userwithNewPswrd.role, name: userwithNewPswrd.username }, constants.secret, { expiresIn: constants.expiresIn, algorithm: constants.algorithm });
+                    response = {
+                        "statusCode": 200,
+                        "message": "Password chnaged successfully",
+                        "token": token
+                    };
+                }
+                else {
+                    response = {
+                        "statusCode": 201,
+                        "message": "Please enter valid Oldpassword"
+                    };
+                }
+            }
+            else {
+                response = {
+                    "statusCode": 201,
+                    "message": "Please enter valid Oldpassword"
+                };
+            }
         }
-        else {
+        catch (error) {
+            console.log(error);
             response = {
-                "statusCode": 201,
-                "message": "Please enter valid password"
+                "statusCode": 400,
+                "message": "Error when changing the password"
             };
         }
         return response;
@@ -441,15 +459,16 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], AuthController.prototype, "activeuser", null);
 tslib_1.__decorate([
-    authentication_1.authenticate.skip(),
+    (0, authentication_1.authenticate)('jwt'),
     (0, rest_1.post)('/user/changePassword'),
     tslib_1.__param(0, (0, rest_1.requestBody)({
         content: {
             'application/json': { schema: chnagePassword },
         }
     })),
+    tslib_1.__param(1, (0, core_1.inject)(security_1.SecurityBindings.USER)),
     tslib_1.__metadata("design:type", Function),
-    tslib_1.__metadata("design:paramtypes", [Object]),
+    tslib_1.__metadata("design:paramtypes", [Object, Object]),
     tslib_1.__metadata("design:returntype", Promise)
 ], AuthController.prototype, "chnagePasswords", null);
 tslib_1.__decorate([

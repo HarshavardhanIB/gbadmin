@@ -3,8 +3,6 @@ export declare class BrokerSignupformsPlanlevels extends Entity {
     id?: number;
     formId: number;
     planlevelId: number;
-    rebateId?: number;
-    coveredPercentage?: number;
     [prop: string]: any;
     constructor(data?: Partial<BrokerSignupformsPlanlevels>);
 }

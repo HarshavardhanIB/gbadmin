@@ -262,11 +262,11 @@ export class Customer extends Entity {
 
   @hasOne(() => CustomerSignup, { keyTo: 'customer_id' })
   customerSignup: CustomerSignup;
-  @hasMany(() => ContactInformation, { through: { model: () => CustomerContactInfo, keyFrom: 'customer_id', keyTo: 'contact_id' } })
-  contactInformations: ContactInformation[];
-  @hasMany(() => InsurancePlans, { through: { model: () => CustomerPlans, keyFrom: 'customer_id', keyTo: 'plan_id' } })
-  subscriptionPlans: InsurancePlans[];
-  // Define well-known properties here
+  // @hasMany(() => ContactInformation, { through: { model: () => CustomerContactInfo, keyFrom: 'customer_id', keyTo: 'contact_id' } })
+  // contactInformations: ContactInformation[];
+  // @hasMany(() => InsurancePlans, { through: { model: () => CustomerPlans, keyFrom: 'customer_id', keyTo: 'plan_id' } })
+  // subscriptionPlans: InsurancePlans[];
+  // // Define well-known properties here
 
   // Indexer property to allow additional data
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

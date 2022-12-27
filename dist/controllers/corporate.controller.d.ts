@@ -6,4 +6,5 @@ export declare class CorporateController {
     private response;
     constructor(BrokerRepository: BrokerRepository, response: Response);
     brokerDetailsBasedonId(company: string): Promise<Response>;
+    brokerDetails(brokerId: number): Promise<void>;
 }

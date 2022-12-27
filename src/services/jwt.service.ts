@@ -47,7 +47,7 @@ export class JWTService {
       console.log("decryptedToken>>>", decryptedToken);
       userProfile = Object.assign(
         { [securityId]: '', id: '', name: '', role: '' },
-        { [securityId]: decryptedToken.adminid, id: decryptedToken.id, name: decryptedToken.name, role: decryptedToken.role }
+        { [securityId]: decryptedToken.id, id: decryptedToken.id, name: decryptedToken.name, role: decryptedToken.role }
       );
     }
     catch (err) {

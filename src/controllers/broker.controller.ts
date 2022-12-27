@@ -1,12 +1,12 @@
 // Uncomment these imports to begin using these cool features!
 
-import { inject } from "@loopback/core";
+import { inject, service } from "@loopback/core";
 import { repository } from "@loopback/repository";
 import { del, get, getModelSchemaRef, param, post, put, Request, requestBody, Response, response, RestBindings } from "@loopback/rest";
 import { publicEncrypt, sign } from "crypto";
 import { includes } from "lodash";
 import { FILE_UPLOAD_SERVICE } from "../keys";
-import { BROKERPATH_STRING } from "../paths";
+import { BROKERIMG_RESOURCES_FOLDER, BROKERPATH_STRING } from "../paths";
 import { BrokerRepository, BrokerLicensedStatesAndProvincesRepository, InsurancePlansRepository, SignupFormsRepository, BrokerSignupFormsPlansRepository, StatesAndProvincesRepository, BrokerSignupformsPlanlevelsRepository, TieredRebatesDataRepository, TieredRebatesRepository, UsersRepository, ContactInformationRepository, CustomerSignupRepository, CustomerRepository, PlanLevelRepository, BrokerEoInsuranceRepository } from '../repositories'
 import { FileUploadHandler } from "../types";
 import { FilesController } from "./files.controller";
@@ -18,6 +18,11 @@ import { query } from "express";
 import { request, STATUS_CODES } from "http";
 import { authenticate } from "@loopback/authentication";
 import { MessageChannel } from "worker_threads";
+import { Stats, readFile } from "fs";
+import * as validation from '../services/validation.services'
+import path from "path";
+import { HttpService, ResizeimgService } from "../services";
+import { FORMERR } from "dns";
 export class BrokerController {
   constructor(
     @repository(BrokerRepository)
@@ -52,6 +57,8 @@ export class BrokerController {
     public BrokerEoInsuranceRepository: BrokerEoInsuranceRepository,
     @inject(RestBindings.Http.RESPONSE) private response: Response,
     @inject(FILE_UPLOAD_SERVICE) public handler: FileUploadHandler,
+    @service(HttpService) public http: HttpService,
+    @service(ResizeimgService) public img: ResizeimgService
   ) { }
   @get('/admin/broker')
   @response(200, {
@@ -248,19 +255,14 @@ export class BrokerController {
   async brokerLogoUpload(
 
     @param.path.string('brokerid') broker_id: number,
-
+    @param.query.string('resize') resize: boolean,
     @requestBody.file()
-
     request: Request,
-
     @inject(RestBindings.Http.RESPONSE) response: Response,
 
-  ): Promise<Response> {
+  ): Promise<any> {
 
     let message: string, status: string, data: any = {};
-
-
-
     let p = new Promise<any>((resolve, reject) => {
 
       this.handler(request, response, err => {
@@ -292,41 +294,41 @@ export class BrokerController {
         let modfilenameArr = filename.split(".")
 
         let modfilename = modfilenameArr[0] + "0." + modfilenameArr[1]
-
-
-
+        console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>" + resize)
+        if (resize) {
+          let resizeimg = await this.img.resizeImg(filename.replace(/[\])}[{(]/g, '').replace(/ /g, ''));
+          console.log("the resizeimg >>>>>>>>>>>>", resizeimg)
+        }
+        else {
+        }
         const broker = await this.BrokerRepository.findById(broker_id);
-
+        console.log(broker);
         if (broker) {
 
           await this.BrokerRepository.updateById(broker_id, {
 
-            logo: BROKERPATH_STRING + filename,
+            logo: BROKERPATH_STRING + filename.replace(/[\])}[{(]/g, '').replace(/ /g, ''),
 
             link: BROKERPATH_STRING + modfilename
 
           })
+          //method
+          let url = process.env.MAINAPI + `/api/customer/broker/${broker_id}/logo`;
 
+          let pathImg = BROKERIMG_RESOURCES_FOLDER + "/" + filename.replace(/[\])}[{(]/g, '').replace(/ /g, '');
+          const fetchStatus = await this.http.fetchMultipartFormdata(url, pathImg);
+          console.log("fetchStatus >> status", fetchStatus);
           message = 'Broker logo is set'
-
           status = '200'
-
         } else {
-
           console.log('no broker with given id');
-
           message = 'No broker found'
-
           status = '202'
-
         }
 
       }
 
     })
-
-
-
     p.catch(onrejected => {
 
       message = 'Broker logo is not set'
@@ -334,9 +336,6 @@ export class BrokerController {
       status = '202'
 
     })
-
-
-
     this.response.status(parseInt('200')).send({
 
       status: '200',
@@ -348,7 +347,6 @@ export class BrokerController {
       data: data
 
     });
-
     return this.response;
 
   }
@@ -417,9 +415,10 @@ export class BrokerController {
                 default: '',
               },
               license: {
-                //required: ['formType'],
+                // required: ['formType'],
                 type: 'object',
                 properties: {
+
                   provinces_ids: {
                     type: 'array',
                     items: {
@@ -435,10 +434,23 @@ export class BrokerController {
                   },
                   expiry_date: { type: 'string', default: new Date().toISOString().slice(0, 10) },
                   reminder_email: { type: 'number', default: '7', description: 'send a reminder x days before' },
-
+                  licence_nums: { type: "array", default: "" }
                 }
               },
-
+              licenses: {
+                required: [''],
+                type: 'array',
+                items: {
+                  properties: {
+                    provinces_id: { type: 'number', default: '0' },
+                    provinces_name: { type: 'string', default: '' },
+                    expiry_date: { type: 'string', default: new Date().toISOString().slice(0, 10) },
+                    reminder_email: { type: 'number', default: '7', description: 'send a reminder x days before' },
+                    license_num: { type: "array", default: "" },
+                    license_coverage: { type: 'string', default: 'LIFE_ACCIDENT_AND_SICKNESS', enum: CONST.LICENSE_COVERAGE }
+                  }
+                }
+              },
               sales_tracking_code: {
                 type: 'string',
                 default: '',
@@ -454,12 +466,25 @@ export class BrokerController {
                 items: {
                   properties: {
                     formType: { type: 'string', default: 'REGULAR', enum: CONST.FORM_TYPE_ARRAY, },
-                    // name: {type: 'string', default: 'Health Benefits Application Form'},
-                    // description: {type: 'string', default: ''},
+                    name: { type: 'string', default: 'Health Benefits Application Form' },
+                    description: { type: 'string', default: '' },
                     link: { type: 'string', default: '' },
+                    planLevels: { type: 'array', default: '' },
                   }
                 }
 
+              },
+              EOInsurense: {
+                type: 'string'
+              },
+              EOCertificate: {
+                type: 'string'
+              },
+              policy: {
+                type: 'string'
+              },
+              EOIexpiryDate: {
+                type: 'string', default: new Date().toISOString().slice(0, 10)
               },
               apt: {
                 type: 'string',
@@ -536,6 +561,9 @@ export class BrokerController {
     });
     p.then(async value => {
       let brokerId;
+      let userId;
+      let contId;
+      let signupFormId;
       console.log("entry")
       if (!value.fields) {
         this.response.status(422).send({
@@ -560,7 +588,7 @@ export class BrokerController {
         }
 
         let apiRequest = value.fields;
-
+        let BroId: any;
 
 
         try {
@@ -651,6 +679,8 @@ export class BrokerController {
           //brokerData.logo=?
 
           brokerId = broker.id;
+          contId = broker.contactId;
+          userId = broker.userId;
           console.log(`Broker - ${brokerId}`)
 
           //broker
@@ -661,45 +691,71 @@ export class BrokerController {
 
 
           let brokerLicensedProvinces = [];
-          if (apiRequest.license) {
-            apiRequest.license = JSON.parse(apiRequest.license)
-            brokerLicenses.expiryDate = apiRequest.license.expiry_date
-            brokerLicenses.reminderEmail = apiRequest.license.reminder_email
+          // if (apiRequest.license) {
+          //   apiRequest.license = JSON.parse(apiRequest.license)
+          //   brokerLicenses.expiryDate = apiRequest.license.expiry_date
+          //   brokerLicenses.reminderEmail = apiRequest.license.reminder_email
 
-            if (apiRequest.license.provinces_ids && apiRequest.license.provinces_ids.length > 0) {
-              brokerLicensedProvinces = apiRequest.license.provinces_ids
-            } else if (apiRequest.license.provinces_names && apiRequest.license.provinces_names.length > 0) {
-              let provinces = await this.StatesAndProvincesRepository.find({
-                where: {
-                  or: [
-                    { shortName: { inq: apiRequest.license.provinces_names } },
-                    { name: { inq: apiRequest.license.provinces_names } }
-                  ]
-                }
-              })
+          //   if (apiRequest.license.provinces_ids && apiRequest.license.provinces_ids.length > 0) {
+          //     brokerLicensedProvinces = apiRequest.license.provinces_ids
+          //   } else if (apiRequest.license.provinces_names && apiRequest.license.provinces_names.length > 0) {
+          //     let provinces = await this.StatesAndProvincesRepository.find({
+          //       where: {
+          //         or: [
+          //           { shortName: { inq: apiRequest.license.provinces_names } },
+          //           { name: { inq: apiRequest.license.provinces_names } }
+          //         ]
+          //       }
+          //     })
 
-              console.log(provinces);
+          //     console.log(provinces);
 
-              for (const province of provinces) {
-                brokerLicensedProvinces.push(province.id);
-              }
-            }
-
-            for (const brokerLicensedProvince of brokerLicensedProvinces) {
-              brokerLicenses.stateId = brokerLicensedProvince;
-              console.log(`before push`)
-              console.log(brokerLicenses);
-              brokerLicensesArray.push(brokerLicenses)
+          //     for (const province of provinces) {
+          //       brokerLicensedProvinces.push(province.id);
+          //     }
+          //   }
+          //   let licenceNums = apiRequest.license.licence_nums;
+          //   // for (const brokerLicensedProvince of brokerLicensedProvinces) {
+          //   if (licenceNums.length == brokerLicensedProvinces.length) {
+          //     for (let i = 0; i < brokerLicensedProvinces.length; i++) {
+          //       // brokerLicenses.stateId = brokerLicensedProvince;
+          //       brokerLicenses.stateId = brokerLicensedProvinces[i];
+          //       brokerLicenses.licenseNumber = licenceNums[i];
+          //       console.log(`before push`)
+          //       console.log(brokerLicenses);
+          //       brokerLicensesArray.push(brokerLicenses)
+          //       await this.BrokerLicensedStatesAndProvincesRepository.create(brokerLicenses);
+          //     }
+          //   }
+          //   console.log(`brokerLicensesArray: ${brokerLicensesArray.length}`)
+          //   // if (brokerLicensesArray.length > 0)
+          //   //   await this.brokerLicensedProvincesRepo.create(brokerLicensesArray);
+          // }
+          if (apiRequest.licenses) {
+            apiRequest.licenses = JSON.parse(apiRequest.licenses);
+            let brokerLicenses: BrokerLicensedStatesAndProvinces = new BrokerLicensedStatesAndProvinces();
+            brokerLicenses.brokerId = brokerId || 0;
+            let licenses = apiRequest.licenses;
+            for (const license of licenses) {
+              brokerLicenses.expiryDate = license.expiry_date
+              brokerLicenses.reminderEmail = license.reminder_email
+              brokerLicenses.licenseNumber = license.license_num
+              brokerLicenses.licenseCoverage = license.license_coverage
+              brokerLicenses.stateId = license.provinces_id;
               await this.BrokerLicensedStatesAndProvincesRepository.create(brokerLicenses);
             }
-
-            console.log(`brokerLicensesArray: ${brokerLicensesArray.length}`)
-            // if (brokerLicensesArray.length > 0)
-            //   await this.brokerLicensedProvincesRepo.create(brokerLicensesArray);
+          }
+          //handle form
+          if (apiRequest.EOCertificate && apiRequest.EOIexpiryDate && apiRequest.EOInsurense && apiRequest.policy) {
+            let EOInsurence: BrokerEoInsurance = new BrokerEoInsurance();
+            EOInsurence.brokerId = broker?.id || 1;
+            EOInsurence.certificateNumber = apiRequest.EOCertificate;
+            EOInsurence.expiryDate = apiRequest.EOIexpiryDate;
+            EOInsurence.insurerName = apiRequest.EOInsurense;
+            EOInsurence.policyNumber = apiRequest.policy;
+            await this.BrokerEoInsuranceRepository.create(EOInsurence);
           }
 
-
-          //handle form
           if (apiRequest.createSignupForm) {
             //console.log("CONST.signupForm")
             // console.log(CONST.signupForm)
@@ -714,12 +770,11 @@ export class BrokerController {
             apiRequest.formDetails = JSON.parse(apiRequest.formDetails)
             console.log(apiRequest.formDetails)
             console.log(typeof apiRequest.formDetails)
-
             console.log(apiRequest.formDetails.length)
-
             data.form = []
+            console.log("form details in api", apiRequest.formDetails);
             for (const formDetails of apiRequest.formDetails) {
-
+              console.log("entery ", formDetails)
               let link = await generateFormLink(user.id || 0)
               signupFormData.link = await this.checkAndGenerateNewFormLink(link, user.id || 0)//generate_random_lin and user_id
 
@@ -746,7 +801,6 @@ export class BrokerController {
               signupFormData.description = formDetails.description ?? CONST.signupForm.description
               signupFormData.title = formDetails.title ?? CONST.signupForm.title
               signupFormData.formType = formDetails.formType ?? CONST.signupForm.formType
-
               signupFormData.keywords = formDetails.keywords ?? CONST.signupForm.keywords
               // signupFormData.disclosureAgreement = formDetails.disclosureAgreement ?? CONST.signupForm.disclosure_agreement
               // signupFormData.termsOfService = formDetails.termsOfService ?? CONST.signupForm.terms_of_service
@@ -772,6 +826,9 @@ export class BrokerController {
               signupFormData.isDemoForm = formDetails.isDemoform || false
 
               const signupForm = await this.SignupFormsRepository.create(signupFormData);
+              console.log(signupForm);
+
+              signupFormId = signupForm.id || 0;
 
               data.form.push(signupForm)
               console.log(`signupForm.id: ${signupForm.id}`)
@@ -803,31 +860,42 @@ export class BrokerController {
                 }
                 console.log(`signupFormPlansArray: ${signupFormPlansArray.length}`)
               }
-              if (formDetails.formType == CONST.SIGNUP_FORM.CUSTOME) {
+              if (formDetails.formType == CONST.SIGNUP_FORM.CUSTOM) {
                 let planLevels = formDetails.planLevels;
-                let executivePlanlevelObj: BrokerSignupformsPlanlevels = new BrokerSignupformsPlanlevels();
-                executivePlanlevelObj.formId = signupForm.id || 0;
+                let customPlanlevelObj: BrokerSignupformsPlanlevels = new BrokerSignupformsPlanlevels();
+                customPlanlevelObj.formId = signupForm.id || 0;
                 for (const pl of planLevels) {
-                  let plkanLevels = await this.PlanLevelRepository.find({
-                    where: {
-                      and: [
-                        { or: [{ id: pl }, { parentId: pl }] },
-                        { published: '1' }
-                      ]
-                    }, fields: {
-                      id: true
-                    }
-                  });
-                  if (plkanLevels) {
-                    for (const planlevel of plkanLevels) {
-                      executivePlanlevelObj.planlevelId = planlevel.id || 0;
-                      await this.BrokerSignupformsPlanlevelsRepository.create(executivePlanlevelObj);
-                    }
-                  }
+                  customPlanlevelObj.planlevelId = pl;
+                  await this.BrokerSignupformsPlanlevelsRepository.create(customPlanlevelObj);
                 }
+                // for (const pl of planLevels) {
+                //   let planLevelsInRepo = await this.PlanLevelRepository.find({
+                //     where: {
+                //       and: [
+                //         { or: [{ id: pl }, { parentId: pl }] },
+                //         { published: '1' }
+                //       ]
+                //     }, fields: {
+                //       id: true
+                //     }
+                //   });
+                //   if (planLevelsInRepo) {
+                //     console.log("plan", planLevelsInRepo);
+                //     for (const planlevelloop of planLevelsInRepo) {
+                //       let countofsignupformplanlevelcondition = await this.BrokerSignupformsPlanlevelsRepository.count({ and: [{ formId: signupForm.id }, { planlevelId: planlevelloop.id }] })
+                //       console.log(countofsignupformplanlevelcondition);
+                //       if (countofsignupformplanlevelcondition.count > 0)// console.log("plan levels", planlevel);
+                //       { }
+                //       else {
+                //         customPlanlevelObj.planlevelId = planlevelloop.id || 0;
+                //         let bsfl = await this.BrokerSignupformsPlanlevelsRepository.create(customPlanlevelObj);
+                //         console.log("bsfl>>>>>", bsfl);
+                //       }
+                //     }
+                //   }
+                // }
 
               }
-
             }//forms
 
           }
@@ -879,6 +947,14 @@ export class BrokerController {
           status = '202';
           statusCode = 202
         }
+        await this.BrokerLicensedStatesAndProvincesRepository.deleteAll({ brokerId: brokerId })
+        await this.BrokerSignupformsPlanlevelsRepository.deleteAll({ formId: signupFormId });
+        await this.BrokerEoInsuranceRepository.deleteAll({ brokerId: brokerId });
+        await this.ContactInformationRepository.deleteById(contId);
+        await this.BrokerLicensedStatesAndProvincesRepository.deleteAll({ brokerId: brokerId });
+        await this.UsersRepository.deleteById(userId);
+        await this.SignupFormsRepository.deleteAll({ brokerId: brokerId });
+        await this.BrokerRepository.deleteById(brokerId);
       }
 
       this.response.status(parseInt(status)).send({
@@ -1077,7 +1153,7 @@ export class BrokerController {
           }
           console.log(`signupFormPlansArray: ${signupFormPlansArray.length}`)
         }
-        if (formDetails.formType == CONST.SIGNUP_FORM.CUSTOME) {
+        if (formDetails.formType == CONST.SIGNUP_FORM.CUSTOM) {
           let planLevels = formDetails.planLevels;
           let executivePlanlevelObj: BrokerSignupformsPlanlevels = new BrokerSignupformsPlanlevels();
           executivePlanlevelObj.formId = signupForm.id || 0;
@@ -1155,27 +1231,73 @@ export class BrokerController {
             },
           },
         },
-        description: 'delete form',
+        description: 'delete form based on the formid',
       },
     },
   })
   async deleteForm(@param.path.number('formId') formId: number): Promise<any> {
     // let unPublish: number = 0;
+    let status, message, data: any = {};
     try {
       await this.BrokerSignupformsPlanlevelsRepository.deleteAll({ where: { formId: formId } });
-      await this.SignupFormsRepository.updateById(formId, { published: false });
+      let suf = await this.SignupFormsRepository.findById(formId);
+      if (suf) {
+        await this.SignupFormsRepository.updateById(formId, { published: false });
+      }
+      status = 200;
+      message = "Form deleted successfull"
     }
     catch (error) {
       console.log(error);
+      status = 400;
+      message = "Error when deleting the form"
     }
+
+    this.response.status(status).send({
+      status, message, date: new Date(),
+    });
+    return this.response;
   }
-  @del('/broker/brokerForm/{id}')
-  async deleteBrokerForm(@param.path.number('id') id: number): Promise<any> {
-    let brokerForms = await this.SignupFormsRepository.find({ where: { brokerId: id } });
-    for (const form of brokerForms) {
-      await this.BrokerSignupformsPlanlevelsRepository.deleteAll({ where: { formId: form.id } });
+  @del('/broker/brokerForm/{brokerid}')
+  async deleteBrokerForm(@param.path.number('brokerid') Brokerid: number): Promise<any> {
+    let status, message, data: any = {};
+    try {
+      if (Brokerid) {
+        let brokerForms = await this.SignupFormsRepository.find({ where: { brokerId: Brokerid } });
+        console.log(brokerForms);
+        if (brokerForms) {
+          for (const form of brokerForms) {
+            await this.BrokerSignupFormsPlansRepository.deleteAll({ formId: form.id });
+            await this.BrokerSignupformsPlanlevelsRepository.deleteAll({ formId: form.id });
+
+          }
+          // await this.SignupFormsRepository.deleteAll({ where: { brokerId: Brokerid } });
+          await this.SignupFormsRepository.deleteAll({ brokerId: Brokerid });
+
+          status = 200;
+          message = "Broker formds deleted successfull"
+        }
+        else {
+          status = 201
+          message = "No broker formds found"
+        }
+      }
+      else {
+        status = 401;
+        message = "Send brokerId"
+      }
+
     }
-    await this.SignupFormsRepository.deleteAll({ where: { brokerId: id } });
+    catch (error) {
+      status = 402;
+      message = "Error when delete the broker form"
+      console.log(error)
+    }
+
+    this.response.status(status).send({
+      status, message, date: new Date(),
+    });
+    return this.response;
   }
   @get('/formConfigurations')
   @response(200, {
@@ -1825,7 +1947,7 @@ export class BrokerController {
     });
     return this.response;
   }
-  @put('/broker/updateLicence/State/{brokerId}')
+  @put('/broker/updateLicenceState/{brokerId}')
   @response(200, {
     content: {
       'application/json': {
@@ -1988,4 +2110,243 @@ export class BrokerController {
     });
     return this.response;
   }
+  @post('/broker/change_emailId/{brokerId}')
+  async emailChange(@param.path.number('brokerId') brokerId: number, @requestBody({
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object'
+        }
+      }
+    }
+  }) requestBody: {
+    newMailid: string
+  }) {
+    let newmail = requestBody.newMailid;
+    let status, message, date, data: any = {};
+    if (!newmail || !brokerId) {
+      status: 201;
+      message = "No inpiuts found"
+    }
+    try {
+      let broker = await this.BrokerRepository.findById(brokerId, { fields: { contactId: true, user_id: true } });
+      let emailValidation = await validation.emailvalidation(newmail);
+      if (emailValidation) {
+        status = 400;
+        message = "Error when updating the mail id"
+      }
+      else {
+        await this.UsersRepository.updateById(broker.userId, { username: newmail });
+        await this.ContactInformationRepository.updateById(broker.contactId, { primaryEmail: newmail })
+        status = 200;
+        message = "Mail updated successfull"
+      }
+    } catch (error) {
+      console.log(error);
+      status = 400;
+      message = "Error when updating the mail id"
+    }
+    this.response.status(status).send({
+      status, message, date: new Date()
+    })
+    return this.response;
+  }
+  @put('/broker/', {
+    responses: {
+      200: {
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+            },
+          },
+        },
+        description: 'File',
+      },
+    },
+  })
+  async brokerUpdate(@requestBody({
+    description: "Update broker details",
+    content: {
+      'multipart/form-data': {
+        // Skip body parsing
+        'x-parser': 'stream',
+        schema: {
+          //required: ['name', 'email'],
+          type: 'object',
+          properties: {
+
+            // contact_type: {
+            //   type: 'string',
+            //   default: 'BROKER',
+            // },
+            name: {
+              type: 'string',
+              default: '',
+            },
+            brokerType: {
+              type: 'string',
+              default: 'BROKERAGE',
+              enum: CONST.BROKER_TYPE_ARRAY,
+            },
+            email: {
+              type: 'string',
+              default: '',
+            },
+            secondary_email: {
+              type: 'string',
+              default: '',
+            },
+            logo: {
+              type: 'string',
+              format: 'binary'
+            },
+
+            useParentsLogo: {
+              type: 'boolean',
+              default: 'false',
+            },
+            parent_id: {
+              type: 'number',
+              default: '0',
+            },
+            parent_name: {
+              type: 'string',
+              default: '',
+            },
+            license: {
+              // required: ['formType'],
+              type: 'object',
+              properties: {
+
+                provinces_ids: {
+                  type: 'array',
+                  items: {
+                    type: 'number'
+
+                  }
+                },
+                provinces_names: {
+                  type: 'array',
+                  items: {
+                    type: 'string'
+                  }
+                },
+                expiry_date: { type: 'string', default: new Date().toISOString().slice(0, 10) },
+                reminder_email: { type: 'number', default: '7', description: 'send a reminder x days before' },
+                licence_nums: { type: "array", default: "" }
+              }
+            },
+            licenses: {
+              required: [''],
+              type: 'array',
+              items: {
+                properties: {
+                  provinces_id: { type: 'number', default: '0' },
+                  provinces_name: { type: 'string', default: '' },
+                  expiry_date: { type: 'string', default: new Date().toISOString().slice(0, 10) },
+                  reminder_email: { type: 'number', default: '7', description: 'send a reminder x days before' },
+                  license_num: { type: "array", default: "" },
+                  license_coverage: { type: 'string', default: 'LIFE_ACCIDENT_AND_SICKNESS', enum: CONST.LICENSE_COVERAGE }
+                }
+              }
+            },
+            sales_tracking_code: {
+              type: 'string',
+              default: '',
+            },
+
+            createSignupForm: {
+              type: 'boolean',
+              default: '',
+            },
+            formDetails: {
+              required: ['formType'],
+              type: 'array',
+              items: {
+                properties: {
+                  formType: { type: 'string', default: 'REGULAR', enum: CONST.FORM_TYPE_ARRAY, },
+                  name: { type: 'string', default: 'Health Benefits Application Form' },
+                  description: { type: 'string', default: '' },
+                  link: { type: 'string', default: '' },
+                  planLevels: { type: 'array', default: '' },
+                }
+              }
+
+            },
+            EOInsurense: {
+              type: 'string'
+            },
+            EOCertificate: {
+              type: 'string'
+            },
+            policy: {
+              type: 'string'
+            },
+            EOIexpiryDate: {
+              type: 'string', default: new Date().toISOString().slice(0, 10)
+            },
+            apt: {
+              type: 'string',
+              default: '',
+            },
+            street_address_line1: {
+              type: 'string',
+              default: '',
+            },
+            street_address_line2: {
+              type: 'string',
+              default: '',
+            },
+            city: {
+              type: 'string',
+              default: '',
+            },
+            province: {
+              type: 'string',
+              default: '',
+            },
+            province_id: {
+              type: 'number',
+              default: '0',
+            },
+            state: {
+              type: 'string',
+              default: '',
+            },
+            state_id: {
+              type: 'number',
+              default: '0',
+            },
+            country: {
+              type: 'string',
+              default: '',
+            },
+            country_id: {
+              type: 'number',
+              default: '0',
+            },
+            postal_code: {
+              type: 'string',
+              default: '',
+            },
+            phone_number: {
+              type: 'string',
+              default: '',
+            },
+            secondary_phone: {
+              type: 'string',
+              default: '',
+            },
+
+          }
+
+        },
+      },
+    },
+  }) request: Request): Promise<any> {
+
+
+  }
+
 }
