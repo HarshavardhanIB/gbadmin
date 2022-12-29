@@ -4,6 +4,10 @@ exports.Broker = void 0;
 const tslib_1 = require("tslib");
 const repository_1 = require("@loopback/repository");
 const users_model_1 = require("./users.model");
+const contact_information_model_1 = require("./contact-information.model");
+const broker_eo_insurance_model_1 = require("./broker-eo-insurance.model");
+const broker_licensed_states_and_provinces_model_1 = require("./broker-licensed-states-and-provinces.model");
+const signup_forms_model_1 = require("./signup-forms.model");
 let Broker = class Broker extends repository_1.Entity {
     constructor(data) {
         super(data);
@@ -166,6 +170,22 @@ tslib_1.__decorate([
     (0, repository_1.belongsTo)(() => users_model_1.Users, { name: 'user' }),
     tslib_1.__metadata("design:type", Number)
 ], Broker.prototype, "user_id", void 0);
+tslib_1.__decorate([
+    (0, repository_1.belongsTo)(() => contact_information_model_1.ContactInformation, { name: 'contactInfo' }),
+    tslib_1.__metadata("design:type", Number)
+], Broker.prototype, "contact_id", void 0);
+tslib_1.__decorate([
+    (0, repository_1.hasOne)(() => broker_eo_insurance_model_1.BrokerEoInsurance, { keyTo: 'broker_id' }),
+    tslib_1.__metadata("design:type", broker_eo_insurance_model_1.BrokerEoInsurance)
+], Broker.prototype, "brokerEoInsurance", void 0);
+tslib_1.__decorate([
+    (0, repository_1.hasMany)(() => broker_licensed_states_and_provinces_model_1.BrokerLicensedStatesAndProvinces, { keyTo: 'broker_id' }),
+    tslib_1.__metadata("design:type", Array)
+], Broker.prototype, "brokerLicensedStatesAndProvinces", void 0);
+tslib_1.__decorate([
+    (0, repository_1.hasMany)(() => signup_forms_model_1.SignupForms, { keyTo: 'broker_id' }),
+    tslib_1.__metadata("design:type", Array)
+], Broker.prototype, "signupForms", void 0);
 Broker = tslib_1.__decorate([
     (0, repository_1.model)({
         settings: {

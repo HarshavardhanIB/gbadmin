@@ -1,4 +1,6 @@
 import { Entity } from '@loopback/repository';
+import { BrokerSignupformsPlanlevels } from './broker-signupforms-planlevels.model';
+import { Customer } from './customer.model';
 export declare class SignupForms extends Entity {
     alias?: string;
     brokerId: number;
@@ -19,6 +21,9 @@ export declare class SignupForms extends Entity {
     useCreditCardPaymentMethod: boolean;
     usePadPaymentMethod: boolean;
     warnRequiredDependantMedicalExam: boolean;
+    broker_id?: number;
+    signupFormPlanLevels: BrokerSignupformsPlanlevels[];
+    customers: Customer[];
     [prop: string]: any;
     constructor(data?: Partial<SignupForms>);
 }

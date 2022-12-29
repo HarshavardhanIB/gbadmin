@@ -167,6 +167,18 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", Boolean)
 ], CustomerSignup.prototype, "working_20hours", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'number',
+    }),
+    tslib_1.__metadata("design:type", Number)
+], CustomerSignup.prototype, "form_id", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'number',
+    }),
+    tslib_1.__metadata("design:type", Number)
+], CustomerSignup.prototype, "customer_id", void 0);
 CustomerSignup = tslib_1.__decorate([
     (0, repository_1.model)({
         settings: {

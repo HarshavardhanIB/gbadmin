@@ -1,5 +1,9 @@
-import { Entity, model, property, hasOne, belongsTo } from '@loopback/repository';
+import { Entity, model, property, hasOne, belongsTo, hasMany} from '@loopback/repository';
 import { Users } from './users.model';
+import {ContactInformation} from './contact-information.model';
+import {BrokerEoInsurance} from './broker-eo-insurance.model';
+import {BrokerLicensedStatesAndProvinces} from './broker-licensed-states-and-provinces.model';
+import {SignupForms} from './signup-forms.model';
 
 @model({
   settings: {
@@ -10,7 +14,7 @@ import { Users } from './users.model';
         entityKey: 'id',
         foreignKey: 'userId',
       },
-    }, mysql: { schema: 'gbadmin', table: 'broker' }
+    }, mysql: {schema: 'gbadmin', table: 'broker'}
   }
 })
 export class Broker extends Entity {
@@ -20,7 +24,7 @@ export class Broker extends Entity {
     scale: 0,
     generated: 1,
     id: 1,
-    mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
+    mysql: {columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1},
   })
   id?: number;
 
@@ -29,7 +33,7 @@ export class Broker extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: { columnName: 'parent_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0 },
+    mysql: {columnName: 'parent_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0},
   })
   parentId?: number;
 
@@ -37,7 +41,7 @@ export class Broker extends Entity {
     type: 'string',
     length: 45,
     generated: 0,
-    mysql: { columnName: 'name', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
+    mysql: {columnName: 'name', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
   })
   name?: string;
 
@@ -46,7 +50,7 @@ export class Broker extends Entity {
     required: true,
     length: 11,
     generated: 0,
-    mysql: { columnName: 'broker_type', dataType: 'enum', dataLength: 11, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
+    mysql: {columnName: 'broker_type', dataType: 'enum', dataLength: 11, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0},
   })
   brokerType: string;
 
@@ -54,7 +58,7 @@ export class Broker extends Entity {
     type: 'string',
     length: 45,
     generated: 0,
-    mysql: { columnName: 'unique_id', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
+    mysql: {columnName: 'unique_id', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
   })
   uniqueId?: string;
 
@@ -62,7 +66,7 @@ export class Broker extends Entity {
     type: 'string',
     length: 255,
     generated: 0,
-    mysql: { columnName: 'logo', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
+    mysql: {columnName: 'logo', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
   })
   logo?: string;
 
@@ -70,7 +74,7 @@ export class Broker extends Entity {
     type: 'string',
     length: 1000,
     generated: 0,
-    mysql: { columnName: 'link', dataType: 'varchar', dataLength: 1000, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
+    mysql: {columnName: 'link', dataType: 'varchar', dataLength: 1000, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
   })
   link?: string;
 
@@ -78,7 +82,7 @@ export class Broker extends Entity {
     type: 'string',
     length: 45,
     generated: 0,
-    mysql: { columnName: 'description', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
+    mysql: {columnName: 'description', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
   })
   description?: string;
 
@@ -86,7 +90,7 @@ export class Broker extends Entity {
     type: 'boolean',
     precision: 1,
     generated: 0,
-    mysql: { columnName: 'published', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'Y', generated: 0 },
+    mysql: {columnName: 'published', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'Y', generated: 0},
   })
   published?: boolean;
 
@@ -94,7 +98,7 @@ export class Broker extends Entity {
     type: 'boolean',
     precision: 1,
     generated: 0,
-    mysql: { columnName: 'deleted', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'Y', generated: 0 },
+    mysql: {columnName: 'deleted', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'Y', generated: 0},
   })
   deleted?: boolean;
 
@@ -103,7 +107,7 @@ export class Broker extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: { columnName: 'user_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0 },
+    mysql: {columnName: 'user_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0},
   })
   userId?: number;
 
@@ -112,7 +116,7 @@ export class Broker extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: { columnName: 'contact_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0 },
+    mysql: {columnName: 'contact_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0},
   })
   contactId?: number;
 
@@ -120,7 +124,7 @@ export class Broker extends Entity {
     type: 'string',
     length: 45,
     generated: 0,
-    mysql: { columnName: 'sales_tracking_code', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
+    mysql: {columnName: 'sales_tracking_code', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
   })
   salesTrackingCode?: string;
 
@@ -129,7 +133,7 @@ export class Broker extends Entity {
     required: true,
     precision: 1,
     generated: 0,
-    mysql: { columnName: 'use_credit_card_payment_method', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
+    mysql: {columnName: 'use_credit_card_payment_method', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0},
   })
   useCreditCardPaymentMethod: boolean;
 
@@ -138,7 +142,7 @@ export class Broker extends Entity {
     required: true,
     precision: 1,
     generated: 0,
-    mysql: { columnName: 'use_pad_payment_method', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
+    mysql: {columnName: 'use_pad_payment_method', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0},
   })
   usePadPaymentMethod: boolean;
 
@@ -147,11 +151,23 @@ export class Broker extends Entity {
     required: true,
     precision: 1,
     generated: 0,
-    mysql: { columnName: 'discoverable', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
+    mysql: {columnName: 'discoverable', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0},
   })
   discoverable: boolean;
-  @belongsTo(() => Users, { name: 'user' })
+  @belongsTo(() => Users, {name: 'user'})
   user_id: number;
+
+  @belongsTo(() => ContactInformation, {name: 'contactInfo'})
+  contact_id: number;
+
+  @hasOne(() => BrokerEoInsurance, {keyTo: 'broker_id'})
+  brokerEoInsurance: BrokerEoInsurance;
+
+  @hasMany(() => BrokerLicensedStatesAndProvinces, {keyTo: 'broker_id'})
+  brokerLicensedStatesAndProvinces: BrokerLicensedStatesAndProvinces[];
+
+  @hasMany(() => SignupForms, {keyTo: 'broker_id'})
+  signupForms: SignupForms[];
   // @hasOne(() => Users, { keyTo: 'user_id' })
   // users: Users;
   // Define well-known properties here

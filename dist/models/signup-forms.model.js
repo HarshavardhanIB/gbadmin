@@ -3,6 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SignupForms = void 0;
 const tslib_1 = require("tslib");
 const repository_1 = require("@loopback/repository");
+const broker_signupforms_planlevels_model_1 = require("./broker-signupforms-planlevels.model");
+const customer_model_1 = require("./customer.model");
+const customer_signup_model_1 = require("./customer-signup.model");
 let SignupForms = class SignupForms extends repository_1.Entity {
     constructor(data) {
         super(data);
@@ -189,6 +192,20 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", Boolean)
 ], SignupForms.prototype, "warnRequiredDependantMedicalExam", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'number',
+    }),
+    tslib_1.__metadata("design:type", Number)
+], SignupForms.prototype, "broker_id", void 0);
+tslib_1.__decorate([
+    (0, repository_1.hasMany)(() => broker_signupforms_planlevels_model_1.BrokerSignupformsPlanlevels, { keyTo: 'form_id' }),
+    tslib_1.__metadata("design:type", Array)
+], SignupForms.prototype, "signupFormPlanLevels", void 0);
+tslib_1.__decorate([
+    (0, repository_1.hasMany)(() => customer_model_1.Customer, { through: { model: () => customer_signup_model_1.CustomerSignup, keyFrom: 'form_id', keyTo: 'customer_id' } }),
+    tslib_1.__metadata("design:type", Array)
+], SignupForms.prototype, "customers", void 0);
 SignupForms = tslib_1.__decorate([
     (0, repository_1.model)({
         settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'signup_forms' } }

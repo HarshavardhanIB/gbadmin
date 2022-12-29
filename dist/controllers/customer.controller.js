@@ -9,8 +9,6 @@ const authentication_1 = require("@loopback/authentication");
 const rest_1 = require("@loopback/rest");
 const repository_1 = require("@loopback/repository");
 const repositories_1 = require("../repositories");
-const authorization_1 = require("@loopback/authorization");
-const auth_midd_1 = require("../middleware/auth.midd");
 const security_1 = require("@loopback/security");
 let customerController = class customerController {
     constructor(usersRepository, ContactInformationRepository, CustomerContactInfoRepository, CustomerPlanOptionsValuesRepository, CustomerPlansRepository, CustomerRelativesRepository, CustomerRepository, CustomerSignupRepository, response, user) {
@@ -73,62 +71,11 @@ let customerController = class customerController {
         });
         console.log(customers[customers.length - 1]);
         const custmrList = [];
-        // console.log(customers);
-        // for (let i = 0; i < customers.length; i++) {
-        // for (let customer of customers) {
-        //   let userid = customer.userId;
-        //   // console.log(userid);
-        //   let id = customer.id;
-        //   // console.log(id);
-        //   let custmrObj: any = customer;
-        //   // let emailid = await this.usersRepository.findOne({
-        //   //   where: { id: userid },
-        //   //   fields: {
-        //   //     username: true
-        //   //   }
-        //   // });
-        //   let emailid: any = customer.user;
-        //   let email: any;
-        //   if (!emailid) {
-        //     let contctInfoid = await this.CustomerContactInfoRepository.findOne({ where: { customerId: id } })
-        //     if (contctInfoid == null) {
-        //       email = ""
-        //     }
-        //     else {
-        //       let contactId = contctInfoid?.contactId;
-        //       // console.log(contctInfoid);
-        //       let contactIbfo: any = await this.ContactInformationRepository.findById(contactId);
-        //       if (contactIbfo.length == 0) {
-        //         email = "";
-        //       }
-        //       else {
-        //         email = contactIbfo.primaryEmail;
-        //       }
-        //     }
-        //   }
-        //   else {
-        //     email = emailid.username ?? "test";
-        //   }
-        //   custmrObj["test1"] = "test1";
-        //   custmrObj["emailId"] = email;
-        //   custmrObj["test2"] = "test2";
-        //   // console.log(custmrObj);
-        //   custmrList.push(custmrObj);
-        // }
         console.log(">>>>>>>>>>>>>>>>>>>>>>>", custmrList.length);
         if (custmrList.length > 0) {
             console.log(">>>>>>>>>>>>>>>>>>>>>>>", custmrList[0]);
             console.log(">>>>>>>>>>>>>>>>>>>>>>>", custmrList[custmrList.length - 1]);
         }
-        // setTimeout(function () {
-        //   let response = {
-        //     "status": 200,
-        //     "message": "List of primary details",
-        //     "data": custmrList
-        //   }
-        //   return response;
-        // }, 1000);
-        // return response;
         const responseObject = {
             status: 200,
             message: "List of primary details",
@@ -141,20 +88,20 @@ let customerController = class customerController {
     async allCustmerDetails(id) {
         let finalResultsArray = [];
         let finalObjforCustmr;
-        let customers = await this.CustomerRepository.findById(id, { include: [{ relation: "customerRelativeRelation" }, { relation: 'customerPlans' }, { relation: 'customerSignup' }] });
+        let customers = await this.CustomerRepository.findById(id, { include: [{ relation: "customerRelativeRelation" }, { relation: 'customerPlans' }, { relation: 'customerSignup' }, { relation: 'contactInformations' }, { relation: 'customerPlanOptionsValues' }] });
         console.log(">>>>>>><<<<<<<<<", customers);
         let contactInfo = [];
         let userid = customers.userId;
-        let contactInfoObj = await this.CustomerContactInfoRepository.find({ where: { customerId: id } });
-        for (let j = 0; j < contactInfoObj.length; j++) {
-            let contcatId = contactInfoObj[j].contactId;
-            let contactInfoRes = await this.ContactInformationRepository.find({ where: { id: contcatId } });
-            for (let j = 0; j < contactInfoRes.length; j++) {
-                contactInfo.push(contactInfoRes[j]);
-            }
-        }
+        // let contactInfoObj = await this.CustomerContactInfoRepository.find({ where: { customerId: id } });
+        // for (let j = 0; j < contactInfoObj.length; j++) {
+        //   let contcatId = contactInfoObj[j].contactId;
+        //   let contactInfoRes = await this.ContactInformationRepository.find({ where: { id: contcatId } });
+        //   for (let j = 0; j < contactInfoRes.length; j++) {
+        //     contactInfo.push(contactInfoRes[j]);
+        //   }
+        // }
         // let customerPlansObj = await this.CustomerPlansRepository.find({ where: { customerId: id } });
-        let custmerPlanOpt = await this.CustomerPlanOptionsValuesRepository.find({ where: { customerId: id } });
+        // let custmerPlanOpt = await this.CustomerPlanOptionsValuesRepository.find({ where: { customerId: id } });
         // let custmrRelatives = await this.CustomerRelativesRepository.find({ where: { customerId: id } });
         // let signupdetails: any = await this.CustomerSignupRepository.findOne({ where: { customerId: id } });
         // var tfHours = signupdetails?.working_20hours[0];
@@ -165,11 +112,17 @@ let customerController = class customerController {
         // else {
         //   signupdetails['working_20hours'] = false;
         // }
-        finalObjforCustmr = { "customerDetails": customers, "contactInfo": contactInfo, "customerPlanValues": custmerPlanOpt };
+        if (!customers) {
+            let response = {
+                "statusCode": 201,
+                "message": "no details found",
+            };
+            return response;
+        }
         let response = {
             "statusCode": 200,
             "message": "Customer details",
-            "data": finalObjforCustmr
+            "data": customers
         };
         return response;
     }
@@ -202,11 +155,12 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], customerController.prototype, "allCustmerDetails", null);
 customerController = tslib_1.__decorate([
-    (0, authentication_1.authenticate)('jwt'),
-    (0, authorization_1.authorize)({
-        allowedRoles: ['BROKER'],
-        voters: [auth_midd_1.basicAuthorization]
-    }),
+    (0, authentication_1.authenticate)('jwt')
+    // @authorize({
+    //   allowedRoles: ['BROKER'],
+    //   voters: [basicAuthorization]
+    // })
+    ,
     tslib_1.__param(0, (0, repository_1.repository)(repositories_1.UsersRepository)),
     tslib_1.__param(1, (0, repository_1.repository)(repositories_1.ContactInformationRepository)),
     tslib_1.__param(2, (0, repository_1.repository)(repositories_1.CustomerContactInfoRepository)),

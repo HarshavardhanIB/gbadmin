@@ -3,7 +3,7 @@ import { Request, Response } from "@loopback/rest";
 import { BrokerRepository, BrokerLicensedStatesAndProvincesRepository, InsurancePlansRepository, SignupFormsRepository, BrokerSignupFormsPlansRepository, StatesAndProvincesRepository, BrokerSignupformsPlanlevelsRepository, TieredRebatesDataRepository, TieredRebatesRepository, UsersRepository, ContactInformationRepository, CustomerSignupRepository, CustomerRepository, PlanLevelRepository, BrokerEoInsuranceRepository } from '../repositories';
 import { FileUploadHandler } from "../types";
 import { BrokerEoInsurance, ContactInformation } from "../models";
-import { HttpService, ResizeimgService } from "../services";
+import { BrokerService, HttpService, ResizeimgService } from "../services";
 export declare class BrokerController {
     BrokerRepository: BrokerRepository;
     BrokerLicensedStatesAndProvincesRepository: BrokerLicensedStatesAndProvincesRepository;
@@ -24,9 +24,10 @@ export declare class BrokerController {
     handler: FileUploadHandler;
     http: HttpService;
     img: ResizeimgService;
-    constructor(BrokerRepository: BrokerRepository, BrokerLicensedStatesAndProvincesRepository: BrokerLicensedStatesAndProvincesRepository, BrokerSignupFormsPlansRepository: BrokerSignupFormsPlansRepository, BrokerSignupformsPlanlevelsRepository: BrokerSignupformsPlanlevelsRepository, TieredRebatesDataRepository: TieredRebatesDataRepository, TieredRebatesRepository: TieredRebatesRepository, UsersRepository: UsersRepository, ContactInformationRepository: ContactInformationRepository, SignupFormsRepository: SignupFormsRepository, StatesAndProvincesRepository: StatesAndProvincesRepository, CustomerSignupRepository: CustomerSignupRepository, CustomerRepository: CustomerRepository, InsurancePlansRepository: InsurancePlansRepository, PlanLevelRepository: PlanLevelRepository, BrokerEoInsuranceRepository: BrokerEoInsuranceRepository, response: Response, handler: FileUploadHandler, http: HttpService, img: ResizeimgService);
+    bs: BrokerService;
+    constructor(BrokerRepository: BrokerRepository, BrokerLicensedStatesAndProvincesRepository: BrokerLicensedStatesAndProvincesRepository, BrokerSignupFormsPlansRepository: BrokerSignupFormsPlansRepository, BrokerSignupformsPlanlevelsRepository: BrokerSignupformsPlanlevelsRepository, TieredRebatesDataRepository: TieredRebatesDataRepository, TieredRebatesRepository: TieredRebatesRepository, UsersRepository: UsersRepository, ContactInformationRepository: ContactInformationRepository, SignupFormsRepository: SignupFormsRepository, StatesAndProvincesRepository: StatesAndProvincesRepository, CustomerSignupRepository: CustomerSignupRepository, CustomerRepository: CustomerRepository, InsurancePlansRepository: InsurancePlansRepository, PlanLevelRepository: PlanLevelRepository, BrokerEoInsuranceRepository: BrokerEoInsuranceRepository, response: Response, handler: FileUploadHandler, http: HttpService, img: ResizeimgService, bs: BrokerService);
     getBroker(): Promise<any>;
-    brokerDetailsBasedonId(id: number): Promise<Response<any, Record<string, any>> | undefined>;
+    brokerDetailsBasedonId(id: number): Promise<any>;
     custmerCount(id: number): Promise<any>;
     static newBroker(request: Request, method: string, others: any): Promise<void>;
     brokerLogoUpload(broker_id: number, resize: boolean, request: Request, response: Response): Promise<any>;
@@ -45,13 +46,13 @@ export declare class BrokerController {
     updateLiceceState(brokerId: number, requestBody: {
         states: Array<number>;
     }): Promise<any>;
-    updateEO(BrokerEoInsurance: Omit<BrokerEoInsurance, 'id'>): Promise<any>;
+    updateEO(brokerId: number, BrokerEoInsurance: Omit<BrokerEoInsurance, 'id'>): Promise<any>;
     updateLiceceNum(brokerId: number, requestBody: {
-        licenceNum: number;
+        licenceNum: string;
     }): Promise<any>;
     deleteBroker(brokerId: number): Promise<Response<any, Record<string, any>>>;
     emailChange(brokerId: number, requestBody: {
         newMailid: string;
     }): Promise<Response<any, Record<string, any>>>;
-    brokerUpdate(request: Request): Promise<any>;
+    brokerUpdate(request: Request, response: Response): Promise<Response>;
 }

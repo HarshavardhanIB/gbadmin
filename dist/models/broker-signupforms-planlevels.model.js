@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BrokerSignupformsPlanlevels = void 0;
 const tslib_1 = require("tslib");
 const repository_1 = require("@loopback/repository");
+const plan_level_model_1 = require("./plan-level.model");
 let BrokerSignupformsPlanlevels = class BrokerSignupformsPlanlevels extends repository_1.Entity {
     constructor(data) {
         super(data);
@@ -41,6 +42,16 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", Number)
 ], BrokerSignupformsPlanlevels.prototype, "planlevelId", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'number',
+    }),
+    tslib_1.__metadata("design:type", Number)
+], BrokerSignupformsPlanlevels.prototype, "form_id", void 0);
+tslib_1.__decorate([
+    (0, repository_1.belongsTo)(() => plan_level_model_1.PlanLevel, { name: 'planLevels' }),
+    tslib_1.__metadata("design:type", Number)
+], BrokerSignupformsPlanlevels.prototype, "planlevel_id", void 0);
 BrokerSignupformsPlanlevels = tslib_1.__decorate([
     (0, repository_1.model)({
         settings: {

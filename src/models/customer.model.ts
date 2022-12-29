@@ -6,6 +6,7 @@ import { CustomerSignup } from './customer-signup.model';
 import { ContactInformation } from './contact-information.model';
 import { CustomerContactInfo } from './customer-contact-info.model';
 import { InsurancePlans } from './insurance-plans.model';
+import {CustomerPlanOptionsValues} from './customer-plan-options-values.model';
 
 @model({
   settings: {
@@ -256,8 +257,14 @@ export class Customer extends Entity {
   userId?: number;
   @hasMany(() => CustomerRelatives, { keyTo: 'customer_id' })
   customerRelativeRelation: CustomerRelatives[];
+
   // @hasMany(() => CustomerRelatives)
   // customerRelativeRelation: CustomerRelatives[];
+  @hasMany(() => ContactInformation, {through: {model: () => CustomerContactInfo, keyFrom: 'customer_id', keyTo: 'contact_id'}})
+  contactInformations: ContactInformation[];
+
+  @hasMany(() => CustomerPlanOptionsValues, {keyTo: 'customer_id'})
+  customerPlanOptionsValues: CustomerPlanOptionsValues[];
   @hasMany(() => CustomerPlans, { keyTo: 'customer_id' }) customerPlans: CustomerPlans[];
 
   @hasOne(() => CustomerSignup, { keyTo: 'customer_id' })

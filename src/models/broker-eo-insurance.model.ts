@@ -59,6 +59,10 @@ export class BrokerEoInsurance extends Entity {
   })
   expiryDate: string;
 
+  @property({
+    type: 'number',
+  })
+  broker_id?: number;
   // Define well-known properties here
 
   // Indexer property to allow additional data

@@ -16,7 +16,7 @@ import { Entity, model, property } from '@loopback/repository';
 
       }
 
-    }, mysql: { table: 'customer_signup' }
+    }, mysql: {table: 'customer_signup'}
   }
 })
 export class CustomerSignup extends Entity {
@@ -25,7 +25,7 @@ export class CustomerSignup extends Entity {
     type: 'string',
     length: 45,
     generated: 0,
-    mysql: { columnName: 'company_name', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
+    mysql: {columnName: 'company_name', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
   })
   companyName?: string;
 
@@ -35,7 +35,7 @@ export class CustomerSignup extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: { columnName: 'customer_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0 },
+    mysql: {columnName: 'customer_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0},
   })
   customerId: number;
 
@@ -43,7 +43,7 @@ export class CustomerSignup extends Entity {
     type: 'date',
     required: true,
     generated: 0,
-    mysql: { columnName: 'enrollment_date', dataType: 'date', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
+    mysql: {columnName: 'enrollment_date', dataType: 'date', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0},
   })
   enrollmentDate: string;
 
@@ -53,7 +53,7 @@ export class CustomerSignup extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: { columnName: 'form_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0 },
+    mysql: {columnName: 'form_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0},
   })
   formId: number;
 
@@ -61,7 +61,7 @@ export class CustomerSignup extends Entity {
     type: 'date',
     required: true,
     generated: 0,
-    mysql: { columnName: 'hiring_date', dataType: 'date', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
+    mysql: {columnName: 'hiring_date', dataType: 'date', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0},
   })
   hiringDate: string;
 
@@ -79,7 +79,7 @@ export class CustomerSignup extends Entity {
     type: 'string',
     length: 45,
     generated: 0,
-    mysql: { columnName: 'job_title', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
+    mysql: {columnName: 'job_title', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
   })
   jobTitle?: string;
 
@@ -88,7 +88,7 @@ export class CustomerSignup extends Entity {
     required: true,
     length: 7,
     generated: 0,
-    mysql: { columnName: 'marital_status', dataType: 'enum', dataLength: 7, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
+    mysql: {columnName: 'marital_status', dataType: 'enum', dataLength: 7, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0},
   })
   maritalStatus: string;
 
@@ -97,7 +97,7 @@ export class CustomerSignup extends Entity {
     required: true,
     precision: 1,
     generated: 0,
-    mysql: { columnName: 'opt_in_pills', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
+    mysql: {columnName: 'opt_in_pills', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0},
   })
   optInPills: boolean;
 
@@ -106,7 +106,7 @@ export class CustomerSignup extends Entity {
     required: true,
     precision: 1,
     generated: 0,
-    mysql: { columnName: 'provincial_health_care', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
+    mysql: {columnName: 'provincial_health_care', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0},
   })
   provincialHealthCare: boolean;
 
@@ -115,7 +115,7 @@ export class CustomerSignup extends Entity {
     required: true,
     precision: 1,
     generated: 0,
-    mysql: { columnName: 'read_advisor_disclosure', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
+    mysql: {columnName: 'read_advisor_disclosure', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0},
   })
   readAdvisorDisclosure: boolean;
 
@@ -124,7 +124,7 @@ export class CustomerSignup extends Entity {
     required: true,
     length: 65535,
     generated: 0,
-    mysql: { columnName: 'signature', dataType: 'text', dataLength: 65535, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
+    mysql: {columnName: 'signature', dataType: 'text', dataLength: 65535, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0},
   })
   signature: string;
 
@@ -132,7 +132,7 @@ export class CustomerSignup extends Entity {
     type: 'date',
     required: true,
     generated: 0,
-    mysql: { columnName: 'signup_date', dataType: 'date', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
+    mysql: {columnName: 'signup_date', dataType: 'date', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0},
   })
   signupDate: string;
 
@@ -141,7 +141,7 @@ export class CustomerSignup extends Entity {
     required: true,
     precision: 1,
     generated: 0,
-    mysql: { columnName: 'terms_and_conditions', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
+    mysql: {columnName: 'terms_and_conditions', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0},
   })
   termsAndConditions: boolean;
 
@@ -151,7 +151,7 @@ export class CustomerSignup extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: { columnName: 'weekly_hours', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0 },
+    mysql: {columnName: 'weekly_hours', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0},
   })
   weeklyHours: number;
 
@@ -160,10 +160,19 @@ export class CustomerSignup extends Entity {
     required: true,
     precision: 1,
     generated: 0,
-    mysql: { columnName: 'working_20hours', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
+    mysql: {columnName: 'working_20hours', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0},
   })
   working_20hours: boolean;
 
+  @property({
+    type: 'number',
+  })
+  form_id?: number;
+
+  @property({
+    type: 'number',
+  })
+  customer_id?: number;
   // Define well-known properties here
 
   // Indexer property to allow additional data

@@ -1,4 +1,7 @@
-import {Entity, model, property} from '@loopback/repository';
+import {Entity, model, property, hasMany} from '@loopback/repository';
+import {BrokerSignupformsPlanlevels} from './broker-signupforms-planlevels.model';
+import {Customer} from './customer.model';
+import {CustomerSignup} from './customer-signup.model';
 
 @model({
   settings: {idInjection: false, mysql: {schema: 'gbadmin', table: 'signup_forms'}}
@@ -166,6 +169,16 @@ export class SignupForms extends Entity {
   })
   warnRequiredDependantMedicalExam: boolean;
 
+  @property({
+    type: 'number',
+  })
+  broker_id?: number;
+
+  @hasMany(() => BrokerSignupformsPlanlevels, {keyTo: 'form_id'})
+  signupFormPlanLevels: BrokerSignupformsPlanlevels[];
+
+  @hasMany(() => Customer, {through: {model: () => CustomerSignup, keyFrom: 'form_id', keyTo: 'customer_id'}})
+  customers: Customer[];
   // Define well-known properties here
 
   // Indexer property to allow additional data

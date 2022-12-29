@@ -14,10 +14,11 @@ const CONST = tslib_1.__importStar(require("../constants"));
 const MESSAGE = tslib_1.__importStar(require("../messages"));
 const models_1 = require("../models");
 const common_functions_1 = require("../common-functions");
+const authentication_1 = require("@loopback/authentication");
 const validation = tslib_1.__importStar(require("../services/validation.services"));
 const services_1 = require("../services");
 let BrokerController = class BrokerController {
-    constructor(BrokerRepository, BrokerLicensedStatesAndProvincesRepository, BrokerSignupFormsPlansRepository, BrokerSignupformsPlanlevelsRepository, TieredRebatesDataRepository, TieredRebatesRepository, UsersRepository, ContactInformationRepository, SignupFormsRepository, StatesAndProvincesRepository, CustomerSignupRepository, CustomerRepository, InsurancePlansRepository, PlanLevelRepository, BrokerEoInsuranceRepository, response, handler, http, img) {
+    constructor(BrokerRepository, BrokerLicensedStatesAndProvincesRepository, BrokerSignupFormsPlansRepository, BrokerSignupformsPlanlevelsRepository, TieredRebatesDataRepository, TieredRebatesRepository, UsersRepository, ContactInformationRepository, SignupFormsRepository, StatesAndProvincesRepository, CustomerSignupRepository, CustomerRepository, InsurancePlansRepository, PlanLevelRepository, BrokerEoInsuranceRepository, response, handler, http, img, bs) {
         this.BrokerRepository = BrokerRepository;
         this.BrokerLicensedStatesAndProvincesRepository = BrokerLicensedStatesAndProvincesRepository;
         this.BrokerSignupFormsPlansRepository = BrokerSignupFormsPlansRepository;
@@ -37,6 +38,7 @@ let BrokerController = class BrokerController {
         this.handler = handler;
         this.http = http;
         this.img = img;
+        this.bs = bs;
     }
     async getBroker() {
         try {
@@ -95,12 +97,34 @@ let BrokerController = class BrokerController {
         let final = [];
         let responseObject, status;
         try {
-            let data = await this.BrokerRepository.findOne({ where: { id: id } });
+            console.log("enter");
+            let data = await this.BrokerRepository.findOne({
+                where: { id: id }, include: [
+                    {
+                        relation: 'user', scope: {
+                            fields: { username: true }
+                        }
+                    }, { relation: 'contactInfo' }, { relation: 'brokerEoInsurance' },
+                    {
+                        relation: 'brokerLicensedStatesAndProvinces', scope: {
+                            include: [{ relation: 'stateFullDetails', scope: { fields: { name: true } } }]
+                        },
+                    },
+                    {
+                        relation: 'signupForms', scope: {
+                            include: [{
+                                    relation: 'signupFormPlanLevels'
+                                },
+                                { relation: 'customers', scope: { fields: { firstName: true, lastName: true, dob: true, gender: true, status: true, userId: true } } }]
+                        }
+                    }
+                ]
+            });
             if (!data) {
                 status = 201;
                 responseObject = {
-                    status: 200,
-                    message: "List of primary details",
+                    status: 201,
+                    message: "No details found",
                     date: new Date(),
                     data: final
                 };
@@ -114,19 +138,22 @@ let BrokerController = class BrokerController {
                     userDetails = "";
                 }
                 else {
-                    userDetails = await this.UsersRepository.findOne({ where: { id: userId }, fields: { username: true } });
-                    dataArray['emailId'] = userDetails;
+                    // userDetails = await this.UsersRepository.findOne({ where: { id: userId }, fields: { username: true } });
+                    // dataArray['emailId'] = userDetails
                 }
-                let contactInfo = await this.ContactInformationRepository.find({ where: { id: data.contactId }, fields: { primaryEmail: true, primaryPhone: true, addressType: true, apt: true, line1: true, city: true, state: true, country: true } });
-                if (contactInfo) {
-                    final.push(contactInfo);
-                }
-                final.push(dataArray);
+                // let contactInfo = await this.ContactInformationRepository.find({ where: { id: data.contactId }, fields: { primaryEmail: true, primaryPhone: true, addressType: true, apt: true, line1: true, city: true, state: true, country: true } });
+                // let signupForm = await this.BrokerSignupFormsPlansRepository.find({ where: { brokerId: id } });
+                // console.log(signupForm);
+                // dataArray['signupFormds'] = signupForm
+                // if (contactInfo) {
+                // final.push(contactInfo);
+                // }
+                // final.push(dataArray);
                 responseObject = {
                     status: 200,
-                    message: "List of primary details",
+                    message: "Broker Details",
                     date: new Date(),
-                    data: final
+                    data: data
                 };
             }
             this.response.status(status).send(responseObject);
@@ -865,6 +892,7 @@ let BrokerController = class BrokerController {
     async formConfig(
     // @param.path.string('formLink') formLink: string
     formLink, lang) {
+        await this.bs.print();
         let message, status, data = {}, error;
         // formLink += '/'
         // if (!formLink) {
@@ -1221,10 +1249,9 @@ let BrokerController = class BrokerController {
         });
         return this.response;
     }
-    async updateEO(BrokerEoInsurance) {
+    async updateEO(brokerId, BrokerEoInsurance) {
         let status, message, data = {};
         console.log(BrokerEoInsurance);
-        let brokerId = BrokerEoInsurance.brokerId;
         if (!brokerId) {
             status = 201;
             message = "Send proper input";
@@ -1320,7 +1347,68 @@ let BrokerController = class BrokerController {
         });
         return this.response;
     }
-    async brokerUpdate(request) {
+    async brokerUpdate(request, response) {
+        let message, status, statusCode, data = {};
+        let p = new Promise((resolve, reject) => {
+            this.handler(request, response, err => {
+                if (err)
+                    reject(err);
+                else {
+                    resolve(files_controller_1.FilesController.getFilesAndFields(request, 'brokerLogoUpload', {}));
+                    // const upload = FilesController.getFilesAndFields(request, 'brokerLogoUpload', { brokerid: broker_id });
+                }
+            });
+        });
+        p.then(async (value) => {
+            let brokerId;
+            let userId;
+            let contId;
+            let signupFormId;
+            console.log("entry");
+            if (!value.fields) {
+                this.response.status(422).send({
+                    status: '422',
+                    error: `Missing input fields`,
+                    message: MESSAGE.ERRORS.missingDetails,
+                    date: new Date(),
+                });
+                return this.response;
+            }
+            if (value.fields) {
+                if (value.fields.error) {
+                    this.response.status(422).send({
+                        status: '422',
+                        error: value.fields.error,
+                        message: value.fields.error,
+                        date: new Date(),
+                    });
+                    return this.response;
+                }
+                let apiRequest = value.fields;
+                let BroId;
+                if (apiRequest.borkerId == 0 || !apiRequest.borkerId) {
+                    this.response.status(422).send({
+                        status: '422',
+                        error: `Missing input fields`,
+                        message: MESSAGE.ERRORS.missingDetails,
+                        date: new Date(),
+                    });
+                    return this.response;
+                }
+                brokerId = apiRequest.borkerId;
+            }
+        });
+        p.catch(onrejected => {
+            message = 'Broker logo is not set';
+            status = '202';
+            this.response.status(parseInt(status)).send({
+                status: status,
+                message: message,
+                date: new Date(),
+                data: data
+            });
+        });
+        return this.response;
     }
 };
 tslib_1.__decorate([
@@ -1644,6 +1732,7 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], BrokerController.prototype, "deleteBrokerForm", null);
 tslib_1.__decorate([
+    authentication_1.authenticate.skip(),
     (0, rest_1.get)('/formConfigurations'),
     (0, rest_1.response)(200, {
         description: 'Mixed object of all the specific values needed for form configuration',
@@ -1745,7 +1834,8 @@ tslib_1.__decorate([
             }
         }
     }),
-    tslib_1.__param(0, (0, rest_1.requestBody)({
+    tslib_1.__param(0, rest_1.param.path.number('brokerId')),
+    tslib_1.__param(1, (0, rest_1.requestBody)({
         content: {
             'application/json': {
                 schema: (0, rest_1.getModelSchemaRef)(models_1.BrokerEoInsurance, {
@@ -1755,7 +1845,7 @@ tslib_1.__decorate([
         }
     })),
     tslib_1.__metadata("design:type", Function),
-    tslib_1.__metadata("design:paramtypes", [Object]),
+    tslib_1.__metadata("design:paramtypes", [Number, Object]),
     tslib_1.__metadata("design:returntype", Promise)
 ], BrokerController.prototype, "updateEO", null);
 tslib_1.__decorate([
@@ -1840,26 +1930,9 @@ tslib_1.__decorate([
                     //required: ['name', 'email'],
                     type: 'object',
                     properties: {
-                        // contact_type: {
-                        //   type: 'string',
-                        //   default: 'BROKER',
-                        // },
-                        name: {
-                            type: 'string',
-                            default: '',
-                        },
-                        brokerType: {
-                            type: 'string',
-                            default: 'BROKERAGE',
-                            enum: CONST.BROKER_TYPE_ARRAY,
-                        },
-                        email: {
-                            type: 'string',
-                            default: '',
-                        },
-                        secondary_email: {
-                            type: 'string',
-                            default: '',
+                        borkerId: {
+                            type: 'number',
+                            default: '0',
                         },
                         logo: {
                             type: 'string',
@@ -2002,8 +2075,9 @@ tslib_1.__decorate([
             },
         },
     })),
+    tslib_1.__param(1, (0, core_1.inject)(rest_1.RestBindings.Http.RESPONSE)),
     tslib_1.__metadata("design:type", Function),
-    tslib_1.__metadata("design:paramtypes", [Object]),
+    tslib_1.__metadata("design:paramtypes", [Object, Object]),
     tslib_1.__metadata("design:returntype", Promise)
 ], BrokerController.prototype, "brokerUpdate", null);
 BrokerController = tslib_1.__decorate([
@@ -2026,6 +2100,7 @@ BrokerController = tslib_1.__decorate([
     tslib_1.__param(16, (0, core_1.inject)(keys_1.FILE_UPLOAD_SERVICE)),
     tslib_1.__param(17, (0, core_1.service)(services_1.HttpService)),
     tslib_1.__param(18, (0, core_1.service)(services_1.ResizeimgService)),
+    tslib_1.__param(19, (0, core_1.service)(services_1.BrokerService)),
     tslib_1.__metadata("design:paramtypes", [repositories_1.BrokerRepository,
         repositories_1.BrokerLicensedStatesAndProvincesRepository,
         repositories_1.BrokerSignupFormsPlansRepository,
@@ -2041,7 +2116,8 @@ BrokerController = tslib_1.__decorate([
         repositories_1.InsurancePlansRepository,
         repositories_1.PlanLevelRepository,
         repositories_1.BrokerEoInsuranceRepository, Object, Function, services_1.HttpService,
-        services_1.ResizeimgService])
+        services_1.ResizeimgService,
+        services_1.BrokerService])
 ], BrokerController);
 exports.BrokerController = BrokerController;
 //# sourceMappingURL=broker.controller.js.map

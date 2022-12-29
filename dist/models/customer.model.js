@@ -7,6 +7,9 @@ const users_model_1 = require("./users.model");
 const customer_relatives_model_1 = require("./customer-relatives.model");
 const customer_plans_model_1 = require("./customer-plans.model");
 const customer_signup_model_1 = require("./customer-signup.model");
+const contact_information_model_1 = require("./contact-information.model");
+const customer_contact_info_model_1 = require("./customer-contact-info.model");
+const customer_plan_options_values_model_1 = require("./customer-plan-options-values.model");
 let Customer = class Customer extends repository_1.Entity {
     constructor(data) {
         super(data);
@@ -281,6 +284,14 @@ tslib_1.__decorate([
     (0, repository_1.hasMany)(() => customer_relatives_model_1.CustomerRelatives, { keyTo: 'customer_id' }),
     tslib_1.__metadata("design:type", Array)
 ], Customer.prototype, "customerRelativeRelation", void 0);
+tslib_1.__decorate([
+    (0, repository_1.hasMany)(() => contact_information_model_1.ContactInformation, { through: { model: () => customer_contact_info_model_1.CustomerContactInfo, keyFrom: 'customer_id', keyTo: 'contact_id' } }),
+    tslib_1.__metadata("design:type", Array)
+], Customer.prototype, "contactInformations", void 0);
+tslib_1.__decorate([
+    (0, repository_1.hasMany)(() => customer_plan_options_values_model_1.CustomerPlanOptionsValues, { keyTo: 'customer_id' }),
+    tslib_1.__metadata("design:type", Array)
+], Customer.prototype, "customerPlanOptionsValues", void 0);
 tslib_1.__decorate([
     (0, repository_1.hasMany)(() => customer_plans_model_1.CustomerPlans, { keyTo: 'customer_id' }),
     tslib_1.__metadata("design:type", Array)

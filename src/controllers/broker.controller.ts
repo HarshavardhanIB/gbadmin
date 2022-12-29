@@ -21,7 +21,7 @@ import { MessageChannel } from "worker_threads";
 import { Stats, readFile } from "fs";
 import * as validation from '../services/validation.services'
 import path from "path";
-import { HttpService, ResizeimgService } from "../services";
+import { BrokerService, HttpService, ResizeimgService } from "../services";
 import { FORMERR } from "dns";
 export class BrokerController {
   constructor(
@@ -58,7 +58,8 @@ export class BrokerController {
     @inject(RestBindings.Http.RESPONSE) private response: Response,
     @inject(FILE_UPLOAD_SERVICE) public handler: FileUploadHandler,
     @service(HttpService) public http: HttpService,
-    @service(ResizeimgService) public img: ResizeimgService
+    @service(ResizeimgService) public img: ResizeimgService,
+    @service(BrokerService) public bs: BrokerService
   ) { }
   @get('/admin/broker')
   @response(200, {
@@ -119,16 +120,37 @@ export class BrokerController {
     }
   }
   @get('/admin/broker/{id}')
-  async brokerDetailsBasedonId(@param.path.number('id') id: number) {
+  async brokerDetailsBasedonId(@param.path.number('id') id: number): Promise<any> {
     let final: any = [];
     let responseObject, status: any;
     try {
-      let data = await this.BrokerRepository.findOne({ where: { id: id } });
+      console.log("enter");
+      let data = await this.BrokerRepository.findOne({
+        where: { id: id }, include: [
+          {
+            relation: 'user', scope: {
+              fields: { username: true }
+            }
+          }, { relation: 'contactInfo' }, { relation: 'brokerEoInsurance' },
+          {
+            relation: 'brokerLicensedStatesAndProvinces', scope: {
+              include: [{ relation: 'stateFullDetails', scope: { fields: { name: true } } }]
+            },
+          },
+          {
+            relation: 'signupForms', scope: {
+              include: [{
+                relation: 'signupFormPlanLevels'
+              }
+                , { relation: 'customers', scope: { fields: { firstName: true, lastName: true, dob: true, gender: true, status: true, userId: true } } }]
+            }
+          }]
+      });
       if (!data) {
         status = 201;
         responseObject = {
-          status: 200,
-          message: "List of primary details",
+          status: 201,
+          message: "No details found",
           date: new Date(),
           data: final
         }
@@ -142,28 +164,29 @@ export class BrokerController {
           userDetails = "";
         }
         else {
-          userDetails = await this.UsersRepository.findOne({ where: { id: userId }, fields: { username: true } });
-          dataArray['emailId'] = userDetails
+          // userDetails = await this.UsersRepository.findOne({ where: { id: userId }, fields: { username: true } });
+          // dataArray['emailId'] = userDetails
         }
-        let contactInfo = await this.ContactInformationRepository.find({ where: { id: data.contactId }, fields: { primaryEmail: true, primaryPhone: true, addressType: true, apt: true, line1: true, city: true, state: true, country: true } });
-        if (contactInfo) {
-          final.push(contactInfo);
-        }
-        final.push(dataArray);
+        // let contactInfo = await this.ContactInformationRepository.find({ where: { id: data.contactId }, fields: { primaryEmail: true, primaryPhone: true, addressType: true, apt: true, line1: true, city: true, state: true, country: true } });
+        // let signupForm = await this.BrokerSignupFormsPlansRepository.find({ where: { brokerId: id } });
+        // console.log(signupForm);
+        // dataArray['signupFormds'] = signupForm
+        // if (contactInfo) {
+        // final.push(contactInfo);
+        // }
+        // final.push(dataArray);
         responseObject = {
           status: 200,
-          message: "List of primary details",
+          message: "Broker Details",
           date: new Date(),
-          data: final
+          data: data
         }
-
       }
       this.response.status(status).send(responseObject);
       return this.response;
     }
     catch (error) {
       console.log(error);
-
     }
   }
   @get('/admin/broker/customerlist/{id}')
@@ -555,7 +578,6 @@ export class BrokerController {
         else {
           resolve(FilesController.getFilesAndFields(request, 'brokerLogoUpload', {}));
           // const upload = FilesController.getFilesAndFields(request, 'brokerLogoUpload', { brokerid: broker_id });
-
         }
       });
     });
@@ -1299,6 +1321,7 @@ export class BrokerController {
     });
     return this.response;
   }
+  @authenticate.skip()
   @get('/formConfigurations')
   @response(200, {
 
@@ -1328,7 +1351,7 @@ export class BrokerController {
     @param.query.string('lang') lang?: string
 
   ): Promise<Response> {
-
+    await this.bs.print();
     let message, status, data: any = {}, error;
 
 
@@ -2002,7 +2025,7 @@ export class BrokerController {
       }
     }
   })
-  async updateEO(@requestBody({
+  async updateEO(@param.path.number('brokerId') brokerId: number, @requestBody({
     content: {
       'application/json': {
         schema: getModelSchemaRef(BrokerEoInsurance, {
@@ -2013,7 +2036,6 @@ export class BrokerController {
   }) BrokerEoInsurance: Omit<BrokerEoInsurance, 'id'>): Promise<any> {
     let status, message, data: any = {}
     console.log(BrokerEoInsurance);
-    let brokerId = BrokerEoInsurance.brokerId;
     if (!brokerId) {
       status = 201;
       message = "Send proper input"
@@ -2048,7 +2070,7 @@ export class BrokerController {
     }
 
   }) requestBody: {
-    licenceNum: number
+    licenceNum: string
   }): Promise<any> {
     let licenceNum: any = requestBody.licenceNum;
     let status, message, data: any = {};
@@ -2175,27 +2197,9 @@ export class BrokerController {
           //required: ['name', 'email'],
           type: 'object',
           properties: {
-
-            // contact_type: {
-            //   type: 'string',
-            //   default: 'BROKER',
-            // },
-            name: {
-              type: 'string',
-              default: '',
-            },
-            brokerType: {
-              type: 'string',
-              default: 'BROKERAGE',
-              enum: CONST.BROKER_TYPE_ARRAY,
-            },
-            email: {
-              type: 'string',
-              default: '',
-            },
-            secondary_email: {
-              type: 'string',
-              default: '',
+            borkerId: {
+              type: 'number',
+              default: '0',
             },
             logo: {
               type: 'string',
@@ -2344,9 +2348,70 @@ export class BrokerController {
         },
       },
     },
-  }) request: Request): Promise<any> {
+  }) request: Request, @inject(RestBindings.Http.RESPONSE) response: Response,): Promise<Response> {
+    let message: string, status: string, statusCode: number, data: any = {};
+    let p = new Promise<any>((resolve, reject) => {
+      this.handler(request, response, err => {
+        if (err) reject(err);
+        else {
+          resolve(FilesController.getFilesAndFields(request, 'brokerLogoUpload', {}));
+          // const upload = FilesController.getFilesAndFields(request, 'brokerLogoUpload', { brokerid: broker_id });
+        }
+      });
+    });
+    p.then(async value => {
+      let brokerId;
+      let userId;
+      let contId;
+      let signupFormId;
+      console.log("entry")
+      if (!value.fields) {
+        this.response.status(422).send({
+          status: '422',
+          error: `Missing input fields`,
+          message: MESSAGE.ERRORS.missingDetails,
+          date: new Date(),
+        });
+        return this.response;
+      }
 
+      if (value.fields) {
 
+        if (value.fields.error) {
+          this.response.status(422).send({
+            status: '422',
+            error: value.fields.error,
+            message: value.fields.error,
+            date: new Date(),
+          });
+          return this.response;
+        }
+        let apiRequest = value.fields;
+        let BroId: any;
+        if (apiRequest.borkerId == 0 || !apiRequest.borkerId) {
+          this.response.status(422).send({
+            status: '422',
+            error: `Missing input fields`,
+            message: MESSAGE.ERRORS.missingDetails,
+            date: new Date(),
+          });
+          return this.response;
+        }
+        brokerId = apiRequest.borkerId;
+      }
+
+    })
+    p.catch(onrejected => {
+      message = 'Broker logo is not set'
+      status = '202'
+      this.response.status(parseInt(status)).send({
+        status: status,
+        message: message,
+        date: new Date(),
+        data: data
+      });
+    })
+    return this.response;
   }
 
 }

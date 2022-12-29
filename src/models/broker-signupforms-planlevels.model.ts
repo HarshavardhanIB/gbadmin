@@ -1,9 +1,10 @@
-import { Entity, model, property } from '@loopback/repository';
+import { Entity, model, property, belongsTo} from '@loopback/repository';
+import {PlanLevel} from './plan-level.model';
 
 @model({
   settings: {
     idInjection: false,
-    mysql: { schema: 'gbadmin', table: 'broker_signupforms_planlevels' }
+    mysql: {schema: 'gbadmin', table: 'broker_signupforms_planlevels'}
   }
 })
 export class BrokerSignupformsPlanlevels extends Entity {
@@ -13,7 +14,7 @@ export class BrokerSignupformsPlanlevels extends Entity {
     scale: 0,
     generated: 1,
     id: 1,
-    mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
+    mysql: {columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1},
   })
   id?: number;
 
@@ -23,7 +24,7 @@ export class BrokerSignupformsPlanlevels extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: { columnName: 'form_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0 },
+    mysql: {columnName: 'form_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0},
   })
   formId: number;
 
@@ -33,10 +34,17 @@ export class BrokerSignupformsPlanlevels extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: { columnName: 'planlevel_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0 },
+    mysql: {columnName: 'planlevel_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0},
   })
   planlevelId: number;
 
+  @property({
+    type: 'number',
+  })
+  form_id?: number;
+
+  @belongsTo(() => PlanLevel, {name: 'planLevels'})
+  planlevel_id: number;
   // @property({
   //   type: 'number',
   //   precision: 10,

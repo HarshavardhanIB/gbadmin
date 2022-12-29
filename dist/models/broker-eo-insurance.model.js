@@ -69,6 +69,12 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", String)
 ], BrokerEoInsurance.prototype, "expiryDate", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'number',
+    }),
+    tslib_1.__metadata("design:type", Number)
+], BrokerEoInsurance.prototype, "broker_id", void 0);
 BrokerEoInsurance = tslib_1.__decorate([
     (0, repository_1.model)({
         settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'broker_eo_insurance' } }

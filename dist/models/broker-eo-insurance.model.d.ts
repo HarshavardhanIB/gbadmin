@@ -6,6 +6,7 @@ export declare class BrokerEoInsurance extends Entity {
     policyNumber: string;
     certificateNumber: string;
     expiryDate: string;
+    broker_id?: number;
     [prop: string]: any;
     constructor(data?: Partial<BrokerEoInsurance>);
 }

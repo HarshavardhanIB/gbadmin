@@ -50,6 +50,12 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", String)
 ], CustomerPlanOptionsValues.prototype, "planOptionsValue", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'number',
+    }),
+    tslib_1.__metadata("design:type", Number)
+], CustomerPlanOptionsValues.prototype, "customer_id", void 0);
 CustomerPlanOptionsValues = tslib_1.__decorate([
     (0, repository_1.model)({
         settings: {

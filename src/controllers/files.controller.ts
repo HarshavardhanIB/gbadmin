@@ -105,7 +105,6 @@ export class FilesController {
       files = uploadedFiles.map(mapper);
     } else {
       for (const filename in uploadedFiles) {
-
         // console.log(`filename`);
         // let originalname = filename;
         // console.log(originalname)

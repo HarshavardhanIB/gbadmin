@@ -1,9 +1,10 @@
-import { Entity, model, property } from '@loopback/repository';
+import { Entity, model, property, belongsTo} from '@loopback/repository';
+import {StatesAndProvinces} from './states-and-provinces.model';
 
 @model({
   settings: {
     idInjection: false,
-    mysql: { schema: 'gbadmin', table: 'broker_licensed_states_and_provinces' }
+    mysql: {schema: 'gbadmin', table: 'broker_licensed_states_and_provinces'}
   }
 })
 export class BrokerLicensedStatesAndProvinces extends Entity {
@@ -13,7 +14,7 @@ export class BrokerLicensedStatesAndProvinces extends Entity {
     scale: 0,
     generated: 1,
     id: 1,
-    mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
+    mysql: {columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1},
   })
   id?: number;
 
@@ -23,7 +24,7 @@ export class BrokerLicensedStatesAndProvinces extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: { columnName: 'broker_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0 },
+    mysql: {columnName: 'broker_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0},
   })
   brokerId: number;
 
@@ -33,7 +34,7 @@ export class BrokerLicensedStatesAndProvinces extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: { columnName: 'state_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0 },
+    mysql: {columnName: 'state_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0},
   })
   stateId: number;
   @property({
@@ -41,7 +42,7 @@ export class BrokerLicensedStatesAndProvinces extends Entity {
     required: false,
     length: 35,
     generated: 0,
-    mysql: { columnName: 'license_number', dataType: 'varchar', dataLength: 35, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
+    mysql: {columnName: 'license_number', dataType: 'varchar', dataLength: 35, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0},
   })
   licenseNumber: string;
 
@@ -50,13 +51,13 @@ export class BrokerLicensedStatesAndProvinces extends Entity {
     required: false,
     length: 35,
     generated: 0,
-    mysql: { columnName: 'license_coverage', dataType: 'enum', dataLength: 11, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
+    mysql: {columnName: 'license_coverage', dataType: 'enum', dataLength: 11, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0},
   })
   licenseCoverage: string;
   @property({
     type: 'date',
     generated: 0,
-    mysql: { columnName: 'expiry_date', dataType: 'date', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
+    mysql: {columnName: 'expiry_date', dataType: 'date', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
   })
   expiryDate?: string;
 
@@ -65,10 +66,17 @@ export class BrokerLicensedStatesAndProvinces extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: { columnName: 'reminder_email', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0 },
+    mysql: {columnName: 'reminder_email', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0},
   })
   reminderEmail?: number;
 
+  @belongsTo(() => StatesAndProvinces, {name: 'stateFullDetails'})
+  state_id: number;
+
+  @property({
+    type: 'number',
+  })
+  broker_id?: number;
   // Define well-known properties here
 
   // Indexer property to allow additional data
