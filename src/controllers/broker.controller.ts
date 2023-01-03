@@ -968,15 +968,17 @@ export class BrokerController {
           message = 'Broker registration failed'
           status = '202';
           statusCode = 202
+          await this.BrokerLicensedStatesAndProvincesRepository.deleteAll({ brokerId: brokerId })
+          await this.BrokerSignupFormsPlansRepository.deleteAll({ brokerId: brokerId });
+          await this.BrokerSignupformsPlanlevelsRepository.deleteAll({ formId: signupFormId });
+          await this.BrokerEoInsuranceRepository.deleteAll({ brokerId: brokerId });
+          await this.ContactInformationRepository.deleteById(contId);
+          await this.BrokerLicensedStatesAndProvincesRepository.deleteAll({ brokerId: brokerId });
+          await this.UsersRepository.deleteById(userId);
+          await this.SignupFormsRepository.deleteAll({ brokerId: brokerId });
+          await this.BrokerRepository.deleteById(brokerId);
         }
-        await this.BrokerLicensedStatesAndProvincesRepository.deleteAll({ brokerId: brokerId })
-        await this.BrokerSignupformsPlanlevelsRepository.deleteAll({ formId: signupFormId });
-        await this.BrokerEoInsuranceRepository.deleteAll({ brokerId: brokerId });
-        await this.ContactInformationRepository.deleteById(contId);
-        await this.BrokerLicensedStatesAndProvincesRepository.deleteAll({ brokerId: brokerId });
-        await this.UsersRepository.deleteById(userId);
-        await this.SignupFormsRepository.deleteAll({ brokerId: brokerId });
-        await this.BrokerRepository.deleteById(brokerId);
+
       }
 
       this.response.status(parseInt(status)).send({
@@ -1261,7 +1263,7 @@ export class BrokerController {
     // let unPublish: number = 0;
     let status, message, data: any = {};
     try {
-      await this.BrokerSignupformsPlanlevelsRepository.deleteAll({ where: { formId: formId } });
+      await this.BrokerSignupformsPlanlevelsRepository.deleteAll({ formId: formId });
       let suf = await this.SignupFormsRepository.findById(formId);
       if (suf) {
         await this.SignupFormsRepository.updateById(formId, { published: false });
@@ -1847,7 +1849,7 @@ export class BrokerController {
           // signUpform.usePadPaymentMethod = formData.usePadPaymentMethod;
           // signUpform.isDemoForm = formData.isDemoForm;
           await this.SignupFormsRepository.updateById(formid, signUpform);
-          await this.BrokerSignupformsPlanlevelsRepository.deleteAll({ where: { formid: formid } });
+          await this.BrokerSignupformsPlanlevelsRepository.deleteAll({ formid: formid });
         }
         else if (newType == CONST.SIGNUP_FORM.EXECUTIVE) {
           // let signUpform: SignupForms = new SignupForms();
@@ -1866,7 +1868,7 @@ export class BrokerController {
           // signUpform.usePadPaymentMethod = formData.usePadPaymentMethod;
           // signUpform.isDemoForm = formData.isDemoForm;
           let newform = await this.SignupFormsRepository.updateById(formid, signUpform);
-          await this.BrokerSignupformsPlanlevelsRepository.deleteAll({ where: { formid: formid } });
+          await this.BrokerSignupformsPlanlevelsRepository.deleteAll({ formid: formid });
           let brokerSignUpformlevel: BrokerSignupformsPlanlevels = new BrokerSignupformsPlanlevels();
           brokerSignUpformlevel.formId = formid || 0;
           let planlevels = CONST.EXECUTIVE_CARE_COMPLETE_PLAN_LEVELS.concat(CONST.EXECUTIVE_HEALTH_PLAN_LEVELS)
@@ -1891,7 +1893,7 @@ export class BrokerController {
           // signUpform.usePadPaymentMethod = formData.usePadPaymentMethod;
           // signUpform.isDemoForm = formData.isDemoForm;
           let newform = await this.SignupFormsRepository.updateById(formid, signUpform);
-          await this.BrokerSignupformsPlanlevelsRepository.deleteAll({ where: { formid: formid } });
+          await this.BrokerSignupformsPlanlevelsRepository.deleteAll({ formid: formid });
           if (planlevel.length >= 0) {
             for (const pl of planlevel) {
               let plkanLevels = await this.PlanLevelRepository.find({
@@ -1947,7 +1949,6 @@ export class BrokerController {
       content: {
         'application/json': {
           schema: getModelSchemaRef(ContactInformation, { exclude: ['id', 'fusebillId'] })
-
         }
       }
     }
@@ -2015,8 +2016,9 @@ export class BrokerController {
     return this.response;
 
   }
-  @put('/broker/updateLicenceEO')
+  @put('/broker/updateLicenceEO/{brokerId}')
   @response(200, {
+    description: 'update broker E&O insurence',
     content: {
       'application/json': {
         schema: {
@@ -2029,7 +2031,7 @@ export class BrokerController {
     content: {
       'application/json': {
         schema: getModelSchemaRef(BrokerEoInsurance, {
-          exclude: ['id']
+          exclude: ['id', 'brokerId', 'broker_id']
         })
       }
     }
@@ -2113,12 +2115,12 @@ export class BrokerController {
     if (broker) {
       let signUpForms = await this.SignupFormsRepository.find({ where: { brokerId: brokerId } });
       for (const signupForm of signUpForms) {
-        await this.BrokerSignupformsPlanlevelsRepository.deleteAll({ where: { formId: signupForm.id } })
+        await this.BrokerSignupformsPlanlevelsRepository.deleteAll({ formId: signupForm.id })
       }
-      await this.ContactInformationRepository.deleteAll({ where: { id: brokerId } });
-      await this.BrokerLicensedStatesAndProvincesRepository.deleteAll({ where: { brokerId: brokerId } })
-      await this.BrokerEoInsuranceRepository.deleteAll({ where: { brokerId: brokerId } });
-      await this.SignupFormsRepository.deleteAll({ where: { brokerId: brokerId } });
+      await this.ContactInformationRepository.deleteAll({ id: brokerId });
+      await this.BrokerLicensedStatesAndProvincesRepository.deleteAll({ brokerId: brokerId })
+      await this.BrokerEoInsuranceRepository.deleteAll({ brokerId: brokerId });
+      await this.SignupFormsRepository.deleteAll({ brokerId: brokerId });
       await this.BrokerRepository.deleteById(brokerId);
       statusCode = 200;
       message = "Broker details deleted successfull"
