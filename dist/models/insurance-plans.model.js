@@ -187,6 +187,18 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", Boolean)
 ], InsurancePlans.prototype, "published", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'number',
+    }),
+    tslib_1.__metadata("design:type", Number)
+], InsurancePlans.prototype, "package_id", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'number',
+    }),
+    tslib_1.__metadata("design:type", Number)
+], InsurancePlans.prototype, "plan_level", void 0);
 InsurancePlans = tslib_1.__decorate([
     (0, repository_1.model)({
         settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'insurance_plans' } }

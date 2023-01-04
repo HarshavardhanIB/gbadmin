@@ -5,11 +5,15 @@ exports.customerController = void 0;
 const tslib_1 = require("tslib");
 // import {inject} from '@loopback/core';
 const core_1 = require("@loopback/core");
-const authentication_1 = require("@loopback/authentication");
 const rest_1 = require("@loopback/rest");
 const repository_1 = require("@loopback/repository");
 const repositories_1 = require("../repositories");
 const security_1 = require("@loopback/security");
+// @authenticate('jwt')
+// @authorize({
+//   allowedRoles: ['BROKER', 'ADMINISTRATOR'],
+//   voters: [basicAuthorization]
+// })
 let customerController = class customerController {
     constructor(usersRepository, ContactInformationRepository, CustomerContactInfoRepository, CustomerPlanOptionsValuesRepository, CustomerPlansRepository, CustomerRelativesRepository, CustomerRepository, CustomerSignupRepository, response, user) {
         this.usersRepository = usersRepository;
@@ -34,16 +38,30 @@ let customerController = class customerController {
     //   console.log(coustmers);
     //   return coustmers;
     // }
-    async customersCount(currentUserProfile) {
+    // async customersCount(@inject(SecurityBindings.USER)
+    // currentUserProfile: UserProfile): Promise<any> {
+    async customersCount() {
         let customerCount = await this.CustomerRepository.count();
         let activeCoustomers = await this.CustomerRepository.count({ status: 'active' });
+        let draftCoustomers = await this.CustomerRepository.count({ status: 'Draft' });
+        let holdCoustomers = await this.CustomerRepository.count({ status: 'Hold' });
+        let suspendedCoustomers = await this.CustomerRepository.count({ status: 'Suspended' });
+        let cancelledCoustomers = await this.CustomerRepository.count({ status: 'Cancelled' });
+        let otherCoustomers = await this.CustomerRepository.count({ status: '' });
         console.log(activeCoustomers);
-        console.log("role>>", currentUserProfile.role);
+        // console.log("role>>", currentUserProfile.role);
         let response = {
             "statusCode": 200,
             "message": "Count of the customers ",
-            "totalCustomersCount": customerCount.count,
-            "activeCustomersCount": activeCoustomers.count,
+            data: {
+                totalCustomersCount: customerCount.count,
+                activeCustomersCount: activeCoustomers.count,
+                draftCoustomers: draftCoustomers.count,
+                holdCoustomers: holdCoustomers.count,
+                suspendedCoustomers: suspendedCoustomers.count,
+                cancelledCoustomers: cancelledCoustomers.count,
+                otherCoustomers: otherCoustomers.count
+            }
         };
         return response;
     }
@@ -85,6 +103,7 @@ let customerController = class customerController {
         this.response.status(parseInt("200")).send(responseObject);
         return this.response;
     }
+    // @authenticate.skip()
     async allCustmerDetails(id) {
         let finalResultsArray = [];
         let finalObjforCustmr;
@@ -131,10 +150,12 @@ tslib_1.__decorate([
     (0, rest_1.get)('/admin/customers/count'),
     (0, rest_1.response)(200, {
         description: 'customers count',
-    }),
-    tslib_1.__param(0, (0, core_1.inject)(security_1.SecurityBindings.USER)),
+    })
+    // async customersCount(@inject(SecurityBindings.USER)
+    // currentUserProfile: UserProfile): Promise<any> {
+    ,
     tslib_1.__metadata("design:type", Function),
-    tslib_1.__metadata("design:paramtypes", [Object]),
+    tslib_1.__metadata("design:paramtypes", []),
     tslib_1.__metadata("design:returntype", Promise)
 ], customerController.prototype, "customersCount", null);
 tslib_1.__decorate([
@@ -147,7 +168,6 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], customerController.prototype, "customerslist", null);
 tslib_1.__decorate([
-    authentication_1.authenticate.skip(),
     (0, rest_1.get)('/admin/customers/{id}/details'),
     tslib_1.__param(0, rest_1.param.path.number('id')),
     tslib_1.__metadata("design:type", Function),
@@ -155,12 +175,6 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], customerController.prototype, "allCustmerDetails", null);
 customerController = tslib_1.__decorate([
-    (0, authentication_1.authenticate)('jwt')
-    // @authorize({
-    //   allowedRoles: ['BROKER'],
-    //   voters: [basicAuthorization]
-    // })
-    ,
     tslib_1.__param(0, (0, repository_1.repository)(repositories_1.UsersRepository)),
     tslib_1.__param(1, (0, repository_1.repository)(repositories_1.ContactInformationRepository)),
     tslib_1.__param(2, (0, repository_1.repository)(repositories_1.CustomerContactInfoRepository)),

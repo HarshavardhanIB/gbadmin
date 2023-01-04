@@ -88,7 +88,6 @@ export class GroupBenfitsAdminPortalApplication extends BootMixin(
     this.static('/app/temp/externalData', path.join(__dirname, '../support/extdata'));
     this.static('/app/temp/bankCheque/', path.join(__dirname, '../support/customer/bank'));
     this.static('/tmp', path.join(__dirname, '../uploads'));
-
     this.setUpBindings();
   }
   /**

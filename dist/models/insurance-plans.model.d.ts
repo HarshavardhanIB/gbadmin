@@ -19,6 +19,8 @@ export declare class InsurancePlans extends Entity {
     planCoverage?: string;
     planLevel?: number;
     published?: boolean;
+    package_id?: number;
+    plan_level?: number;
     [prop: string]: any;
     constructor(data?: Partial<InsurancePlans>);
 }

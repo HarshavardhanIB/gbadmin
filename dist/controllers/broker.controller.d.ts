@@ -1,6 +1,6 @@
 /// <reference types="express" />
 import { Request, Response } from "@loopback/rest";
-import { BrokerRepository, BrokerLicensedStatesAndProvincesRepository, InsurancePlansRepository, SignupFormsRepository, BrokerSignupFormsPlansRepository, StatesAndProvincesRepository, BrokerSignupformsPlanlevelsRepository, TieredRebatesDataRepository, TieredRebatesRepository, UsersRepository, ContactInformationRepository, CustomerSignupRepository, CustomerRepository, PlanLevelRepository, BrokerEoInsuranceRepository } from '../repositories';
+import { BrokerRepository, BrokerLicensedStatesAndProvincesRepository, InsurancePlansRepository, SignupFormsRepository, BrokerSignupFormsPlansRepository, StatesAndProvincesRepository, SignupFormsPlanLevelMappingRepository, TieredRebatesDataRepository, TieredRebatesRepository, UsersRepository, ContactInformationRepository, CustomerSignupRepository, CustomerRepository, PlanLevelRepository, BrokerEoInsuranceRepository, InsurancePackagesRepository, PlansAvailabilityRepository } from '../repositories';
 import { FileUploadHandler } from "../types";
 import { BrokerEoInsurance, ContactInformation } from "../models";
 import { BrokerService, HttpService, ResizeimgService } from "../services";
@@ -8,7 +8,7 @@ export declare class BrokerController {
     BrokerRepository: BrokerRepository;
     BrokerLicensedStatesAndProvincesRepository: BrokerLicensedStatesAndProvincesRepository;
     BrokerSignupFormsPlansRepository: BrokerSignupFormsPlansRepository;
-    BrokerSignupformsPlanlevelsRepository: BrokerSignupformsPlanlevelsRepository;
+    SignupFormsPlanLevelMappingRepository: SignupFormsPlanLevelMappingRepository;
     TieredRebatesDataRepository: TieredRebatesDataRepository;
     TieredRebatesRepository: TieredRebatesRepository;
     UsersRepository: UsersRepository;
@@ -25,7 +25,10 @@ export declare class BrokerController {
     http: HttpService;
     img: ResizeimgService;
     bs: BrokerService;
-    constructor(BrokerRepository: BrokerRepository, BrokerLicensedStatesAndProvincesRepository: BrokerLicensedStatesAndProvincesRepository, BrokerSignupFormsPlansRepository: BrokerSignupFormsPlansRepository, BrokerSignupformsPlanlevelsRepository: BrokerSignupformsPlanlevelsRepository, TieredRebatesDataRepository: TieredRebatesDataRepository, TieredRebatesRepository: TieredRebatesRepository, UsersRepository: UsersRepository, ContactInformationRepository: ContactInformationRepository, SignupFormsRepository: SignupFormsRepository, StatesAndProvincesRepository: StatesAndProvincesRepository, CustomerSignupRepository: CustomerSignupRepository, CustomerRepository: CustomerRepository, InsurancePlansRepository: InsurancePlansRepository, PlanLevelRepository: PlanLevelRepository, BrokerEoInsuranceRepository: BrokerEoInsuranceRepository, response: Response, handler: FileUploadHandler, http: HttpService, img: ResizeimgService, bs: BrokerService);
+    insurancePackages: InsurancePackagesRepository;
+    plansAvalibility: PlansAvailabilityRepository;
+    constructor(BrokerRepository: BrokerRepository, BrokerLicensedStatesAndProvincesRepository: BrokerLicensedStatesAndProvincesRepository, BrokerSignupFormsPlansRepository: BrokerSignupFormsPlansRepository, SignupFormsPlanLevelMappingRepository: SignupFormsPlanLevelMappingRepository, TieredRebatesDataRepository: TieredRebatesDataRepository, TieredRebatesRepository: TieredRebatesRepository, UsersRepository: UsersRepository, ContactInformationRepository: ContactInformationRepository, SignupFormsRepository: SignupFormsRepository, StatesAndProvincesRepository: StatesAndProvincesRepository, CustomerSignupRepository: CustomerSignupRepository, CustomerRepository: CustomerRepository, InsurancePlansRepository: InsurancePlansRepository, PlanLevelRepository: PlanLevelRepository, BrokerEoInsuranceRepository: BrokerEoInsuranceRepository, response: Response, handler: FileUploadHandler, http: HttpService, img: ResizeimgService, bs: BrokerService, insurancePackages: InsurancePackagesRepository, plansAvalibility: PlansAvailabilityRepository);
+    brokerCount(): Promise<Response>;
     getBroker(): Promise<any>;
     brokerDetailsBasedonId(id: number): Promise<any>;
     custmerCount(id: number): Promise<any>;
@@ -55,4 +58,6 @@ export declare class BrokerController {
         newMailid: string;
     }): Promise<Response<any, Record<string, any>>>;
     brokerUpdate(request: Request, response: Response): Promise<Response>;
+    formeConfig(): Promise<Response>;
+    planId(apiRequest: any): Promise<any>;
 }

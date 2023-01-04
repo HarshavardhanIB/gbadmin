@@ -17,12 +17,18 @@ const common_functions_1 = require("../common-functions");
 const authentication_1 = require("@loopback/authentication");
 const validation = tslib_1.__importStar(require("../services/validation.services"));
 const services_1 = require("../services");
+// import { GbadminDataSource } from "../datasources";
+// @authenticate('jwt')
+// @authorize({
+//   allowedRoles: ['BROKER', 'ADMINISTRATOR'],
+//   voters: [basicAuthorization]
+// })
 let BrokerController = class BrokerController {
-    constructor(BrokerRepository, BrokerLicensedStatesAndProvincesRepository, BrokerSignupFormsPlansRepository, BrokerSignupformsPlanlevelsRepository, TieredRebatesDataRepository, TieredRebatesRepository, UsersRepository, ContactInformationRepository, SignupFormsRepository, StatesAndProvincesRepository, CustomerSignupRepository, CustomerRepository, InsurancePlansRepository, PlanLevelRepository, BrokerEoInsuranceRepository, response, handler, http, img, bs) {
+    constructor(BrokerRepository, BrokerLicensedStatesAndProvincesRepository, BrokerSignupFormsPlansRepository, SignupFormsPlanLevelMappingRepository, TieredRebatesDataRepository, TieredRebatesRepository, UsersRepository, ContactInformationRepository, SignupFormsRepository, StatesAndProvincesRepository, CustomerSignupRepository, CustomerRepository, InsurancePlansRepository, PlanLevelRepository, BrokerEoInsuranceRepository, response, handler, http, img, bs, insurancePackages, plansAvalibility) {
         this.BrokerRepository = BrokerRepository;
         this.BrokerLicensedStatesAndProvincesRepository = BrokerLicensedStatesAndProvincesRepository;
         this.BrokerSignupFormsPlansRepository = BrokerSignupFormsPlansRepository;
-        this.BrokerSignupformsPlanlevelsRepository = BrokerSignupformsPlanlevelsRepository;
+        this.SignupFormsPlanLevelMappingRepository = SignupFormsPlanLevelMappingRepository;
         this.TieredRebatesDataRepository = TieredRebatesDataRepository;
         this.TieredRebatesRepository = TieredRebatesRepository;
         this.UsersRepository = UsersRepository;
@@ -39,6 +45,35 @@ let BrokerController = class BrokerController {
         this.http = http;
         this.img = img;
         this.bs = bs;
+        this.insurancePackages = insurancePackages;
+        this.plansAvalibility = plansAvalibility;
+    }
+    async brokerCount() {
+        let totalBrokers, TpaMga, brokaRage, advisor, association, corporate, status, message, data, date = {};
+        try {
+            status = 200;
+            totalBrokers = await this.BrokerRepository.count();
+            TpaMga = await this.BrokerRepository.count({ brokerType: 'TPA/MGA' });
+            brokaRage = await this.BrokerRepository.count({ brokerType: 'BROKERAGE' });
+            advisor = await this.BrokerRepository.count({ brokerType: 'ADVISOR' });
+            association = await this.BrokerRepository.count({ brokerType: 'ASSOCIATION' });
+            corporate = await this.BrokerRepository.count({ brokerType: 'CORPORATE' });
+            message = "The brokers count";
+            data = {
+                totalBrokers: totalBrokers.count, TpaMga: TpaMga.count, brokaRage: brokaRage.count, advisor: advisor.count, association: association.count, corporate: corporate.count
+            };
+        }
+        catch (error) {
+            status = 201;
+            message = "Something went wrong";
+        }
+        this.response.status(status).send({
+            status: status,
+            message: message,
+            date: new Date(),
+            data: data
+        });
+        return this.response;
     }
     async getBroker() {
         try {
@@ -113,7 +148,7 @@ let BrokerController = class BrokerController {
                     {
                         relation: 'signupForms', scope: {
                             include: [{
-                                    relation: 'signupFormPlanLevels'
+                                    relation: 'signupFormsPlanLevelMappings'
                                 },
                                 { relation: 'customers', scope: { fields: { firstName: true, lastName: true, dob: true, gender: true, status: true, userId: true } } }]
                         }
@@ -539,7 +574,7 @@ let BrokerController = class BrokerController {
                             if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
                                 //get executive plan ids ---> package_id=5
                                 let executivePlans = await this.InsurancePlansRepository.find({ where: { packageId: CONST.EXECUTIVE_PACKAGE_ID } });
-                                let executivePlanlevelObj = new models_1.BrokerSignupformsPlanlevels();
+                                let executivePlanlevelObj = new models_1.SignupFormsPlanLevelMapping();
                                 executivePlanlevelObj.formId = signupForm.id || 0;
                                 let executivePlanlevelArray = [];
                                 for (const executivePlan of executivePlans) {
@@ -553,18 +588,18 @@ let BrokerController = class BrokerController {
                                     }
                                 }
                                 for (const executivePlanLevel of executivePlanlevelArray) {
-                                    executivePlanlevelObj.planlevelId = executivePlanLevel;
-                                    await this.BrokerSignupformsPlanlevelsRepository.create(executivePlanlevelObj);
+                                    executivePlanlevelObj.planLevelId = executivePlanLevel;
+                                    await this.SignupFormsPlanLevelMappingRepository.create(executivePlanlevelObj);
                                 }
                                 console.log(`signupFormPlansArray: ${signupFormPlansArray.length}`);
                             }
                             if (formDetails.formType == CONST.SIGNUP_FORM.CUSTOM) {
                                 let planLevels = formDetails.planLevels;
-                                let customPlanlevelObj = new models_1.BrokerSignupformsPlanlevels();
+                                let customPlanlevelObj = new models_1.SignupFormsPlanLevelMapping();
                                 customPlanlevelObj.formId = signupForm.id || 0;
                                 for (const pl of planLevels) {
                                     customPlanlevelObj.planlevelId = pl;
-                                    await this.BrokerSignupformsPlanlevelsRepository.create(customPlanlevelObj);
+                                    await this.SignupFormsPlanLevelMappingRepository.create(customPlanlevelObj);
                                 }
                                 // for (const pl of planLevels) {
                                 //   let planLevelsInRepo = await this.PlanLevelRepository.find({
@@ -580,13 +615,13 @@ let BrokerController = class BrokerController {
                                 //   if (planLevelsInRepo) {
                                 //     console.log("plan", planLevelsInRepo);
                                 //     for (const planlevelloop of planLevelsInRepo) {
-                                //       let countofsignupformplanlevelcondition = await this.BrokerSignupformsPlanlevelsRepository.count({ and: [{ formId: signupForm.id }, { planlevelId: planlevelloop.id }] })
+                                //       let countofsignupformplanlevelcondition = await this.SignupFormsPlanLevelMappingRepository.count({ and: [{ formId: signupForm.id }, { planlevelId: planlevelloop.id }] })
                                 //       console.log(countofsignupformplanlevelcondition);
                                 //       if (countofsignupformplanlevelcondition.count > 0)// console.log("plan levels", planlevel);
                                 //       { }
                                 //       else {
                                 //         customPlanlevelObj.planlevelId = planlevelloop.id || 0;
-                                //         let bsfl = await this.BrokerSignupformsPlanlevelsRepository.create(customPlanlevelObj);
+                                //         let bsfl = await this.SignupFormsPlanLevelMappingRepository.create(customPlanlevelObj);
                                 //         console.log("bsfl>>>>>", bsfl);
                                 //       }
                                 //     }
@@ -639,7 +674,7 @@ let BrokerController = class BrokerController {
                     statusCode = 202;
                     await this.BrokerLicensedStatesAndProvincesRepository.deleteAll({ brokerId: brokerId });
                     await this.BrokerSignupFormsPlansRepository.deleteAll({ brokerId: brokerId });
-                    await this.BrokerSignupformsPlanlevelsRepository.deleteAll({ formId: signupFormId });
+                    await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formId: signupFormId });
                     await this.BrokerEoInsuranceRepository.deleteAll({ brokerId: brokerId });
                     await this.ContactInformationRepository.deleteById(contId);
                     await this.BrokerLicensedStatesAndProvincesRepository.deleteAll({ brokerId: brokerId });
@@ -758,7 +793,7 @@ let BrokerController = class BrokerController {
                 if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
                     //get executive plan ids ---> package_id=5
                     let executivePlans = await this.InsurancePlansRepository.find({ where: { packageId: CONST.EXECUTIVE_PACKAGE_ID } });
-                    let executivePlanlevelObj = new models_1.BrokerSignupformsPlanlevels();
+                    let executivePlanlevelObj = new models_1.SignupFormsPlanLevelMapping();
                     executivePlanlevelObj.formId = signupForm.id || 0;
                     let executivePlanlevelArray = [];
                     for (const executivePlan of executivePlans) {
@@ -773,13 +808,13 @@ let BrokerController = class BrokerController {
                     }
                     for (const executivePlanLevel of executivePlanlevelArray) {
                         executivePlanlevelObj.planlevelId = executivePlanLevel;
-                        await this.BrokerSignupformsPlanlevelsRepository.create(executivePlanlevelObj);
+                        await this.SignupFormsPlanLevelMappingRepository.create(executivePlanlevelObj);
                     }
                     console.log(`signupFormPlansArray: ${signupFormPlansArray.length}`);
                 }
                 if (formDetails.formType == CONST.SIGNUP_FORM.CUSTOM) {
                     let planLevels = formDetails.planLevels;
-                    let executivePlanlevelObj = new models_1.BrokerSignupformsPlanlevels();
+                    let executivePlanlevelObj = new models_1.SignupFormsPlanLevelMapping();
                     executivePlanlevelObj.formId = signupForm.id || 0;
                     for (const pl of planLevels) {
                         let plkanLevels = await this.PlanLevelRepository.find({
@@ -795,7 +830,7 @@ let BrokerController = class BrokerController {
                         if (plkanLevels) {
                             for (const planlevel of plkanLevels) {
                                 executivePlanlevelObj.planlevelId = planlevel.id || 0;
-                                await this.BrokerSignupformsPlanlevelsRepository.create(executivePlanlevelObj);
+                                await this.SignupFormsPlanLevelMappingRepository.create(executivePlanlevelObj);
                             }
                         }
                     }
@@ -836,7 +871,7 @@ let BrokerController = class BrokerController {
         // let unPublish: number = 0;
         let status, message, data = {};
         try {
-            await this.BrokerSignupformsPlanlevelsRepository.deleteAll({ formId: formId });
+            await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formId: formId });
             let suf = await this.SignupFormsRepository.findById(formId);
             if (suf) {
                 await this.SignupFormsRepository.updateById(formId, { published: false });
@@ -863,7 +898,7 @@ let BrokerController = class BrokerController {
                 if (brokerForms) {
                     for (const form of brokerForms) {
                         await this.BrokerSignupFormsPlansRepository.deleteAll({ formId: form.id });
-                        await this.BrokerSignupformsPlanlevelsRepository.deleteAll({ formId: form.id });
+                        await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formId: form.id });
                     }
                     // await this.SignupFormsRepository.deleteAll({ where: { brokerId: Brokerid } });
                     await this.SignupFormsRepository.deleteAll({ brokerId: Brokerid });
@@ -916,7 +951,7 @@ let BrokerController = class BrokerController {
                             }
                         }]
                 });
-                //console.log(form);
+                console.log(form);
                 if (form) {
                     formError = false;
                 }
@@ -961,7 +996,8 @@ let BrokerController = class BrokerController {
                 //   },
                 //   include: [{relation: 'languageTokens'}]
                 // });
-                data['default_language'] = languageDetails.slug; //term
+                // console.log('slug', languageDetails)
+                // data['default_language'] = languageDetails.slug //term
                 // data['default_language_details'] = languageDetails
                 console.log(`lang: ${lang}`);
                 if (lang) {
@@ -1123,7 +1159,7 @@ let BrokerController = class BrokerController {
                     // signUpform.usePadPaymentMethod = formData.usePadPaymentMethod;
                     // signUpform.isDemoForm = formData.isDemoForm;
                     await this.SignupFormsRepository.updateById(formid, signUpform);
-                    await this.BrokerSignupformsPlanlevelsRepository.deleteAll({ formid: formid });
+                    await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formid: formid });
                 }
                 else if (newType == CONST.SIGNUP_FORM.EXECUTIVE) {
                     // let signUpform: SignupForms = new SignupForms();
@@ -1142,13 +1178,13 @@ let BrokerController = class BrokerController {
                     // signUpform.usePadPaymentMethod = formData.usePadPaymentMethod;
                     // signUpform.isDemoForm = formData.isDemoForm;
                     let newform = await this.SignupFormsRepository.updateById(formid, signUpform);
-                    await this.BrokerSignupformsPlanlevelsRepository.deleteAll({ formid: formid });
-                    let brokerSignUpformlevel = new models_1.BrokerSignupformsPlanlevels();
+                    await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formid: formid });
+                    let brokerSignUpformlevel = new models_1.SignupFormsPlanLevelMapping();
                     brokerSignUpformlevel.formId = formid || 0;
                     let planlevels = CONST.EXECUTIVE_CARE_COMPLETE_PLAN_LEVELS.concat(CONST.EXECUTIVE_HEALTH_PLAN_LEVELS);
                     for (const planLevel of planlevels) {
                         brokerSignUpformlevel.planlevelId = planLevel;
-                        await this.BrokerSignupformsPlanlevelsRepository.create(brokerSignUpformlevel);
+                        await this.SignupFormsPlanLevelMappingRepository.create(brokerSignUpformlevel);
                     }
                 }
                 else {
@@ -1167,7 +1203,7 @@ let BrokerController = class BrokerController {
                     // signUpform.usePadPaymentMethod = formData.usePadPaymentMethod;
                     // signUpform.isDemoForm = formData.isDemoForm;
                     let newform = await this.SignupFormsRepository.updateById(formid, signUpform);
-                    await this.BrokerSignupformsPlanlevelsRepository.deleteAll({ formid: formid });
+                    await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formid: formid });
                     if (planlevel.length >= 0) {
                         for (const pl of planlevel) {
                             let plkanLevels = await this.PlanLevelRepository.find({
@@ -1185,11 +1221,11 @@ let BrokerController = class BrokerController {
                                 message = "No plans found";
                             }
                             else {
-                                let brokerSignUpformlevel = new models_1.BrokerSignupformsPlanlevels();
+                                let brokerSignUpformlevel = new models_1.SignupFormsPlanLevelMapping();
                                 brokerSignUpformlevel.formId = formid || 0;
                                 for (const planlevel of plkanLevels) {
                                     brokerSignUpformlevel.planlevelId = planlevel.id || 0;
-                                    await this.BrokerSignupformsPlanlevelsRepository.create(brokerSignUpformlevel);
+                                    await this.SignupFormsPlanLevelMappingRepository.create(brokerSignUpformlevel);
                                 }
                             }
                         }
@@ -1298,7 +1334,7 @@ let BrokerController = class BrokerController {
         if (broker) {
             let signUpForms = await this.SignupFormsRepository.find({ where: { brokerId: brokerId } });
             for (const signupForm of signUpForms) {
-                await this.BrokerSignupformsPlanlevelsRepository.deleteAll({ formId: signupForm.id });
+                await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formId: signupForm.id });
             }
             await this.ContactInformationRepository.deleteAll({ id: brokerId });
             await this.BrokerLicensedStatesAndProvincesRepository.deleteAll({ brokerId: brokerId });
@@ -1411,7 +1447,309 @@ let BrokerController = class BrokerController {
         });
         return this.response;
     }
+    async formeConfig() {
+        let status, message, date, data = {};
+        try {
+            status = 200;
+            message = "Form configurations";
+            data['gender'] = CONST.GENDER_LIST;
+            data['marital_status'] = CONST.MARITAL_STATUS_LIST;
+            data['brokerType'] = CONST.BROKER_TYPE_ARRAY;
+            data['formType'] = CONST.FORM_TYPE_ARRAY;
+            let countryFilter = {
+                where: {
+                    published: 1
+                }
+            };
+            data['states'] = await this.StatesAndProvincesRepository.find(countryFilter);
+            data['default_country'] = CONST.DEFAULT_COUNTRY;
+        }
+        catch (error) {
+            status = 400;
+            message = "Configuration error";
+        }
+        this.response.status(status).send({
+            status, message, data, date: new Date()
+        });
+        return this.response;
+    }
+    async planId(apiRequest) {
+        var _a;
+        console.log(apiRequest);
+        let status, message, data = {};
+        try {
+            const brokerSignupFormPlans = await this.BrokerSignupFormsPlansRepository.find({
+                where: {
+                    formId: apiRequest.formId
+                }
+            });
+            const signupForm_PlanLevels = await this.SignupFormsPlanLevelMappingRepository.find({
+                where: {
+                    formId: apiRequest.formId
+                }
+            });
+            // await this.brokerPlansRepository.find({
+            //   where: {
+            //     brokerId: broker.id
+            //   },
+            //   // include: [
+            //   //   {relation: 'planOptions'} //brokerPlans -- brokerPlanOptions -- planOptions ()
+            //   // ]
+            // })
+            //brokerPlanOptions -- planOptions -- planoptionvalues
+            console.log(`brokerPlans or brokerSignupFormPlans`);
+            console.log(brokerSignupFormPlans);
+            //signupForm_PlanLevels
+            console.log(`brokerPlanLevels or brokerSignupFormPlansLevels`);
+            console.log(signupForm_PlanLevels);
+            //let brokerPlanOptions: any = {}
+            let brokerplanIds = [];
+            for (let brokerPlan of brokerSignupFormPlans) {
+                if (brokerPlan.planId) {
+                    brokerplanIds.push(brokerPlan.planId);
+                    // brokerPlanOptions[brokerPlan.planId] = brokerPlan.planOptions
+                }
+            }
+            // console.log(brokerPlanOptions) //not needed
+            let brokerplanLevels = [];
+            for (let brokerPlanLevel of signupForm_PlanLevels) {
+                if (brokerPlanLevel.planLevelId) {
+                    brokerplanLevels.push(brokerPlanLevel.planLevelId);
+                    // brokerPlanOptions[brokerPlan.planId] = brokerPlan.planOptions
+                }
+            }
+            //check for broker -license statesalso
+            console.log(`brokerplanIds`);
+            console.log(brokerplanIds);
+            console.log(`brokerplanLevels`);
+            console.log(brokerplanLevels);
+            const provinceData = await this.StatesAndProvincesRepository.findById(apiRequest.province_id);
+            data.province = provinceData;
+            //get plans valid for this customer -- state_id, plan_id
+            let plansforProvince = {
+                where: {
+                    and: [
+                        { "stateId": apiRequest.province_id }
+                    ]
+                },
+                include: [{ relation: 'plan' }]
+            };
+            //Remove this //comment this
+            // if (brokerplanIds.length > 0) {
+            //   let brokerPlanFilter = {"planId": {"inq": brokerplanIds}}
+            //   plansforProvince.where.and.push(brokerPlanFilter);
+            // }
+            if (brokerplanLevels.length > 0) {
+                let brokerPlanLevelsFilter = { "planLevel": { "inq": brokerplanLevels } };
+                plansforProvince.where.and.push(brokerPlanLevelsFilter);
+            }
+            // console.log(plansforProvince.where.and.length)
+            //  console.log(plansforProvince.where.and)
+            const planIdsData = await this.plansAvalibility.find(plansforProvince);
+            // console.log(planIdsData);
+            let planIds = [];
+            let planLevelIds = [];
+            for (let planIdData of planIdsData) {
+                if (planIdData.planId)
+                    planIds.push(planIdData.planId);
+                if (planIdData.plan) {
+                    if (planLevelIds.indexOf(planIdData.plan.planLevel) == -1)
+                        planLevelIds.push(planIdData.plan.planLevel);
+                }
+            }
+            console.log(planIds);
+            console.log(planLevelIds);
+            //console.log(age);
+            // console.log(`children_coverage:${children_coverage}`);
+            // let pcc: any = this.registrationService.planCoverageCalculations(apiRequest.having_spouse, apiRequest.spouse_details.is_spouse_having_healthcard, apiRequest.no_of_children, children_coverage);
+            let pcc = {
+                exclusivePlanCoverageArray: [],
+                maritalStatus: '',
+                ninCondition: false,
+                rital_status: 'SINGLE',
+                exclusive: ['COUPLE', 'FAMILY'],
+                inclusive: ['SINGLE']
+            };
+            data.customer.maritalStatus = pcc.maritalStatus;
+            console.log(`excl. ${pcc.exclusivePlanCoverageArray}`);
+            console.log(`maritalStatus: ${pcc.maritalStatus}`);
+            let plansFilter = {
+                order: 'ordering ASC',
+                where: {
+                    and: [
+                        { "id": { "inq": planIds } },
+                        //{"planCoverage": {"nin": pcc.exclusivePlanCoverageArray}},
+                        // {"or": [{"planCoverage": {"nin": pcc.exclusivePlanCoverageArray}}, {"planCoverage": {"eq": null}}]},
+                        //{"packageId": pckg.id},
+                        //{"planLevel": planlevel.id},
+                        { "published": { "type": "Buffer", "data": [1] } },
+                        { "corporatePlan": false },
+                        { "or": [{ "minAge": { "lte": apiRequest.age } }, { "minAge": { "eq": null } }] },
+                        { "or": [{ "maxAge": { "gt": apiRequest.age } }, { "maxAge": { "eq": null } }] },
+                        //{"requiredPlanId": null}
+                    ]
+                },
+                include: [
+                    {
+                        relation: 'stateTaxDetails',
+                        scope: {
+                            include: [
+                                {
+                                    relation: 'state'
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        relation: 'planOptions',
+                        scope: {
+                            include: [
+                                {
+                                    relation: 'planOptionsValues'
+                                }
+                            ]
+                        }
+                    },
+                ]
+            };
+            let packageFilter = {
+                order: 'ordering ASC',
+                where: {
+                    published: true
+                },
+            };
+            const packages = await this.InsurancePlansRepository.find(packageFilter);
+            const packagesArray = [];
+            for (const pckg of packages) {
+                //console.log(pckg.name)
+                const packageObject = {};
+                // packageObject = pckg;
+                packageObject["description"] = pckg.description;
+                packageObject["id"] = pckg.id;
+                packageObject["logo"] = pckg.logo;
+                packageObject["name"] = pckg.name;
+                packageObject["published"] = pckg.published;
+                packageObject["ordering"] = pckg.ordering;
+                packageObject["allowMultiple"] = pckg.allowMultiple;
+                packageObject["applyFilters"] = pckg.applyFilters;
+                packageObject["optIn"] = pckg.optIn;
+                //console.log(plansFilter.where.and.length)
+                plansFilter.where.and.splice(5); //6 conditions default; 1 or 2 dynamic -->changed to 5 as required_plan_id is removed
+                //console.log(plansFilter.where.and.length)
+                //console.log(`Apply filter to this ${pckg.name}:${pckg.applyFilters}`);
+                let pccNincondition = pcc.ninCondition;
+                let pccExclusivePlanCoverageArray = pcc.exclusivePlanCoverageArray;
+                //package 3 : couple is same as family for Highcost drugs..
+                if (pckg.id == CONST.HIGHCOST_DRUGS_PACKAGE_ID) {
+                    if (pcc.maritalStatus == 'COUPLE') {
+                        //remove FAMILY from pccExclusivePlanCoverageArray //just pop
+                        // console.log(pccExclusivePlanCoverageArray.length);
+                        pccExclusivePlanCoverageArray.pop();
+                        // console.log('popped last element--Family?')
+                        //console.log(pccExclusivePlanCoverageArray.length);
+                        // console.log(`pccNincondition:${pccNincondition}`)
+                        if (pccExclusivePlanCoverageArray.length == 0) {
+                            pccNincondition = false;
+                        }
+                        // console.log(`fixed for pckg3 pccNincondition:${pccNincondition}`)
+                    }
+                }
+                //package 5: applyfilters--true same single, couple, family, and combinations //applyfilters has no effect now..
+                if (pckg.id == CONST.EXECUTIVE_PACKAGE_ID) {
+                    // console.log(`pccNincondition:${pccNincondition}`)
+                    if (pcc.maritalStatus == 'SINGLE') {
+                        pccExclusivePlanCoverageArray = ['COUPLE', 'FAMILY'];
+                    }
+                    else if (pcc.maritalStatus == 'COUPLE') {
+                        pccExclusivePlanCoverageArray = ['FAMILY'];
+                    }
+                    else {
+                        //FAMILY
+                        pccExclusivePlanCoverageArray = [];
+                        pccNincondition = false;
+                    }
+                    // console.log(`fixed for pckg5 pccNincondition:${pccNincondition}`)
+                }
+                // if (pckg.applyFilters) {
+                if (pccNincondition) {
+                    let planCoverageConditon = { "or": [{ "planCoverage": { "nin": pccExclusivePlanCoverageArray } }, { "planCoverage": { "eq": null } }] };
+                    plansFilter.where.and.push(planCoverageConditon);
+                }
+                // } else {
+                //   console.log('so basic no exc covergae filter')
+                // }
+                plansFilter.where.and.push({ "packageId": pckg.id });
+                let plansLevelFilter = {
+                    order: 'ordering ASC',
+                    where: {
+                        "id": { "inq": planLevelIds },
+                        "published": true,
+                        "requirePlanLevel": null
+                    },
+                    "include": [
+                        { "relation": "planLevelFeatures", "scope": { "include": [{ "relation": "feature" }] } },
+                        //{"relation": "greenshieldPackages"},
+                        { "relation": "plans", "scope": plansFilter }
+                    ]
+                };
+                const planLevels = await this.insurancePackages.planGroups(pckg.id).find(plansLevelFilter);
+                const groupsArray = [];
+                for (const pl of planLevels) {
+                    if (((_a = pl.plans) === null || _a === void 0 ? void 0 : _a.length) > 0) {
+                        // for (const plan of pl.plans) {
+                        //   plan.options = []
+                        //   if (plan.id) {
+                        //     plan.options = brokerPlanOptions[plan.id];
+                        //     let planoptions: any = []
+                        //     if (plan.options) {
+                        //       for (const blOption of plan.options) {
+                        //         //blOption.id
+                        //         const pov = await this.planOptionsValuesRepository.find({where: {planOptionsId: blOption.id}})
+                        //         blOption.optionValues = pov
+                        //         planoptions.push(blOption);
+                        //       }
+                        //     }
+                        //     plan.options = planoptions;
+                        //     plansArray.push(plan)
+                        //   }
+                        // }
+                        //pl.plans = plansArray;
+                        //if (plansArray.length > 0)
+                        groupsArray.push(pl);
+                    }
+                }
+                packageObject["groups"] = groupsArray; //planLevels
+                //console.log("-->" + packageObject.groups.length)
+                if (groupsArray.length > 0)
+                    packagesArray.push(packageObject);
+            }
+            data.packages = packagesArray; //packages;
+            return data;
+        }
+        catch (error) {
+            console.log(error);
+        }
+    }
 };
+tslib_1.__decorate([
+    (0, rest_1.get)('/broker/count', {
+        responses: {
+            200: {
+                content: {
+                    'application/json': {
+                        schema: {
+                            type: 'object',
+                        },
+                    },
+                },
+                description: 'File',
+            },
+        },
+    }),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", []),
+    tslib_1.__metadata("design:returntype", Promise)
+], BrokerController.prototype, "brokerCount", null);
 tslib_1.__decorate([
     (0, rest_1.get)('/admin/broker'),
     (0, rest_1.response)(200, {
@@ -2082,11 +2420,69 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:paramtypes", [Object, Object]),
     tslib_1.__metadata("design:returntype", Promise)
 ], BrokerController.prototype, "brokerUpdate", null);
+tslib_1.__decorate([
+    (0, rest_1.get)('/broker/FormConfig', {
+        responses: {
+            200: {
+                content: {
+                    'application/json': {
+                        schema: {
+                            type: 'object',
+                        },
+                    },
+                },
+                description: 'Form Configuration',
+            },
+        },
+    }),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", []),
+    tslib_1.__metadata("design:returntype", Promise)
+], BrokerController.prototype, "formeConfig", null);
+tslib_1.__decorate([
+    (0, rest_1.post)('/broker/plans', {
+        responses: {
+            200: {
+                content: {
+                    'application/json': {
+                        schema: {
+                            type: 'object',
+                        },
+                    },
+                },
+                description: 'File',
+            },
+        },
+    }),
+    tslib_1.__param(0, (0, rest_1.requestBody)({
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        formId: {
+                            type: 'number',
+                        },
+                        age: {
+                            type: 'number'
+                        },
+                        province_id: {
+                            type: 'number'
+                        }
+                    }
+                }
+            },
+        }
+    })),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], BrokerController.prototype, "planId", null);
 BrokerController = tslib_1.__decorate([
     tslib_1.__param(0, (0, repository_1.repository)(repositories_1.BrokerRepository)),
     tslib_1.__param(1, (0, repository_1.repository)(repositories_1.BrokerLicensedStatesAndProvincesRepository)),
     tslib_1.__param(2, (0, repository_1.repository)(repositories_1.BrokerSignupFormsPlansRepository)),
-    tslib_1.__param(3, (0, repository_1.repository)(repositories_1.BrokerSignupformsPlanlevelsRepository)),
+    tslib_1.__param(3, (0, repository_1.repository)(repositories_1.SignupFormsPlanLevelMappingRepository)),
     tslib_1.__param(4, (0, repository_1.repository)(repositories_1.TieredRebatesDataRepository)),
     tslib_1.__param(5, (0, repository_1.repository)(repositories_1.TieredRebatesRepository)),
     tslib_1.__param(6, (0, repository_1.repository)(repositories_1.UsersRepository)),
@@ -2103,10 +2499,12 @@ BrokerController = tslib_1.__decorate([
     tslib_1.__param(17, (0, core_1.service)(services_1.HttpService)),
     tslib_1.__param(18, (0, core_1.service)(services_1.ResizeimgService)),
     tslib_1.__param(19, (0, core_1.service)(services_1.BrokerService)),
+    tslib_1.__param(20, (0, repository_1.repository)(repositories_1.InsurancePackagesRepository)),
+    tslib_1.__param(21, (0, repository_1.repository)(repositories_1.PlansAvailabilityRepository)),
     tslib_1.__metadata("design:paramtypes", [repositories_1.BrokerRepository,
         repositories_1.BrokerLicensedStatesAndProvincesRepository,
         repositories_1.BrokerSignupFormsPlansRepository,
-        repositories_1.BrokerSignupformsPlanlevelsRepository,
+        repositories_1.SignupFormsPlanLevelMappingRepository,
         repositories_1.TieredRebatesDataRepository,
         repositories_1.TieredRebatesRepository,
         repositories_1.UsersRepository,
@@ -2119,7 +2517,9 @@ BrokerController = tslib_1.__decorate([
         repositories_1.PlanLevelRepository,
         repositories_1.BrokerEoInsuranceRepository, Object, Function, services_1.HttpService,
         services_1.ResizeimgService,
-        services_1.BrokerService])
+        services_1.BrokerService,
+        repositories_1.InsurancePackagesRepository,
+        repositories_1.PlansAvailabilityRepository])
 ], BrokerController);
 exports.BrokerController = BrokerController;
 //# sourceMappingURL=broker.controller.js.map

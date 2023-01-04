@@ -7,11 +7,11 @@ const repository_1 = require("@loopback/repository");
 const models_1 = require("../models");
 const repositories_1 = require("../repositories");
 let BrokerService = class BrokerService {
-    constructor(/* Add @inject to inject parameters */ BrokerRepository, BrokerLicensedStatesAndProvincesRepository, BrokerSignupFormsPlansRepository, BrokerSignupformsPlanlevelsRepository, TieredRebatesDataRepository, TieredRebatesRepository, UsersRepository, ContactInformationRepository, SignupFormsRepository, StatesAndProvincesRepository, CustomerSignupRepository, CustomerRepository, InsurancePlansRepository, PlanLevelRepository, BrokerEoInsuranceRepository) {
+    constructor(/* Add @inject to inject parameters */ BrokerRepository, BrokerLicensedStatesAndProvincesRepository, BrokerSignupFormsPlansRepository, SignupFormsPlanLevelMappingRepository, TieredRebatesDataRepository, TieredRebatesRepository, UsersRepository, ContactInformationRepository, SignupFormsRepository, StatesAndProvincesRepository, CustomerSignupRepository, CustomerRepository, InsurancePlansRepository, PlanLevelRepository, BrokerEoInsuranceRepository) {
         this.BrokerRepository = BrokerRepository;
         this.BrokerLicensedStatesAndProvincesRepository = BrokerLicensedStatesAndProvincesRepository;
         this.BrokerSignupFormsPlansRepository = BrokerSignupFormsPlansRepository;
-        this.BrokerSignupformsPlanlevelsRepository = BrokerSignupformsPlanlevelsRepository;
+        this.SignupFormsPlanLevelMappingRepository = SignupFormsPlanLevelMappingRepository;
         this.TieredRebatesDataRepository = TieredRebatesDataRepository;
         this.TieredRebatesRepository = TieredRebatesRepository;
         this.UsersRepository = UsersRepository;
@@ -114,7 +114,7 @@ BrokerService = tslib_1.__decorate([
     tslib_1.__param(0, (0, repository_1.repository)(repositories_1.BrokerRepository)),
     tslib_1.__param(1, (0, repository_1.repository)(repositories_1.BrokerLicensedStatesAndProvincesRepository)),
     tslib_1.__param(2, (0, repository_1.repository)(repositories_1.BrokerSignupFormsPlansRepository)),
-    tslib_1.__param(3, (0, repository_1.repository)(repositories_1.BrokerSignupformsPlanlevelsRepository)),
+    tslib_1.__param(3, (0, repository_1.repository)(repositories_1.SignupFormsPlanLevelMappingRepository)),
     tslib_1.__param(4, (0, repository_1.repository)(repositories_1.TieredRebatesDataRepository)),
     tslib_1.__param(5, (0, repository_1.repository)(repositories_1.TieredRebatesRepository)),
     tslib_1.__param(6, (0, repository_1.repository)(repositories_1.UsersRepository)),
@@ -129,7 +129,7 @@ BrokerService = tslib_1.__decorate([
     tslib_1.__metadata("design:paramtypes", [repositories_1.BrokerRepository,
         repositories_1.BrokerLicensedStatesAndProvincesRepository,
         repositories_1.BrokerSignupFormsPlansRepository,
-        repositories_1.BrokerSignupformsPlanlevelsRepository,
+        repositories_1.SignupFormsPlanLevelMappingRepository,
         repositories_1.TieredRebatesDataRepository,
         repositories_1.TieredRebatesRepository,
         repositories_1.UsersRepository,

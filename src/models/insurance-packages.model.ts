@@ -1,4 +1,6 @@
-import {Entity, model, property} from '@loopback/repository';
+import {Entity, model, property, hasMany} from '@loopback/repository';
+import {PlanLevel} from './plan-level.model';
+import {InsurancePlans} from './insurance-plans.model';
 
 @model({
   settings: {idInjection: false, mysql: {schema: 'gbadmin', table: 'insurance_packages'}}
@@ -79,6 +81,8 @@ export class InsurancePackages extends Entity {
   })
   published?: boolean;
 
+  @hasMany(() => PlanLevel, {through: {model: () => InsurancePlans, keyFrom: 'package_id', keyTo: 'plan_level'}})
+  planGroups: PlanLevel[];
   // Define well-known properties here
 
   // Indexer property to allow additional data

@@ -16,4 +16,5 @@ tslib_1.__exportStar(require("./geocoder.service"), exports);
 tslib_1.__exportStar(require("./jwt.service"), exports);
 tslib_1.__exportStar(require("./validation.services"), exports);
 tslib_1.__exportStar(require("./broker.service"), exports);
+tslib_1.__exportStar(require("./database-changes.service"), exports);
 //# sourceMappingURL=index.js.map

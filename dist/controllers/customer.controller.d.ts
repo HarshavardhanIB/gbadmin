@@ -14,7 +14,7 @@ export declare class customerController {
     private response;
     user: UserProfile;
     constructor(usersRepository: UsersRepository, ContactInformationRepository: ContactInformationRepository, CustomerContactInfoRepository: CustomerContactInfoRepository, CustomerPlanOptionsValuesRepository: CustomerPlanOptionsValuesRepository, CustomerPlansRepository: CustomerPlansRepository, CustomerRelativesRepository: CustomerRelativesRepository, CustomerRepository: CustomerRepository, CustomerSignupRepository: CustomerSignupRepository, response: Response, user: UserProfile);
-    customersCount(currentUserProfile: UserProfile): Promise<any>;
+    customersCount(): Promise<any>;
     customerslist(): Promise<Response>;
     allCustmerDetails(id: number): Promise<any>;
 }

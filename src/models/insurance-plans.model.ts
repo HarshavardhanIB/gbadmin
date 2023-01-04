@@ -164,6 +164,15 @@ export class InsurancePlans extends Entity {
   })
   published?: boolean;
 
+  @property({
+    type: 'number',
+  })
+  package_id?: number;
+
+  @property({
+    type: 'number',
+  })
+  plan_level?: number;
   // Define well-known properties here
 
   // Indexer property to allow additional data

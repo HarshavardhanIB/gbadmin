@@ -1,7 +1,7 @@
 // import { injectable, /* inject, */ BindingScope } from '@loopback/core';
 // import { repository } from '@loopback/repository';
 // import { BrokerLicensedStatesAndProvinces } from '../models';
-// import { BrokerEoInsuranceRepository, BrokerLicensedStatesAndProvincesRepository, BrokerRepository, BrokerSignupformsPlanlevelsRepository, BrokerSignupFormsPlansRepository, ContactInformationRepository, CustomerRepository, CustomerSignupRepository, InsurancePlansRepository, PlanLevelRepository, SignupFormsRepository, StatesAndProvincesRepository, TieredRebatesDataRepository, TieredRebatesRepository, UsersRepository } from '../repositories';
+// import { BrokerEoInsuranceRepository, BrokerLicensedStatesAndProvincesRepository, BrokerRepository, SignupFormsPlanLevelMappingRepository, BrokerSignupFormsPlansRepository, ContactInformationRepository, CustomerRepository, CustomerSignupRepository, InsurancePlansRepository, PlanLevelRepository, SignupFormsRepository, StatesAndProvincesRepository, TieredRebatesDataRepository, TieredRebatesRepository, UsersRepository } from '../repositories';
 
 // @injectable({ scope: BindingScope.TRANSIENT })
 // export class BrokerServices {
@@ -12,8 +12,8 @@
 //     public BrokerLicensedStatesAndProvincesRepository: BrokerLicensedStatesAndProvincesRepository,
 //     @repository(BrokerSignupFormsPlansRepository)
 //     public BrokerSignupFormsPlansRepository: BrokerSignupFormsPlansRepository,
-//     @repository(BrokerSignupformsPlanlevelsRepository)
-//     public BrokerSignupformsPlanlevelsRepository: BrokerSignupformsPlanlevelsRepository,
+//     @repository(SignupFormsPlanLevelMappingRepository)
+//     public SignupFormsPlanLevelMappingRepository: SignupFormsPlanLevelMappingRepository,
 //     @repository(TieredRebatesDataRepository)
 //     public TieredRebatesDataRepository: TieredRebatesDataRepository,
 //     @repository(TieredRebatesRepository)

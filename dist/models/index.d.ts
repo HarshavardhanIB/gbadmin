@@ -22,7 +22,7 @@ export * from './states-and-provinces.model';
 export * from './broker.model';
 export * from './broker-licensed-states-and-provinces.model';
 export * from './broker-signup-forms-plans.model';
-export * from './broker-signupforms-planlevels.model';
 export * from './tiered-rebates.model';
 export * from './tiered-rebates-data.model';
 export * from './broker-eo-insurance.model';
+export * from './signup-forms-plan-level-mapping.model';

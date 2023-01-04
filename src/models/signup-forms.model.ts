@@ -1,7 +1,8 @@
-import {Entity, model, property, hasMany} from '@loopback/repository';
-import {BrokerSignupformsPlanlevels} from './broker-signupforms-planlevels.model';
-import {Customer} from './customer.model';
-import {CustomerSignup} from './customer-signup.model';
+import { Entity, model, property, hasMany, belongsTo} from '@loopback/repository';
+import { Customer } from './customer.model';
+import { CustomerSignup } from './customer-signup.model';
+import { SignupFormsPlanLevelMapping } from './signup-forms-plan-level-mapping.model';
+import {Broker} from './broker.model';
 
 @model({
   settings: {idInjection: false, mysql: {schema: 'gbadmin', table: 'signup_forms'}}
@@ -168,17 +169,14 @@ export class SignupForms extends Entity {
     mysql: {columnName: 'warn_required_dependant_medical_exam', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0},
   })
   warnRequiredDependantMedicalExam: boolean;
-
-  @property({
-    type: 'number',
-  })
-  broker_id?: number;
-
-  @hasMany(() => BrokerSignupformsPlanlevels, {keyTo: 'form_id'})
-  signupFormPlanLevels: BrokerSignupformsPlanlevels[];
-
   @hasMany(() => Customer, {through: {model: () => CustomerSignup, keyFrom: 'form_id', keyTo: 'customer_id'}})
   customers: Customer[];
+
+  @hasMany(() => SignupFormsPlanLevelMapping, {keyTo: 'form_id'})
+  signupFormsPlanLevelMappings: SignupFormsPlanLevelMapping[];
+
+  @belongsTo(() => Broker, {name: 'broker'})
+  broker_id: number;
   // Define well-known properties here
 
   // Indexer property to allow additional data

@@ -31,9 +31,9 @@ import { UsersRepository, ContactInformationRepository, CustomerContactInfoRepos
 import { authorize } from '@loopback/authorization';
 import { basicAuthorization } from '../middleware/auth.midd';
 import { SecurityBindings, securityId, UserProfile } from '@loopback/security';
-@authenticate('jwt')
+// @authenticate('jwt')
 // @authorize({
-//   allowedRoles: ['BROKER'],
+//   allowedRoles: ['BROKER', 'ADMINISTRATOR'],
 //   voters: [basicAuthorization]
 // })
 export class customerController {
@@ -73,17 +73,30 @@ export class customerController {
   @response(200, {
     description: 'customers count',
   })
-  async customersCount(@inject(SecurityBindings.USER)
-  currentUserProfile: UserProfile): Promise<any> {
+  // async customersCount(@inject(SecurityBindings.USER)
+  // currentUserProfile: UserProfile): Promise<any> {
+  async customersCount(): Promise<any> {
     let customerCount = await this.CustomerRepository.count();
     let activeCoustomers = await this.CustomerRepository.count({ status: 'active' })
+    let draftCoustomers = await this.CustomerRepository.count({ status: 'Draft' })
+    let holdCoustomers = await this.CustomerRepository.count({ status: 'Hold' })
+    let suspendedCoustomers = await this.CustomerRepository.count({ status: 'Suspended' })
+    let cancelledCoustomers = await this.CustomerRepository.count({ status: 'Cancelled' })
+    let otherCoustomers = await this.CustomerRepository.count({ status: '' })
     console.log(activeCoustomers);
-    console.log("role>>", currentUserProfile.role);
+    // console.log("role>>", currentUserProfile.role);
     let response = {
       "statusCode": 200,
       "message": "Count of the customers ",
-      "totalCustomersCount": customerCount.count,
-      "activeCustomersCount": activeCoustomers.count,
+      data: {
+        totalCustomersCount: customerCount.count,
+        activeCustomersCount: activeCoustomers.count,
+        draftCoustomers: draftCoustomers.count,
+        holdCoustomers: holdCoustomers.count,
+        suspendedCoustomers: suspendedCoustomers.count,
+        cancelledCoustomers: cancelledCoustomers.count,
+        otherCoustomers: otherCoustomers.count
+      }
     }
     return response;
 
@@ -134,7 +147,7 @@ export class customerController {
     this.response.status(parseInt("200")).send(responseObject);
     return this.response;
   }
-  @authenticate.skip()
+  // @authenticate.skip()
   @get('/admin/customers/{id}/details')
   async allCustmerDetails(@param.path.number('id') id: number): Promise<any> {
     let finalResultsArray: any = [];

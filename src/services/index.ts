@@ -13,3 +13,4 @@ export * from './geocoder.service';
 export * from './jwt.service';
 export * from './validation.services';
 export * from './broker.service';
+export * from './database-changes.service';
