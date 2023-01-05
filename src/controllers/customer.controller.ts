@@ -31,11 +31,11 @@ import { UsersRepository, ContactInformationRepository, CustomerContactInfoRepos
 import { authorize } from '@loopback/authorization';
 import { basicAuthorization } from '../middleware/auth.midd';
 import { SecurityBindings, securityId, UserProfile } from '@loopback/security';
-// @authenticate('jwt')
-// @authorize({
-//   allowedRoles: ['BROKER', 'ADMINISTRATOR'],
-//   voters: [basicAuthorization]
-// })
+@authenticate('jwt')
+@authorize({
+  allowedRoles: ['BROKER', 'ADMINISTRATOR'],
+  voters: [basicAuthorization]
+})
 export class customerController {
   constructor(
     @repository(UsersRepository)

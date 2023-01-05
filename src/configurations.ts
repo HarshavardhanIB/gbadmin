@@ -2,7 +2,7 @@ export const app: any = {
 
   name: process.env.APP_NAME || "GroupBenefitz Admin API",
   company: process.env.COMPANY_NAME || "The Groupbenefitz Platform Inc.",
-  version: "v1.4.1", //process.env.APP_VERSION ||
+  version: "v0.4.3", //process.env.APP_VERSION ||
   env: process.env.NODE_ENV || "local",
 }
 

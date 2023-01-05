@@ -17,12 +17,9 @@ const common_functions_1 = require("../common-functions");
 const authentication_1 = require("@loopback/authentication");
 const validation = tslib_1.__importStar(require("../services/validation.services"));
 const services_1 = require("../services");
+const authorization_1 = require("@loopback/authorization");
+const auth_midd_1 = require("../middleware/auth.midd");
 // import { GbadminDataSource } from "../datasources";
-// @authenticate('jwt')
-// @authorize({
-//   allowedRoles: ['BROKER', 'ADMINISTRATOR'],
-//   voters: [basicAuthorization]
-// })
 let BrokerController = class BrokerController {
     constructor(BrokerRepository, BrokerLicensedStatesAndProvincesRepository, BrokerSignupFormsPlansRepository, SignupFormsPlanLevelMappingRepository, TieredRebatesDataRepository, TieredRebatesRepository, UsersRepository, ContactInformationRepository, SignupFormsRepository, StatesAndProvincesRepository, CustomerSignupRepository, CustomerRepository, InsurancePlansRepository, PlanLevelRepository, BrokerEoInsuranceRepository, response, handler, http, img, bs, insurancePackages, plansAvalibility) {
         this.BrokerRepository = BrokerRepository;
@@ -1535,14 +1532,14 @@ let BrokerController = class BrokerController {
                 include: [{ relation: 'plan' }]
             };
             //Remove this //comment this
-            // if (brokerplanIds.length > 0) {
-            //   let brokerPlanFilter = {"planId": {"inq": brokerplanIds}}
-            //   plansforProvince.where.and.push(brokerPlanFilter);
-            // }
-            if (brokerplanLevels.length > 0) {
-                let brokerPlanLevelsFilter = { "planLevel": { "inq": brokerplanLevels } };
-                plansforProvince.where.and.push(brokerPlanLevelsFilter);
+            if (brokerplanIds.length > 0) {
+                let brokerPlanFilter = { "planId": { "inq": brokerplanIds } };
+                plansforProvince.where.and.push(brokerPlanFilter);
             }
+            // if (brokerplanLevels.length > 0) {
+            //   let brokerPlanLevelsFilter = { "planLevel": { "inq": brokerplanLevels } }
+            //   plansforProvince.where.and.push(brokerPlanLevelsFilter);
+            // }
             // console.log(plansforProvince.where.and.length)
             //  console.log(plansforProvince.where.and)
             const planIdsData = await this.plansAvalibility.find(plansforProvince);
@@ -2479,6 +2476,11 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], BrokerController.prototype, "planId", null);
 BrokerController = tslib_1.__decorate([
+    (0, authentication_1.authenticate)('jwt'),
+    (0, authorization_1.authorize)({
+        allowedRoles: ['BROKER', 'ADMINISTRATOR'],
+        voters: [auth_midd_1.basicAuthorization]
+    }),
     tslib_1.__param(0, (0, repository_1.repository)(repositories_1.BrokerRepository)),
     tslib_1.__param(1, (0, repository_1.repository)(repositories_1.BrokerLicensedStatesAndProvincesRepository)),
     tslib_1.__param(2, (0, repository_1.repository)(repositories_1.BrokerSignupFormsPlansRepository)),

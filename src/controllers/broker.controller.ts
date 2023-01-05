@@ -27,11 +27,11 @@ import { authorize } from "@loopback/authorization";
 import { basicAuthorization } from "../middleware/auth.midd";
 import { errorMonitor } from "events";
 // import { GbadminDataSource } from "../datasources";
-// @authenticate('jwt')
-// @authorize({
-//   allowedRoles: ['BROKER', 'ADMINISTRATOR'],
-//   voters: [basicAuthorization]
-// })
+@authenticate('jwt')
+@authorize({
+  allowedRoles: ['BROKER', 'ADMINISTRATOR'],
+  voters: [basicAuthorization]
+})
 export class BrokerController {
   constructor(
     @repository(BrokerRepository)
@@ -2598,17 +2598,15 @@ export class BrokerController {
       }
 
       //Remove this //comment this
-      // if (brokerplanIds.length > 0) {
-      //   let brokerPlanFilter = {"planId": {"inq": brokerplanIds}}
-      //   plansforProvince.where.and.push(brokerPlanFilter);
-
-      // }
-
-      if (brokerplanLevels.length > 0) {
-        let brokerPlanLevelsFilter = { "planLevel": { "inq": brokerplanLevels } }
-        plansforProvince.where.and.push(brokerPlanLevelsFilter);
-
+      if (brokerplanIds.length > 0) {
+        let brokerPlanFilter = { "planId": { "inq": brokerplanIds } }
+        plansforProvince.where.and.push(brokerPlanFilter);
       }
+
+      // if (brokerplanLevels.length > 0) {
+      //   let brokerPlanLevelsFilter = { "planLevel": { "inq": brokerplanLevels } }
+      //   plansforProvince.where.and.push(brokerPlanLevelsFilter);
+      // }
 
 
       // console.log(plansforProvince.where.and.length)
@@ -2667,7 +2665,6 @@ export class BrokerController {
           ]
         },
         include: [
-
           {
             relation: 'stateTaxDetails',
             scope: {
