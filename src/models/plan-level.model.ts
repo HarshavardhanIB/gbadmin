@@ -1,4 +1,5 @@
-import {Entity, model, property} from '@loopback/repository';
+import {Entity, model, property, hasMany} from '@loopback/repository';
+import {InsurancePlans} from './insurance-plans.model';
 
 @model({
   settings: {idInjection: false, mysql: {schema: 'gbadmin', table: 'plan_level'}}
@@ -118,6 +119,8 @@ export class PlanLevel extends Entity {
   })
   tooltipTitle?: string;
 
+  @hasMany(() => InsurancePlans, {keyTo: 'plan_level'})
+  plans: InsurancePlans[];
   // Define well-known properties here
 
   // Indexer property to allow additional data

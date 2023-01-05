@@ -1,4 +1,5 @@
-import {Entity, model, property} from '@loopback/repository';
+import {Entity, model, property, hasMany} from '@loopback/repository';
+import {PlansAvailability} from './plans-availability.model';
 
 @model({
   settings: {idInjection: false, mysql: {schema: 'gbadmin', table: 'insurance_plans'}}
@@ -173,6 +174,9 @@ export class InsurancePlans extends Entity {
     type: 'number',
   })
   plan_level?: number;
+
+  @hasMany(() => PlansAvailability, {keyTo: 'plan_id'})
+  stateTaxDetails: PlansAvailability[];
   // Define well-known properties here
 
   // Indexer property to allow additional data

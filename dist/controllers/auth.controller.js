@@ -103,8 +103,10 @@ let AuthController = class AuthController {
         return currentUserProfile[security_1.securityId];
     }
     async signUp(newUserRequest) {
+        let role = "BROKER";
         let res = {};
-        let emailCount = await this.usersRepository.count({ where: { username: newUserRequest.email } });
+        let emailCount = await this.usersRepository.count({ username: newUserRequest.email });
+        console.log(emailCount);
         if (emailCount.count <= 0) {
             console.log(newUserRequest.password);
             const password = await (0, bcryptjs_1.hash)(newUserRequest.password, await (0, bcryptjs_1.genSalt)());
@@ -121,7 +123,7 @@ let AuthController = class AuthController {
             newUser.username = newUserRequest.email;
             newUser.password = password;
             const saveusers = await this.usersRepository.create(newUser);
-            await this.usersRepository.updateById(saveusers.id, { password: password });
+            await this.usersRepository.updateById(saveusers.id, { password: password, role: role });
             await this.adminRepository.updateById(saveAdmin.id, { "password": password });
             res = {
                 "statusCode": 200,
@@ -425,6 +427,7 @@ tslib_1.__decorate([
             'application/json': {
                 schema: (0, rest_1.getModelSchemaRef)(NewUserRequest, {
                     title: 'NewUser',
+                    exclude: ['id']
                 }),
             },
         },

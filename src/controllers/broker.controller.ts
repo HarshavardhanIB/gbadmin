@@ -26,12 +26,12 @@ import { FORMERR } from "dns";
 import { authorize } from "@loopback/authorization";
 import { basicAuthorization } from "../middleware/auth.midd";
 import { errorMonitor } from "events";
-// import { GbadminDataSource } from "../datasources";
-@authenticate('jwt')
-@authorize({
-  allowedRoles: ['BROKER', 'ADMINISTRATOR'],
-  voters: [basicAuthorization]
-})
+import { GbadminDataSource } from "../datasources";
+// @authenticate('jwt')
+// @authorize({
+//   allowedRoles: ['BROKER', 'ADMINISTRATOR'],
+//   voters: [basicAuthorization]
+// })
 export class BrokerController {
   constructor(
     @repository(BrokerRepository)
@@ -2636,12 +2636,13 @@ export class BrokerController {
       // let pcc: any = this.registrationService.planCoverageCalculations(apiRequest.having_spouse, apiRequest.spouse_details.is_spouse_having_healthcard, apiRequest.no_of_children, children_coverage);
       let pcc: any = {
         exclusivePlanCoverageArray: [],
-        maritalStatus: '',
+        maritalStatus: 'COUPLE',
         ninCondition: false,
         rital_status: 'SINGLE',
         exclusive: ['COUPLE', 'FAMILY'],
         inclusive: ['SINGLE']
       }
+      data.customer = {};
       data.customer.maritalStatus = pcc.maritalStatus
 
 
@@ -2773,7 +2774,7 @@ export class BrokerController {
           },
 
           "include": [
-            { "relation": "planLevelFeatures", "scope": { "include": [{ "relation": "feature" }] } },
+            // { "relation": "planLevelFeatures", "scope": { "include": [{ "relation": "feature" }] } },
             //{"relation": "greenshieldPackages"},
             { "relation": "plans", "scope": plansFilter }]
         }

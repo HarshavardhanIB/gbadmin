@@ -17,9 +17,11 @@ const common_functions_1 = require("../common-functions");
 const authentication_1 = require("@loopback/authentication");
 const validation = tslib_1.__importStar(require("../services/validation.services"));
 const services_1 = require("../services");
-const authorization_1 = require("@loopback/authorization");
-const auth_midd_1 = require("../middleware/auth.midd");
-// import { GbadminDataSource } from "../datasources";
+// @authenticate('jwt')
+// @authorize({
+//   allowedRoles: ['BROKER', 'ADMINISTRATOR'],
+//   voters: [basicAuthorization]
+// })
 let BrokerController = class BrokerController {
     constructor(BrokerRepository, BrokerLicensedStatesAndProvincesRepository, BrokerSignupFormsPlansRepository, SignupFormsPlanLevelMappingRepository, TieredRebatesDataRepository, TieredRebatesRepository, UsersRepository, ContactInformationRepository, SignupFormsRepository, StatesAndProvincesRepository, CustomerSignupRepository, CustomerRepository, InsurancePlansRepository, PlanLevelRepository, BrokerEoInsuranceRepository, response, handler, http, img, bs, insurancePackages, plansAvalibility) {
         this.BrokerRepository = BrokerRepository;
@@ -1561,12 +1563,13 @@ let BrokerController = class BrokerController {
             // let pcc: any = this.registrationService.planCoverageCalculations(apiRequest.having_spouse, apiRequest.spouse_details.is_spouse_having_healthcard, apiRequest.no_of_children, children_coverage);
             let pcc = {
                 exclusivePlanCoverageArray: [],
-                maritalStatus: '',
+                maritalStatus: 'COUPLE',
                 ninCondition: false,
                 rital_status: 'SINGLE',
                 exclusive: ['COUPLE', 'FAMILY'],
                 inclusive: ['SINGLE']
             };
+            data.customer = {};
             data.customer.maritalStatus = pcc.maritalStatus;
             console.log(`excl. ${pcc.exclusivePlanCoverageArray}`);
             console.log(`maritalStatus: ${pcc.maritalStatus}`);
@@ -1684,7 +1687,7 @@ let BrokerController = class BrokerController {
                         "requirePlanLevel": null
                     },
                     "include": [
-                        { "relation": "planLevelFeatures", "scope": { "include": [{ "relation": "feature" }] } },
+                        // { "relation": "planLevelFeatures", "scope": { "include": [{ "relation": "feature" }] } },
                         //{"relation": "greenshieldPackages"},
                         { "relation": "plans", "scope": plansFilter }
                     ]
@@ -2476,11 +2479,6 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], BrokerController.prototype, "planId", null);
 BrokerController = tslib_1.__decorate([
-    (0, authentication_1.authenticate)('jwt'),
-    (0, authorization_1.authorize)({
-        allowedRoles: ['BROKER', 'ADMINISTRATOR'],
-        voters: [auth_midd_1.basicAuthorization]
-    }),
     tslib_1.__param(0, (0, repository_1.repository)(repositories_1.BrokerRepository)),
     tslib_1.__param(1, (0, repository_1.repository)(repositories_1.BrokerLicensedStatesAndProvincesRepository)),
     tslib_1.__param(2, (0, repository_1.repository)(repositories_1.BrokerSignupFormsPlansRepository)),

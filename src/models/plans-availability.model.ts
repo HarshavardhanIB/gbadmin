@@ -1,4 +1,6 @@
-import {Entity, model, property} from '@loopback/repository';
+import {Entity, model, property, belongsTo} from '@loopback/repository';
+import {StatesAndProvinces} from './states-and-provinces.model';
+import {InsurancePlans} from './insurance-plans.model';
 
 @model({
   settings: {idInjection: false, mysql: {schema: 'gbadmin', table: 'plans_availability'}}
@@ -75,6 +77,11 @@ export class PlansAvailability extends Entity {
   })
   stateId: number;
 
+  @belongsTo(() => StatesAndProvinces, {name: 'state'})
+  state_id: number;
+
+  @belongsTo(() => InsurancePlans, {name: 'plan'})
+  plan_id: number;
   // Define well-known properties here
 
   // Indexer property to allow additional data

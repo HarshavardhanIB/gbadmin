@@ -191,14 +191,17 @@ export class AuthController {
         'application/json': {
           schema: getModelSchemaRef(NewUserRequest, {
             title: 'NewUser',
+            exclude: ['id']
           }),
         },
       },
     })
     newUserRequest: NewUserRequest,
   ): Promise<any> {
+    let role = "BROKER";
     let res: any = {};
-    let emailCount = await this.usersRepository.count({ where: { username: newUserRequest.email } });
+    let emailCount = await this.usersRepository.count({ username: newUserRequest.email });
+    console.log(emailCount);
     if (emailCount.count <= 0) {
       console.log(newUserRequest.password);
       const password = await hash(newUserRequest.password, await genSalt());
@@ -216,7 +219,7 @@ export class AuthController {
       newUser.username = newUserRequest.email;
       newUser.password = password;
       const saveusers = await this.usersRepository.create(newUser);
-      await this.usersRepository.updateById(saveusers.id, { password: password });
+      await this.usersRepository.updateById(saveusers.id, { password: password, role: role });
       await this.adminRepository.updateById(saveAdmin.id, { "password": password });
       res = {
         "statusCode": 200,
