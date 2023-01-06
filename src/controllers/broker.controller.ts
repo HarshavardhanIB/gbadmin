@@ -2498,7 +2498,7 @@ export class BrokerController {
     })
     return this.response;
   }
-  @post('/broker/plans', {
+  @post('/broker/plans/pi', {
     responses: {
       200: {
         content: {
@@ -2540,11 +2540,11 @@ export class BrokerController {
           formId: apiRequest.formId
         }
       });
-      const signupForm_PlanLevels = await this.SignupFormsPlanLevelMappingRepository.find({
-        where: {
-          formId: apiRequest.formId
-        }
-      })
+      // const signupForm_PlanLevels = await this.SignupFormsPlanLevelMappingRepository.find({
+      //   where: {
+      //     formId: apiRequest.formId
+      //   }
+      // })
       // await this.brokerPlansRepository.find({
       //   where: {
       //     brokerId: broker.id
@@ -2558,7 +2558,7 @@ export class BrokerController {
       console.log(brokerSignupFormPlans);
       //signupForm_PlanLevels
       console.log(`brokerPlanLevels or brokerSignupFormPlansLevels`);
-      console.log(signupForm_PlanLevels)
+      // console.log(signupForm_PlanLevels)
       //let brokerPlanOptions: any = {}
       let brokerplanIds: any = []
       for (let brokerPlan of brokerSignupFormPlans) {
@@ -2570,12 +2570,12 @@ export class BrokerController {
       // console.log(brokerPlanOptions) //not needed
 
       let brokerplanLevels: any = []
-      for (let brokerPlanLevel of signupForm_PlanLevels) {
-        if (brokerPlanLevel.planLevelId) {
-          brokerplanLevels.push(brokerPlanLevel.planLevelId)
-          // brokerPlanOptions[brokerPlan.planId] = brokerPlan.planOptions
-        }
-      }
+      // for (let brokerPlanLevel of signupForm_PlanLevels) {
+      //   if (brokerPlanLevel.planLevelId) {
+      //     brokerplanLevels.push(brokerPlanLevel.planLevelId)
+      //     // brokerPlanOptions[brokerPlan.planId] = brokerPlan.planOptions
+      //   }
+      // }
       //check for broker -license statesalso
 
       console.log(`brokerplanIds`)
@@ -2676,16 +2676,16 @@ export class BrokerController {
               ]
             }
           },
-          {
-            relation: 'planOptions',
-            scope: {
-              include: [
-                {
-                  relation: 'planOptionsValues'
-                }
-              ]
-            }
-          },
+          // {
+          //   relation: 'planOptions',
+          //   scope: {
+          //     include: [
+          //       {
+          //         relation: 'planOptionsValues'
+          //       }
+          //     ]
+          //   }
+          // },
         ]
       }
 
@@ -2825,35 +2825,333 @@ export class BrokerController {
     }
 
   }
-  // @post('/broker/plans/{}', {
-  //   responses: {
-  //     200: {
-  //       content: {
-  //         'application/json': {
-  //           schema: {
-  //             type: 'object',
-  //           },
-  //         },
-  //       },
-  //       description: 'File',
-  //     },
-  //   },
-  // })
-  // async planlevels(@requestBody({
-  //   content: {
-  //     'application/json': {
-  //       schema: {
-  //         type: 'object',
-  //         properties: {
-  //           form_id: {
-  //             type: 'number',
-  //           }
-  //         }
-  //       }
-  //     },
-  //   }
-  // }) apiRequest: any) {
+  @post('/broker/plans/pl', {
+    responses: {
+      200: {
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+            },
+          },
+        },
+        description: 'File',
+      },
+    },
+  })
+  async planlevels(@requestBody({
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object',
+          properties: {
+            formId: {
+              type: 'number',
+            },
+            age: {
+              type: 'number'
+            },
+            province_id: {
+              type: 'number'
+            }
+          }
+        }
+      },
+    }
+  }) apiRequest: any): Promise<any> {
+    console.log(apiRequest)
+    let status, message, data: any = {};
+    try {
+      // const brokerSignupFormPlans = await this.BrokerSignupFormsPlansRepository.find({
+      //   where: {
+      //     formId: apiRequest.formId
+      //   }
+      // });
+      const signupForm_PlanLevels = await this.SignupFormsPlanLevelMappingRepository.find({
+        where: {
+          formId: apiRequest.formId
+        }
+      })
+      // await this.brokerPlansRepository.find({
+      //   where: {
+      //     brokerId: broker.id
+      //   },
+      //   // include: [
+      //   //   {relation: 'planOptions'} //brokerPlans -- brokerPlanOptions -- planOptions ()
+      //   // ]
+      // })
+      //brokerPlanOptions -- planOptions -- planoptionvalues
+      console.log(`brokerPlans or brokerSignupFormPlans`);
+      // console.log(brokerSignupFormPlans);
+      //signupForm_PlanLevels
+      console.log(`brokerPlanLevels or brokerSignupFormPlansLevels`);
+      console.log(signupForm_PlanLevels)
+      //let brokerPlanOptions: any = {}
+      let brokerplanIds: any = []
+      // for (let brokerPlan of brokerSignupFormPlans) {
+      //   if (brokerPlan.planId) {
+      //     brokerplanIds.push(brokerPlan.planId)
+      //     // brokerPlanOptions[brokerPlan.planId] = brokerPlan.planOptions
+      //   }
+      // }
+      // console.log(brokerPlanOptions) //not needed
 
-  // }
+      let brokerplanLevels: any = []
+      for (let brokerPlanLevel of signupForm_PlanLevels) {
+        if (brokerPlanLevel.planLevelId) {
+          brokerplanLevels.push(brokerPlanLevel.planLevelId)
+          // brokerPlanOptions[brokerPlan.planId] = brokerPlan.planOptions
+        }
+      }
+      //check for broker -license statesalso
+
+      console.log(`brokerplanIds`)
+      console.log(brokerplanIds)
+
+      console.log(`brokerplanLevels`)
+      console.log(brokerplanLevels)
+
+      const provinceData = await this.StatesAndProvincesRepository.findById(apiRequest.province_id);
+      data.province = provinceData;
+
+      //get plans valid for this customer -- state_id, plan_id
+      let plansforProvince: any = {
+        where: {
+          and: [
+            { "stateId": apiRequest.province_id }
+          ]
+        },
+        include: [{ relation: 'plan' }]
+      }
+
+      //Remove this //comment this
+      if (brokerplanIds.length > 0) {
+        let brokerPlanFilter = { "planId": { "inq": brokerplanIds } }
+        plansforProvince.where.and.push(brokerPlanFilter);
+      }
+
+      // if (brokerplanLevels.length > 0) {
+      //   let brokerPlanLevelsFilter = { "planLevel": { "inq": brokerplanLevels } }
+      //   plansforProvince.where.and.push(brokerPlanLevelsFilter);
+      // }
+
+
+      // console.log(plansforProvince.where.and.length)
+      //  console.log(plansforProvince.where.and)
+
+      const planIdsData = await this.plansAvalibility.find(plansforProvince)
+      // console.log(planIdsData);
+
+      let planIds: any = [];
+      let planLevelIds: any = [];
+
+      for (let planIdData of planIdsData) {
+        if (planIdData.planId)
+          planIds.push(planIdData.planId)
+
+        if (planIdData.plan) {
+          if (planLevelIds.indexOf(planIdData.plan.planLevel) == -1)
+            planLevelIds.push(planIdData.plan.planLevel)
+        }
+      }
+
+      console.log(planIds)
+      console.log(planLevelIds)
+
+      //console.log(age);
+      // console.log(`children_coverage:${children_coverage}`);
+      // let pcc: any = this.registrationService.planCoverageCalculations(apiRequest.having_spouse, apiRequest.spouse_details.is_spouse_having_healthcard, apiRequest.no_of_children, children_coverage);
+      let pcc: any = {
+        exclusivePlanCoverageArray: [],
+        maritalStatus: 'COUPLE',
+        ninCondition: false,
+        rital_status: 'SINGLE',
+        exclusive: ['COUPLE', 'FAMILY'],
+        inclusive: ['SINGLE']
+      }
+      data.customer = {};
+      data.customer.maritalStatus = pcc.maritalStatus
+
+
+      console.log(`excl. ${pcc.exclusivePlanCoverageArray}`);
+      console.log(`maritalStatus: ${pcc.maritalStatus}`);
+
+      let plansFilter: any = {
+        order: 'ordering ASC',
+        where: {
+          and: [
+            { "id": { "inq": planIds } },
+            //{"planCoverage": {"nin": pcc.exclusivePlanCoverageArray}},
+            // {"or": [{"planCoverage": {"nin": pcc.exclusivePlanCoverageArray}}, {"planCoverage": {"eq": null}}]},
+            //{"packageId": pckg.id},
+            //{"planLevel": planlevel.id},
+            { "published": { "type": "Buffer", "data": [1] } },
+            { "corporatePlan": false },
+            { "or": [{ "minAge": { "lte": apiRequest.age } }, { "minAge": { "eq": null } }] },
+            { "or": [{ "maxAge": { "gt": apiRequest.age } }, { "maxAge": { "eq": null } }] },
+            //{"requiredPlanId": null}
+          ]
+        },
+        include: [
+          {
+            relation: 'stateTaxDetails',
+            scope: {
+              include: [
+                {
+                  relation: 'state'
+                }
+              ]
+            }
+          },
+          // {
+          //   relation: 'planOptions',
+          //   scope: {
+          //     include: [
+          //       {
+          //         relation: 'planOptionsValues'
+          //       }
+          //     ]
+          //   }
+          // },
+        ]
+      }
+
+      let packageFilter: any = {
+        order: 'ordering ASC',
+        where: {
+          published: true
+        },
+      }
+      const packages: any = await this.InsurancePlansRepository.find(packageFilter)
+
+      const packagesArray: any = []
+      for (const pckg of packages) {
+        //console.log(pckg.name)
+        const packageObject: any = {}
+        // packageObject = pckg;
+        packageObject["description"] = pckg.description
+        packageObject["id"] = pckg.id
+        packageObject["logo"] = pckg.logo
+        packageObject["name"] = pckg.name
+        packageObject["published"] = pckg.published
+        packageObject["ordering"] = pckg.ordering
+        packageObject["allowMultiple"] = pckg.allowMultiple
+        packageObject["applyFilters"] = pckg.applyFilters
+        packageObject["optIn"] = pckg.optIn
+
+        //console.log(plansFilter.where.and.length)
+        plansFilter.where.and.splice(5); //6 conditions default; 1 or 2 dynamic -->changed to 5 as required_plan_id is removed
+        //console.log(plansFilter.where.and.length)
+        //console.log(`Apply filter to this ${pckg.name}:${pckg.applyFilters}`);
+
+        let pccNincondition = pcc.ninCondition
+        let pccExclusivePlanCoverageArray = pcc.exclusivePlanCoverageArray
+        //package 3 : couple is same as family for Highcost drugs..
+
+        if (pckg.id == CONST.HIGHCOST_DRUGS_PACKAGE_ID) {
+          if (pcc.maritalStatus == 'COUPLE') {
+            //remove FAMILY from pccExclusivePlanCoverageArray //just pop
+            // console.log(pccExclusivePlanCoverageArray.length);
+            pccExclusivePlanCoverageArray.pop();
+            // console.log('popped last element--Family?')
+            //console.log(pccExclusivePlanCoverageArray.length);
+
+            // console.log(`pccNincondition:${pccNincondition}`)
+            if (pccExclusivePlanCoverageArray.length == 0) {
+              pccNincondition = false;
+            }
+            // console.log(`fixed for pckg3 pccNincondition:${pccNincondition}`)
+
+          }
+        }
+
+        //package 5: applyfilters--true same single, couple, family, and combinations //applyfilters has no effect now..
+        if (pckg.id == CONST.EXECUTIVE_PACKAGE_ID) {
+          // console.log(`pccNincondition:${pccNincondition}`)
+          if (pcc.maritalStatus == 'SINGLE') {
+            pccExclusivePlanCoverageArray = ['COUPLE', 'FAMILY']
+          } else if (pcc.maritalStatus == 'COUPLE') {
+            pccExclusivePlanCoverageArray = ['FAMILY']
+          } else {
+            //FAMILY
+            pccExclusivePlanCoverageArray = []
+            pccNincondition = false
+          }
+
+          // console.log(`fixed for pckg5 pccNincondition:${pccNincondition}`)
+        }
+
+        // if (pckg.applyFilters) {
+        if (pccNincondition) {
+          let planCoverageConditon = { "or": [{ "planCoverage": { "nin": pccExclusivePlanCoverageArray } }, { "planCoverage": { "eq": null } }] }
+          plansFilter.where.and.push(planCoverageConditon)
+        }
+        // } else {
+        //   console.log('so basic no exc covergae filter')
+        // }
+
+        plansFilter.where.and.push({ "packageId": pckg.id })
+
+        let plansLevelFilter: any = {
+          order: 'ordering ASC',
+          where: {
+            "id": { "inq": planLevelIds },
+            "published": true,
+            "requirePlanLevel": null
+          },
+
+          "include": [
+            // { "relation": "planLevelFeatures", "scope": { "include": [{ "relation": "feature" }] } },
+            //{"relation": "greenshieldPackages"},
+            { "relation": "plans", "scope": plansFilter }]
+        }
+        const planLevels = await this.insurancePackages.planGroups(pckg.id).find(plansLevelFilter)
+        const groupsArray: any = []
+        for (const pl of planLevels) {
+          if (pl.plans?.length > 0) {
+
+            // for (const plan of pl.plans) {
+            //   plan.options = []
+            //   if (plan.id) {
+            //     plan.options = brokerPlanOptions[plan.id];
+            //     let planoptions: any = []
+            //     if (plan.options) {
+            //       for (const blOption of plan.options) {
+            //         //blOption.id
+            //         const pov = await this.planOptionsValuesRepository.find({where: {planOptionsId: blOption.id}})
+            //         blOption.optionValues = pov
+            //         planoptions.push(blOption);
+            //       }
+            //     }
+
+            //     plan.options = planoptions;
+
+            //     plansArray.push(plan)
+            //   }
+            // }
+
+            //pl.plans = plansArray;
+
+            //if (plansArray.length > 0)
+            groupsArray.push(pl);
+          }
+        }
+
+        packageObject["groups"] = groupsArray//planLevels
+        //console.log("-->" + packageObject.groups.length)
+        if (groupsArray.length > 0)
+          packagesArray.push(packageObject);
+
+      }
+
+      data.packages = packagesArray;//packages;
+      return data;
+    }
+    catch (error) {
+      console.log(error)
+    }
+
+
+  }
 
 }

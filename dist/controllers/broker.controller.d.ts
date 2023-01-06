@@ -60,4 +60,5 @@ export declare class BrokerController {
     brokerUpdate(request: Request, response: Response): Promise<Response>;
     formeConfig(): Promise<Response>;
     planId(apiRequest: any): Promise<any>;
+    planlevels(apiRequest: any): Promise<any>;
 }
