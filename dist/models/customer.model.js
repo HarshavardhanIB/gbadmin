@@ -3,22 +3,21 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Customer = void 0;
 const tslib_1 = require("tslib");
 const repository_1 = require("@loopback/repository");
-const users_model_1 = require("./users.model");
-const customer_relatives_model_1 = require("./customer-relatives.model");
-const customer_plans_model_1 = require("./customer-plans.model");
-const customer_signup_model_1 = require("./customer-signup.model");
-const contact_information_model_1 = require("./contact-information.model");
-const customer_contact_info_model_1 = require("./customer-contact-info.model");
-const customer_plan_options_values_model_1 = require("./customer-plan-options-values.model");
 let Customer = class Customer extends repository_1.Entity {
     constructor(data) {
         super(data);
     }
 };
 tslib_1.__decorate([
-    (0, repository_1.belongsTo)(() => users_model_1.Users, { name: 'user' }),
+    (0, repository_1.property)({
+        type: 'number',
+        precision: 10,
+        scale: 0,
+        generated: 0,
+        mysql: { columnName: 'broker_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0 },
+    }),
     tslib_1.__metadata("design:type", Number)
-], Customer.prototype, "user_id", void 0);
+], Customer.prototype, "brokerId", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'date',
@@ -67,9 +66,8 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'date',
-        required: true,
         generated: 0,
-        mysql: { columnName: 'dob', dataType: 'date', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
+        mysql: { columnName: 'dob', dataType: 'date', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
     }),
     tslib_1.__metadata("design:type", String)
 ], Customer.prototype, "dob", void 0);
@@ -159,14 +157,23 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
-        // precision: 10,
-        // scale: 0,
+        precision: 10,
+        scale: 0,
         generated: 1,
-        id: 1
-        //   mysql: {columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1},
+        id: 1,
+        mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
     }),
     tslib_1.__metadata("design:type", Number)
 ], Customer.prototype, "id", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'boolean',
+        precision: 1,
+        generated: 0,
+        mysql: { columnName: 'is_corporate_account', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'Y', generated: 0 },
+    }),
+    tslib_1.__metadata("design:type", Boolean)
+], Customer.prototype, "isCorporateAccount", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'string',
@@ -207,6 +214,16 @@ tslib_1.__decorate([
 ], Customer.prototype, "monthlyRecurringRevenue", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
+        type: 'number',
+        precision: 10,
+        scale: 0,
+        generated: 0,
+        mysql: { columnName: 'parent_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0 },
+    }),
+    tslib_1.__metadata("design:type", Number)
+], Customer.prototype, "parentId", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
         type: 'string',
         required: true,
         length: 11,
@@ -224,6 +241,15 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", String)
 ], Customer.prototype, "paymentMethodId", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'string',
+        length: 35,
+        generated: 0,
+        mysql: { columnName: 'payment_method_name', dataType: 'varchar', dataLength: 35, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
+    }),
+    tslib_1.__metadata("design:type", String)
+], Customer.prototype, "paymentMethodName", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
@@ -273,46 +299,15 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
-        // precision: 10,
-        // scale: 0,
+        precision: 10,
+        scale: 0,
         generated: 0,
         mysql: { columnName: 'user_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0 },
     }),
     tslib_1.__metadata("design:type", Number)
 ], Customer.prototype, "userId", void 0);
-tslib_1.__decorate([
-    (0, repository_1.hasMany)(() => customer_relatives_model_1.CustomerRelatives, { keyTo: 'customer_id' }),
-    tslib_1.__metadata("design:type", Array)
-], Customer.prototype, "customerRelativeRelation", void 0);
-tslib_1.__decorate([
-    (0, repository_1.hasMany)(() => contact_information_model_1.ContactInformation, { through: { model: () => customer_contact_info_model_1.CustomerContactInfo, keyFrom: 'customer_id', keyTo: 'contact_id' } }),
-    tslib_1.__metadata("design:type", Array)
-], Customer.prototype, "contactInformations", void 0);
-tslib_1.__decorate([
-    (0, repository_1.hasMany)(() => customer_plan_options_values_model_1.CustomerPlanOptionsValues, { keyTo: 'customer_id' }),
-    tslib_1.__metadata("design:type", Array)
-], Customer.prototype, "customerPlanOptionsValues", void 0);
-tslib_1.__decorate([
-    (0, repository_1.hasMany)(() => customer_plans_model_1.CustomerPlans, { keyTo: 'customer_id' }),
-    tslib_1.__metadata("design:type", Array)
-], Customer.prototype, "customerPlans", void 0);
-tslib_1.__decorate([
-    (0, repository_1.hasOne)(() => customer_signup_model_1.CustomerSignup, { keyTo: 'customer_id' }),
-    tslib_1.__metadata("design:type", customer_signup_model_1.CustomerSignup)
-], Customer.prototype, "customerSignup", void 0);
 Customer = tslib_1.__decorate([
-    (0, repository_1.model)({
-        settings: {
-            idInjection: false, foreignKeys: {
-                idx_customer_user_id: {
-                    name: 'idx_customer_user_id',
-                    entity: 'Users',
-                    entityKey: 'id',
-                    foreignKey: 'userId',
-                },
-            }, mysql: { table: 'customer' }
-        }
-    }),
+    (0, repository_1.model)({ settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'customer' } } }),
     tslib_1.__metadata("design:paramtypes", [Object])
 ], Customer);
 exports.Customer = Customer;

@@ -6,16 +6,6 @@ import {Entity, model, property} from '@loopback/repository';
 export class BrokerEoInsurance extends Entity {
   @property({
     type: 'number',
-    precision: 10,
-    scale: 0,
-    generated: 1,
-    id: 1,
-    mysql: {columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1},
-  })
-  id?: number;
-
-  @property({
-    type: 'number',
     required: true,
     precision: 10,
     scale: 0,
@@ -23,24 +13,6 @@ export class BrokerEoInsurance extends Entity {
     mysql: {columnName: 'broker_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0},
   })
   brokerId: number;
-
-  @property({
-    type: 'string',
-    required: true,
-    length: 35,
-    generated: 0,
-    mysql: {columnName: 'insurer_name', dataType: 'varchar', dataLength: 35, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0},
-  })
-  insurerName: string;
-
-  @property({
-    type: 'string',
-    required: true,
-    length: 35,
-    generated: 0,
-    mysql: {columnName: 'policy_number', dataType: 'varchar', dataLength: 35, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0},
-  })
-  policyNumber: string;
 
   @property({
     type: 'string',
@@ -61,8 +33,32 @@ export class BrokerEoInsurance extends Entity {
 
   @property({
     type: 'number',
+    precision: 10,
+    scale: 0,
+    generated: 1,
+    id: 1,
+    mysql: {columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1},
   })
-  broker_id?: number;
+  id?: number;
+
+  @property({
+    type: 'string',
+    required: true,
+    length: 35,
+    generated: 0,
+    mysql: {columnName: 'insurer_name', dataType: 'varchar', dataLength: 35, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0},
+  })
+  insurerName: string;
+
+  @property({
+    type: 'string',
+    required: true,
+    length: 35,
+    generated: 0,
+    mysql: {columnName: 'policy_number', dataType: 'varchar', dataLength: 35, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0},
+  })
+  policyNumber: string;
+
   // Define well-known properties here
 
   // Indexer property to allow additional data

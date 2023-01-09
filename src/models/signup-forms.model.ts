@@ -1,18 +1,14 @@
-import { Entity, model, property, hasMany, belongsTo} from '@loopback/repository';
-import { Customer } from './customer.model';
-import { CustomerSignup } from './customer-signup.model';
-import { SignupFormsPlanLevelMapping } from './signup-forms-plan-level-mapping.model';
-import {Broker} from './broker.model';
+import { Entity, model, property } from '@loopback/repository';
 
 @model({
-  settings: {idInjection: false, mysql: {schema: 'gbadmin', table: 'signup_forms'}}
+  settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'signup_forms' } }
 })
 export class SignupForms extends Entity {
   @property({
     type: 'string',
     length: 1000,
     generated: 0,
-    mysql: {columnName: 'alias', dataType: 'varchar', dataLength: 1000, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'alias', dataType: 'varchar', dataLength: 1000, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   alias?: string;
 
@@ -22,7 +18,7 @@ export class SignupForms extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: {columnName: 'broker_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0},
+    mysql: { columnName: 'broker_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0 },
   })
   brokerId: number;
 
@@ -30,7 +26,7 @@ export class SignupForms extends Entity {
     type: 'string',
     length: 65535,
     generated: 0,
-    mysql: {columnName: 'description', dataType: 'text', dataLength: 65535, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'description', dataType: 'text', dataLength: 65535, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   description?: string;
 
@@ -39,7 +35,7 @@ export class SignupForms extends Entity {
     required: true,
     length: 9,
     generated: 0,
-    mysql: {columnName: 'form_type', dataType: 'enum', dataLength: 9, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0},
+    mysql: { columnName: 'form_type', dataType: 'enum', dataLength: 9, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
   })
   formType: string;
 
@@ -49,7 +45,7 @@ export class SignupForms extends Entity {
     scale: 0,
     generated: 1,
     id: 1,
-    mysql: {columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1},
+    mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
   })
   id?: number;
 
@@ -58,7 +54,7 @@ export class SignupForms extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: {columnName: 'inelligibility_period', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'inelligibility_period', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0 },
   })
   inelligibilityPeriod?: number;
 
@@ -67,7 +63,7 @@ export class SignupForms extends Entity {
     required: true,
     precision: 1,
     generated: 0,
-    mysql: {columnName: 'is_demo_form', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0},
+    mysql: { columnName: 'is_demo_form', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
   })
   isDemoForm: boolean;
 
@@ -75,7 +71,7 @@ export class SignupForms extends Entity {
     type: 'string',
     length: 255,
     generated: 0,
-    mysql: {columnName: 'keywords', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'keywords', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   keywords?: string;
 
@@ -83,7 +79,7 @@ export class SignupForms extends Entity {
     type: 'string',
     length: 1000,
     generated: 0,
-    mysql: {columnName: 'link', dataType: 'varchar', dataLength: 1000, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'link', dataType: 'varchar', dataLength: 1000, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   link?: string;
 
@@ -91,21 +87,21 @@ export class SignupForms extends Entity {
     type: 'string',
     length: 255,
     generated: 0,
-    mysql: {columnName: 'name', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'name', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   name?: string;
 
   @property({
     type: 'date',
     generated: 0,
-    mysql: {columnName: 'not_after', dataType: 'date', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'not_after', dataType: 'date', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   notAfter?: string;
 
   @property({
     type: 'date',
     generated: 0,
-    mysql: {columnName: 'not_before', dataType: 'date', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'not_before', dataType: 'date', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   notBefore?: string;
 
@@ -113,7 +109,7 @@ export class SignupForms extends Entity {
     type: 'boolean',
     precision: 1,
     generated: 0,
-    mysql: {columnName: 'published', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'published', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'Y', generated: 0 },
   })
   published?: boolean;
 
@@ -122,7 +118,7 @@ export class SignupForms extends Entity {
     required: true,
     precision: 1,
     generated: 0,
-    mysql: {columnName: 'require_dental_health_coverage', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0},
+    mysql: { columnName: 'require_dental_health_coverage', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
   })
   requireDentalHealthCoverage: boolean;
 
@@ -131,7 +127,7 @@ export class SignupForms extends Entity {
     required: true,
     precision: 1,
     generated: 0,
-    mysql: {columnName: 'require_spouse_email', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0},
+    mysql: { columnName: 'require_spouse_email', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
   })
   requireSpouseEmail: boolean;
 
@@ -139,7 +135,7 @@ export class SignupForms extends Entity {
     type: 'string',
     length: 255,
     generated: 0,
-    mysql: {columnName: 'title', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'title', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   title?: string;
 
@@ -148,7 +144,7 @@ export class SignupForms extends Entity {
     required: true,
     precision: 1,
     generated: 0,
-    mysql: {columnName: 'use_credit_card_payment_method', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0},
+    mysql: { columnName: 'use_credit_card_payment_method', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
   })
   useCreditCardPaymentMethod: boolean;
 
@@ -157,7 +153,7 @@ export class SignupForms extends Entity {
     required: true,
     precision: 1,
     generated: 0,
-    mysql: {columnName: 'use_pad_payment_method', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0},
+    mysql: { columnName: 'use_pad_payment_method', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
   })
   usePadPaymentMethod: boolean;
 
@@ -166,17 +162,10 @@ export class SignupForms extends Entity {
     required: true,
     precision: 1,
     generated: 0,
-    mysql: {columnName: 'warn_required_dependant_medical_exam', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0},
+    mysql: { columnName: 'warn_required_dependant_medical_exam', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
   })
   warnRequiredDependantMedicalExam: boolean;
-  @hasMany(() => Customer, {through: {model: () => CustomerSignup, keyFrom: 'form_id', keyTo: 'customer_id'}})
-  customers: Customer[];
 
-  @hasMany(() => SignupFormsPlanLevelMapping, {keyTo: 'form_id'})
-  signupFormsPlanLevelMappings: SignupFormsPlanLevelMapping[];
-
-  @belongsTo(() => Broker, {name: 'broker'})
-  broker_id: number;
   // Define well-known properties here
 
   // Indexer property to allow additional data

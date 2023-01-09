@@ -26,6 +26,14 @@ export class PlansOptionsReporting extends Entity {
   id?: number;
 
   @property({
+    type: 'string',
+    length: 35,
+    generated: 0,
+    mysql: {columnName: 'name', dataType: 'varchar', dataLength: 35, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
+  })
+  name?: string;
+
+  @property({
     type: 'number',
     required: true,
     precision: 10,

@@ -60,11 +60,11 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
-        // precision: 10,
-        // scale: 0,
+        precision: 10,
+        scale: 0,
         generated: 1,
-        id: 1
-        // mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
+        id: 1,
+        mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
     }),
     tslib_1.__metadata("design:type", Number)
 ], CustomerSignup.prototype, "id", void 0);
@@ -167,30 +167,9 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", Boolean)
 ], CustomerSignup.prototype, "working_20hours", void 0);
-tslib_1.__decorate([
-    (0, repository_1.property)({
-        type: 'number',
-    }),
-    tslib_1.__metadata("design:type", Number)
-], CustomerSignup.prototype, "form_id", void 0);
-tslib_1.__decorate([
-    (0, repository_1.property)({
-        type: 'number',
-    }),
-    tslib_1.__metadata("design:type", Number)
-], CustomerSignup.prototype, "customer_id", void 0);
 CustomerSignup = tslib_1.__decorate([
     (0, repository_1.model)({
-        settings: {
-            idInjection: false, foreignKeys: {
-                fk_customer_signup_customers_customer_id: {
-                    name: 'fk_customer_signup_customers_customer_id',
-                    entity: 'Customers',
-                    entityKey: 'id',
-                    foreignKey: 'customerId',
-                }
-            }, mysql: { table: 'customer_signup' }
-        }
+        settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'customer_signup' } }
     }),
     tslib_1.__metadata("design:paramtypes", [Object])
 ], CustomerSignup);

@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Users = void 0;
 const tslib_1 = require("tslib");
 const repository_1 = require("@loopback/repository");
-const customer_model_1 = require("./customer.model");
 let Users = class Users extends repository_1.Entity {
     constructor(data) {
         super(data);
@@ -21,6 +20,7 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'boolean',
+        required: true,
         precision: 1,
         generated: 0,
         mysql: { columnName: 'block', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
@@ -39,21 +39,21 @@ tslib_1.__decorate([
 ], Users.prototype, "companyId", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
-        type: 'Buffer',
+        type: 'boolean',
         precision: 1,
         generated: 0,
         mysql: { columnName: 'deleted', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'Y', generated: 0 },
     }),
-    tslib_1.__metadata("design:type", Buffer)
+    tslib_1.__metadata("design:type", Boolean)
 ], Users.prototype, "deleted", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
-        // precision: 10,
-        // scale: 0,
+        precision: 10,
+        scale: 0,
         generated: 1,
-        id: 1
-        // mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
+        id: 1,
+        mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
     }),
     tslib_1.__metadata("design:type", Number)
 ], Users.prototype, "id", void 0);
@@ -119,25 +119,8 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", String)
 ], Users.prototype, "username", void 0);
-tslib_1.__decorate([
-    (0, repository_1.hasOne)(() => customer_model_1.Customer, { keyTo: 'user_id' }),
-    tslib_1.__metadata("design:type", customer_model_1.Customer)
-], Users.prototype, "customer", void 0);
 Users = tslib_1.__decorate([
-    (0, repository_1.model)({
-        settings: {
-            idInjection: false,
-            // foreignKeys: {
-            //   fk_broker_users_user_id: {
-            //     name: 'fk_broker_users_user_id',
-            //     entity: 'broker',
-            //     entityKey: 'userId',
-            //     foreignKey: 'id',
-            //   }
-            // },
-            mysql: { table: 'users' }
-        }
-    }),
+    (0, repository_1.model)({ settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'users' } } }),
     tslib_1.__metadata("design:paramtypes", [Object])
 ], Users);
 exports.Users = Users;

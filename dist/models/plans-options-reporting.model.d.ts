@@ -2,6 +2,7 @@ import { Entity } from '@loopback/repository';
 export declare class PlansOptionsReporting extends Entity {
     email?: string;
     id?: number;
+    name?: string;
     planLevelId: number;
     reportingData?: string;
     reportingId: string;

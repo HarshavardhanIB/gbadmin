@@ -1,29 +1,7 @@
-import { Entity, hasOne, model, property } from '@loopback/repository';
-import { Customer } from './customer.model';
+import { Entity, model, property } from '@loopback/repository';
 
-@model({
-  settings: {
-    idInjection: false,
-    // foreignKeys: {
-
-    //   fk_broker_users_user_id: {
-
-    //     name: 'fk_broker_users_user_id',
-
-    //     entity: 'broker',
-
-    //     entityKey: 'userId',
-
-    //     foreignKey: 'id',
-
-    //   }
-
-    // },
-    mysql: { table: 'users' }
-  }
-})
+@model({ settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'users' } } })
 export class Users extends Entity {
-
   @property({
     type: 'string',
     length: 100,
@@ -34,11 +12,12 @@ export class Users extends Entity {
 
   @property({
     type: 'boolean',
+    required: true,
     precision: 1,
     generated: 0,
     mysql: { columnName: 'block', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
   })
-  block?: boolean;
+  block: boolean;
 
   @property({
     type: 'number',
@@ -50,20 +29,20 @@ export class Users extends Entity {
   companyId?: number;
 
   @property({
-    type: 'Buffer',
+    type: 'boolean',
     precision: 1,
     generated: 0,
     mysql: { columnName: 'deleted', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'Y', generated: 0 },
   })
-  deleted?: Buffer;
+  deleted?: boolean;
 
   @property({
     type: 'number',
-    // precision: 10,
-    // scale: 0,
+    precision: 10,
+    scale: 0,
     generated: 1,
-    id: 1
-    // mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
+    id: 1,
+    mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
   })
   id?: number;
 
@@ -121,8 +100,7 @@ export class Users extends Entity {
     mysql: { columnName: 'username', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   username?: string;
-  @hasOne(() => Customer, { keyTo: 'user_id' })
-  customer: Customer;
+
   // Define well-known properties here
 
   // Indexer property to allow additional data

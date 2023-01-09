@@ -1,26 +1,9 @@
-import { Entity, model, property, belongsTo } from '@loopback/repository';
-import { Customer } from './customer.model';
+import { Entity, model, property } from '@loopback/repository';
 
 @model({
-  settings: {
-    idInjection: false, foreignKeys: {
-      fk_customer_relatives_customers_customer_id: {
-
-        name: 'idx_customer_relative_id',
-
-        entity: 'Customers',
-
-        entityKey: 'id',
-
-        foreignKey: 'customerId',
-
-      }
-
-    }, mysql: { table: 'customer_relatives' }
-  }
+  settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'customer_relatives' } }
 })
 export class CustomerRelatives extends Entity {
-
   @property({
     type: 'string',
     length: 45,
@@ -36,17 +19,17 @@ export class CustomerRelatives extends Entity {
     mysql: { columnName: 'cob_coverage', dataType: 'enum', dataLength: 6, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   cobCoverage?: string;
+
   @property({
     type: 'number',
     required: true,
     precision: 10,
-
     scale: 0,
-
-    mysql: { columnName: 'customer_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N' },
-
+    generated: 0,
+    mysql: { columnName: 'customer_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0 },
   })
   customerId: number;
+
   @property({
     type: 'boolean',
     precision: 1,
@@ -97,11 +80,11 @@ export class CustomerRelatives extends Entity {
 
   @property({
     type: 'number',
-    // precision: 10,
-    // scale: 0,
+    precision: 10,
+    scale: 0,
     generated: 1,
-    id: 1
-    // mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
+    id: 1,
+    mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
   })
   id?: number;
 
@@ -153,10 +136,7 @@ export class CustomerRelatives extends Entity {
     mysql: { columnName: 'university_graduation_day', dataType: 'date', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   universityGraduationDay?: string;
-  @belongsTo(() => Customer, { name: 'customer' })
-  customer_id: number;
-  // @belongsTo(() => Customer)
-  // customer_id: number;
+
   // Define well-known properties here
 
   // Indexer property to allow additional data

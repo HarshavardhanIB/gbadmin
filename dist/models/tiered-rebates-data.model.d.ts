@@ -1,9 +1,9 @@
 import { Entity } from '@loopback/repository';
 export declare class TieredRebatesData extends Entity {
     id: number;
+    threshold: number;
     tieredRebateId: number;
     value: number;
-    threshold: number;
     [prop: string]: any;
     constructor(data?: Partial<TieredRebatesData>);
 }

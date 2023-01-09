@@ -16,7 +16,6 @@ export declare class CustomerRelatives extends Entity {
     relationshipType: string;
     uniqueSinId?: string;
     universityGraduationDay?: string;
-    customer_id: number;
     [prop: string]: any;
     constructor(data?: Partial<CustomerRelatives>);
 }

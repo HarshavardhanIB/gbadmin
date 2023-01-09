@@ -3,8 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.InsurancePackages = void 0;
 const tslib_1 = require("tslib");
 const repository_1 = require("@loopback/repository");
-const plan_level_model_1 = require("./plan-level.model");
-const insurance_plans_model_1 = require("./insurance-plans.model");
 let InsurancePackages = class InsurancePackages extends repository_1.Entity {
     constructor(data) {
         super(data);
@@ -95,9 +93,16 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:type", Boolean)
 ], InsurancePackages.prototype, "published", void 0);
 tslib_1.__decorate([
-    (0, repository_1.hasMany)(() => plan_level_model_1.PlanLevel, { through: { model: () => insurance_plans_model_1.InsurancePlans, keyFrom: 'package_id', keyTo: 'plan_level' } }),
-    tslib_1.__metadata("design:type", Array)
-], InsurancePackages.prototype, "planGroups", void 0);
+    (0, repository_1.property)({
+        type: 'number',
+        required: true,
+        precision: 3,
+        scale: 0,
+        generated: 0,
+        mysql: { columnName: 'required_package', dataType: 'tinyint', dataLength: null, dataPrecision: 3, dataScale: 0, nullable: 'N', generated: 0 },
+    }),
+    tslib_1.__metadata("design:type", Number)
+], InsurancePackages.prototype, "requiredPackage", void 0);
 InsurancePackages = tslib_1.__decorate([
     (0, repository_1.model)({
         settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'insurance_packages' } }

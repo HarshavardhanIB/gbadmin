@@ -65,11 +65,11 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
-        // precision: 10,
-        // scale: 0,
+        precision: 10,
+        scale: 0,
         generated: 1,
-        id: 1
-        // mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
+        id: 1,
+        mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
     }),
     tslib_1.__metadata("design:type", Number)
 ], ContactInformation.prototype, "id", void 0);
@@ -147,7 +147,7 @@ tslib_1.__decorate([
 ], ContactInformation.prototype, "state", void 0);
 ContactInformation = tslib_1.__decorate([
     (0, repository_1.model)({
-        settings: { idInjection: false, mysql: { table: 'contact_information' } }
+        settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'contact_information' } }
     }),
     tslib_1.__metadata("design:paramtypes", [Object])
 ], ContactInformation);

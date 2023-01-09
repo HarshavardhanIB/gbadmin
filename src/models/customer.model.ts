@@ -1,28 +1,16 @@
-import { belongsTo, Entity, model, property, hasMany, hasOne } from '@loopback/repository';
-import { Users } from './users.model';
-import { CustomerRelatives } from './customer-relatives.model';
-import { CustomerPlans } from './customer-plans.model';
-import { CustomerSignup } from './customer-signup.model';
-import { ContactInformation } from './contact-information.model';
-import { CustomerContactInfo } from './customer-contact-info.model';
-import { InsurancePlans } from './insurance-plans.model';
-import {CustomerPlanOptionsValues} from './customer-plan-options-values.model';
+import { Entity, model, property } from '@loopback/repository';
 
-@model({
-  settings: {
-    idInjection: false, foreignKeys: {
-      idx_customer_user_id: {
-        name: 'idx_customer_user_id',
-        entity: 'Users',
-        entityKey: 'id',
-        foreignKey: 'userId',
-      },
-    }, mysql: { table: 'customer' }
-  }
-})
+@model({ settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'customer' } } })
 export class Customer extends Entity {
-  @belongsTo(() => Users, { name: 'user' })
-  user_id: number;
+  @property({
+    type: 'number',
+    precision: 10,
+    scale: 0,
+    generated: 0,
+    mysql: { columnName: 'broker_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0 },
+  })
+  brokerId?: number;
+
   @property({
     type: 'date',
     generated: 0,
@@ -65,11 +53,10 @@ export class Customer extends Entity {
 
   @property({
     type: 'date',
-    required: true,
     generated: 0,
-    mysql: { columnName: 'dob', dataType: 'date', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
+    mysql: { columnName: 'dob', dataType: 'date', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
-  dob: string;
+  dob?: string;
 
   @property({
     type: 'string',
@@ -147,13 +134,21 @@ export class Customer extends Entity {
 
   @property({
     type: 'number',
-    // precision: 10,
-    // scale: 0,
+    precision: 10,
+    scale: 0,
     generated: 1,
-    id: 1
-    //   mysql: {columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1},
+    id: 1,
+    mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
   })
   id?: number;
+
+  @property({
+    type: 'boolean',
+    precision: 1,
+    generated: 0,
+    mysql: { columnName: 'is_corporate_account', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'Y', generated: 0 },
+  })
+  isCorporateAccount?: boolean;
 
   @property({
     type: 'string',
@@ -190,6 +185,15 @@ export class Customer extends Entity {
   monthlyRecurringRevenue: number;
 
   @property({
+    type: 'number',
+    precision: 10,
+    scale: 0,
+    generated: 0,
+    mysql: { columnName: 'parent_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0 },
+  })
+  parentId?: number;
+
+  @property({
     type: 'string',
     required: true,
     length: 11,
@@ -205,6 +209,14 @@ export class Customer extends Entity {
     mysql: { columnName: 'payment_method_id', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   paymentMethodId?: string;
+
+  @property({
+    type: 'string',
+    length: 35,
+    generated: 0,
+    mysql: { columnName: 'payment_method_name', dataType: 'varchar', dataLength: 35, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
+  })
+  paymentMethodName?: string;
 
   @property({
     type: 'number',
@@ -249,31 +261,14 @@ export class Customer extends Entity {
 
   @property({
     type: 'number',
-    // precision: 10,
-    // scale: 0,
+    precision: 10,
+    scale: 0,
     generated: 0,
     mysql: { columnName: 'user_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0 },
   })
   userId?: number;
-  @hasMany(() => CustomerRelatives, { keyTo: 'customer_id' })
-  customerRelativeRelation: CustomerRelatives[];
 
-  // @hasMany(() => CustomerRelatives)
-  // customerRelativeRelation: CustomerRelatives[];
-  @hasMany(() => ContactInformation, {through: {model: () => CustomerContactInfo, keyFrom: 'customer_id', keyTo: 'contact_id'}})
-  contactInformations: ContactInformation[];
-
-  @hasMany(() => CustomerPlanOptionsValues, {keyTo: 'customer_id'})
-  customerPlanOptionsValues: CustomerPlanOptionsValues[];
-  @hasMany(() => CustomerPlans, { keyTo: 'customer_id' }) customerPlans: CustomerPlans[];
-
-  @hasOne(() => CustomerSignup, { keyTo: 'customer_id' })
-  customerSignup: CustomerSignup;
-  // @hasMany(() => ContactInformation, { through: { model: () => CustomerContactInfo, keyFrom: 'customer_id', keyTo: 'contact_id' } })
-  // contactInformations: ContactInformation[];
-  // @hasMany(() => InsurancePlans, { through: { model: () => CustomerPlans, keyFrom: 'customer_id', keyTo: 'plan_id' } })
-  // subscriptionPlans: InsurancePlans[];
-  // // Define well-known properties here
+  // Define well-known properties here
 
   // Indexer property to allow additional data
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

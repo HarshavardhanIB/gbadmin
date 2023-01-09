@@ -5,6 +5,15 @@ import { Entity, model, property } from '@loopback/repository';
 })
 export class TieredRebates extends Entity {
   @property({
+    type: 'string',
+    required: true,
+    length: 255,
+    generated: 0,
+    mysql: { columnName: 'description', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
+  })
+  description: string;
+
+  @property({
     type: 'number',
     precision: 10,
     scale: 0,
@@ -22,15 +31,6 @@ export class TieredRebates extends Entity {
     mysql: { columnName: 'name', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
   })
   name: string;
-
-  @property({
-    type: 'string',
-    required: true,
-    length: 255,
-    generated: 0,
-    mysql: { columnName: 'description', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
-  })
-  description: string;
 
   @property({
     type: 'boolean',

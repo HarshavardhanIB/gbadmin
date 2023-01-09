@@ -1,6 +1,4 @@
-import {Entity, model, property, belongsTo} from '@loopback/repository';
-import {StatesAndProvinces} from './states-and-provinces.model';
-import {InsurancePlans} from './insurance-plans.model';
+import {Entity, model, property} from '@loopback/repository';
 
 @model({
   settings: {idInjection: false, mysql: {schema: 'gbadmin', table: 'plans_availability'}}
@@ -77,11 +75,22 @@ export class PlansAvailability extends Entity {
   })
   stateId: number;
 
-  @belongsTo(() => StatesAndProvinces, {name: 'state'})
-  state_id: number;
+  @property({
+    type: 'string',
+    length: 45,
+    generated: 0,
+    mysql: {columnName: 'tax_code', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
+  })
+  taxCode?: string;
 
-  @belongsTo(() => InsurancePlans, {name: 'plan'})
-  plan_id: number;
+  @property({
+    type: 'string',
+    length: 15,
+    generated: 0,
+    mysql: {columnName: 'tax_name', dataType: 'varchar', dataLength: 15, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
+  })
+  taxName?: string;
+
   // Define well-known properties here
 
   // Indexer property to allow additional data

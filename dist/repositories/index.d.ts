@@ -1,4 +1,3 @@
-export * from './todo.repository';
 export * from './users.repository';
 export * from './contact-information.repository';
 export * from './customer-contact-info.repository';

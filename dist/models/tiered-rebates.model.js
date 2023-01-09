@@ -10,6 +10,16 @@ let TieredRebates = class TieredRebates extends repository_1.Entity {
 };
 tslib_1.__decorate([
     (0, repository_1.property)({
+        type: 'string',
+        required: true,
+        length: 255,
+        generated: 0,
+        mysql: { columnName: 'description', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
+    }),
+    tslib_1.__metadata("design:type", String)
+], TieredRebates.prototype, "description", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
         type: 'number',
         precision: 10,
         scale: 0,
@@ -29,16 +39,6 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", String)
 ], TieredRebates.prototype, "name", void 0);
-tslib_1.__decorate([
-    (0, repository_1.property)({
-        type: 'string',
-        required: true,
-        length: 255,
-        generated: 0,
-        mysql: { columnName: 'description', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
-    }),
-    tslib_1.__metadata("design:type", String)
-], TieredRebates.prototype, "description", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'boolean',

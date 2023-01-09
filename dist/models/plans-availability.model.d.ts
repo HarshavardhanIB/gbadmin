@@ -8,8 +8,8 @@ export declare class PlansAvailability extends Entity {
     pst?: number;
     qst?: number;
     stateId: number;
-    state_id: number;
-    plan_id: number;
+    taxCode?: string;
+    taxName?: string;
     [prop: string]: any;
     constructor(data?: Partial<PlansAvailability>);
 }

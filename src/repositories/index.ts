@@ -3,7 +3,7 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-export * from './todo.repository';
+// export * from './todo.repository';
 export * from './users.repository';
 export * from './contact-information.repository';
 export * from './customer-contact-info.repository';

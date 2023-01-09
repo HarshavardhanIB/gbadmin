@@ -4,14 +4,13 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isGeoCoderServiceAvailable = exports.givenCachingProxy = exports.HttpCachingProxy = exports.getProxiedGeoCoderConfig = exports.aLocation = exports.givenTodo = void 0;
+exports.isGeoCoderServiceAvailable = exports.givenCachingProxy = exports.HttpCachingProxy = exports.getProxiedGeoCoderConfig = exports.aLocation = void 0;
 const tslib_1 = require("tslib");
 const http_caching_proxy_1 = require("@loopback/http-caching-proxy");
 Object.defineProperty(exports, "HttpCachingProxy", { enumerable: true, get: function () { return http_caching_proxy_1.HttpCachingProxy; } });
 const lodash_1 = require("lodash");
 const path_1 = tslib_1.__importDefault(require("path"));
 const datasources_1 = require("../datasources");
-const models_1 = require("../models");
 /*
  ==============================================================================
  HELPER FUNCTIONS
@@ -36,15 +35,17 @@ const models_1 = require("../models");
  * Generate a complete Todo object for use with tests.
  * @param todo - A partial (or complete) Todo object.
  */
-function givenTodo(todo) {
-    const data = Object.assign({
-        title: 'do a thing',
-        desc: 'There are some things that need doing',
-        isComplete: false,
-    }, todo);
-    return new models_1.Todo(data);
-}
-exports.givenTodo = givenTodo;
+// export function givenTodo(todo?: Partial<Todo>) {
+//   const data = Object.assign(
+//     {
+//       title: 'do a thing',
+//       desc: 'There are some things that need doing',
+//       isComplete: false,
+//     },
+//     todo,
+//   );
+//   return new Todo(data);
+// }
 exports.aLocation = {
     address: '1 New Orchard Road, Armonk, 10504',
     geopoint: { y: 41.10965601083235, x: -73.72466486205613 },

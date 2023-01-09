@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CustomerRelatives = void 0;
 const tslib_1 = require("tslib");
 const repository_1 = require("@loopback/repository");
-const customer_model_1 = require("./customer.model");
 let CustomerRelatives = class CustomerRelatives extends repository_1.Entity {
     constructor(data) {
         super(data);
@@ -33,7 +32,8 @@ tslib_1.__decorate([
         required: true,
         precision: 10,
         scale: 0,
-        mysql: { columnName: 'customer_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N' },
+        generated: 0,
+        mysql: { columnName: 'customer_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0 },
     }),
     tslib_1.__metadata("design:type", Number)
 ], CustomerRelatives.prototype, "customerId", void 0);
@@ -94,11 +94,11 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
-        // precision: 10,
-        // scale: 0,
+        precision: 10,
+        scale: 0,
         generated: 1,
-        id: 1
-        // mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
+        id: 1,
+        mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
     }),
     tslib_1.__metadata("design:type", Number)
 ], CustomerRelatives.prototype, "id", void 0);
@@ -157,22 +157,9 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", String)
 ], CustomerRelatives.prototype, "universityGraduationDay", void 0);
-tslib_1.__decorate([
-    (0, repository_1.belongsTo)(() => customer_model_1.Customer, { name: 'customer' }),
-    tslib_1.__metadata("design:type", Number)
-], CustomerRelatives.prototype, "customer_id", void 0);
 CustomerRelatives = tslib_1.__decorate([
     (0, repository_1.model)({
-        settings: {
-            idInjection: false, foreignKeys: {
-                fk_customer_relatives_customers_customer_id: {
-                    name: 'idx_customer_relative_id',
-                    entity: 'Customers',
-                    entityKey: 'id',
-                    foreignKey: 'customerId',
-                }
-            }, mysql: { table: 'customer_relatives' }
-        }
+        settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'customer_relatives' } }
     }),
     tslib_1.__metadata("design:paramtypes", [Object])
 ], CustomerRelatives);

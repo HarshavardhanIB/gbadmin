@@ -3,8 +3,6 @@ export declare class CustomerContactInfo extends Entity {
     contactId?: number;
     customerId?: number;
     id?: number;
-    customer_id?: number;
-    contact_id?: number;
     [prop: string]: any;
     constructor(data?: Partial<CustomerContactInfo>);
 }

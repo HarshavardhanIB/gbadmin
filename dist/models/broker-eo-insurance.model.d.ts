@@ -1,12 +1,11 @@
 import { Entity } from '@loopback/repository';
 export declare class BrokerEoInsurance extends Entity {
-    id?: number;
     brokerId: number;
-    insurerName: string;
-    policyNumber: string;
     certificateNumber: string;
     expiryDate: string;
-    broker_id?: number;
+    id?: number;
+    insurerName: string;
+    policyNumber: string;
     [prop: string]: any;
     constructor(data?: Partial<BrokerEoInsurance>);
 }

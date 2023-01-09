@@ -1,11 +1,9 @@
-/// <reference types="node" />
 import { Entity } from '@loopback/repository';
-import { Customer } from './customer.model';
 export declare class Users extends Entity {
     activation?: string;
-    block?: boolean;
+    block: boolean;
     companyId?: number;
-    deleted?: Buffer;
+    deleted?: boolean;
     id?: number;
     lastLogin?: string;
     otpKey?: string;
@@ -14,7 +12,6 @@ export declare class Users extends Entity {
     registrationDate: string;
     role?: string;
     username?: string;
-    customer: Customer;
     [prop: string]: any;
     constructor(data?: Partial<Users>);
 }

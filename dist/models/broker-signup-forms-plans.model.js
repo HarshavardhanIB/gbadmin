@@ -11,14 +11,12 @@ let BrokerSignupFormsPlans = class BrokerSignupFormsPlans extends repository_1.E
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
-        precision: 10,
-        scale: 0,
-        generated: 1,
-        id: 1,
-        mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
+        precision: 12,
+        generated: 0,
+        mysql: { columnName: 'covered_percentage', dataType: 'float', dataLength: null, dataPrecision: 12, dataScale: null, nullable: 'Y', generated: 0 },
     }),
     tslib_1.__metadata("design:type", Number)
-], BrokerSignupFormsPlans.prototype, "id", void 0);
+], BrokerSignupFormsPlans.prototype, "coveredPercentage", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
@@ -30,6 +28,17 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", Number)
 ], BrokerSignupFormsPlans.prototype, "formId", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'number',
+        precision: 10,
+        scale: 0,
+        generated: 1,
+        id: 1,
+        mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
+    }),
+    tslib_1.__metadata("design:type", Number)
+], BrokerSignupFormsPlans.prototype, "id", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
@@ -51,15 +60,6 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", Number)
 ], BrokerSignupFormsPlans.prototype, "rebateId", void 0);
-tslib_1.__decorate([
-    (0, repository_1.property)({
-        type: 'number',
-        precision: 12,
-        generated: 0,
-        mysql: { columnName: 'covered_percentage', dataType: 'float', dataLength: null, dataPrecision: 12, dataScale: null, nullable: 'Y', generated: 0 },
-    }),
-    tslib_1.__metadata("design:type", Number)
-], BrokerSignupFormsPlans.prototype, "coveredPercentage", void 0);
 BrokerSignupFormsPlans = tslib_1.__decorate([
     (0, repository_1.model)({
         settings: {

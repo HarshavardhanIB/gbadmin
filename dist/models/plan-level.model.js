@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PlanLevel = void 0;
 const tslib_1 = require("tslib");
 const repository_1 = require("@loopback/repository");
-const insurance_plans_model_1 = require("./insurance-plans.model");
 let PlanLevel = class PlanLevel extends repository_1.Entity {
     constructor(data) {
         super(data);
@@ -136,10 +135,6 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", String)
 ], PlanLevel.prototype, "tooltipTitle", void 0);
-tslib_1.__decorate([
-    (0, repository_1.hasMany)(() => insurance_plans_model_1.InsurancePlans, { keyTo: 'plan_level' }),
-    tslib_1.__metadata("design:type", Array)
-], PlanLevel.prototype, "plans", void 0);
 PlanLevel = tslib_1.__decorate([
     (0, repository_1.model)({
         settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'plan_level' } }

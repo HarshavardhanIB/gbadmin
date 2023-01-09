@@ -1,5 +1,4 @@
-import {Entity, model, property, belongsTo} from '@loopback/repository';
-import {PlanLevel} from './plan-level.model';
+import {Entity, model, property} from '@loopback/repository';
 
 @model({
   settings: {
@@ -38,13 +37,6 @@ export class SignupFormsPlanLevelMapping extends Entity {
   })
   planLevelId: number;
 
-  @belongsTo(() => PlanLevel, {name: 'planLevels'})
-  plan_level_id: number;
-
-  @property({
-    type: 'number',
-  })
-  form_id?: number;
   // Define well-known properties here
 
   // Indexer property to allow additional data

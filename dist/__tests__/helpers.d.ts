@@ -1,7 +1,5 @@
 import { HttpCachingProxy } from '@loopback/http-caching-proxy';
-import { Todo } from '../models';
 import { Geocoder, GeoPoint } from '../services';
-export declare function givenTodo(todo?: Partial<Todo>): Todo;
 export declare const aLocation: {
     address: string;
     geopoint: GeoPoint;

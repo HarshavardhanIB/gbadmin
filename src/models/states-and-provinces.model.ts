@@ -1,8 +1,7 @@
-import {Entity, model, property, hasMany} from '@loopback/repository';
-import {PlansAvailability} from './plans-availability.model';
+import { Entity, model, property } from '@loopback/repository';
 
 @model({
-  settings: {idInjection: false, mysql: {schema: 'gbadmin', table: 'states_and_provinces'}}
+  settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'states_and_provinces' } }
 })
 export class StatesAndProvinces extends Entity {
   @property({
@@ -11,7 +10,7 @@ export class StatesAndProvinces extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: {columnName: 'country_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0},
+    mysql: { columnName: 'country_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0 },
   })
   countryId: number;
 
@@ -20,7 +19,7 @@ export class StatesAndProvinces extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: {columnName: 'equitable_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'equitable_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0 },
   })
   equitableId?: number;
 
@@ -28,7 +27,7 @@ export class StatesAndProvinces extends Entity {
     type: 'string',
     length: 2,
     generated: 0,
-    mysql: {columnName: 'fusebill_id', dataType: 'varchar', dataLength: 2, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'fusebill_id', dataType: 'varchar', dataLength: 2, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   fusebillId?: string;
 
@@ -38,7 +37,7 @@ export class StatesAndProvinces extends Entity {
     scale: 0,
     generated: 1,
     id: 1,
-    mysql: {columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1},
+    mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
   })
   id?: number;
 
@@ -46,7 +45,7 @@ export class StatesAndProvinces extends Entity {
     type: 'string',
     length: 45,
     generated: 0,
-    mysql: {columnName: 'name', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'name', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   name?: string;
 
@@ -54,7 +53,7 @@ export class StatesAndProvinces extends Entity {
     type: 'string',
     length: 2000,
     generated: 0,
-    mysql: {columnName: 'provincial_healthcare_url', dataType: 'varchar', dataLength: 2000, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'provincial_healthcare_url', dataType: 'varchar', dataLength: 2000, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   provincialHealthcareUrl?: string;
 
@@ -62,7 +61,7 @@ export class StatesAndProvinces extends Entity {
     type: 'boolean',
     precision: 1,
     generated: 0,
-    mysql: {columnName: 'published', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'published', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'Y', generated: 0 },
   })
   published?: boolean;
 
@@ -70,7 +69,7 @@ export class StatesAndProvinces extends Entity {
     type: 'string',
     length: 6,
     generated: 0,
-    mysql: {columnName: 'short_name', dataType: 'varchar', dataLength: 6, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'short_name', dataType: 'varchar', dataLength: 6, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   shortName?: string;
 
@@ -78,12 +77,10 @@ export class StatesAndProvinces extends Entity {
     type: 'string',
     length: 20,
     generated: 0,
-    mysql: {columnName: 'zipcodes', dataType: 'varchar', dataLength: 20, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'zipcodes', dataType: 'varchar', dataLength: 20, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   zipcodes?: string;
 
-  @hasMany(() => PlansAvailability, {keyTo: 'state_id'})
-  planAvailability: PlansAvailability[];
   // Define well-known properties here
 
   // Indexer property to allow additional data

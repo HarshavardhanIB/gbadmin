@@ -4,7 +4,6 @@
 // License text available at https://opensource.org/licenses/MIT
 
 import { Entity, model, property } from '@loopback/repository';
-
 @model()
 export class Todo extends Entity {
   @property({

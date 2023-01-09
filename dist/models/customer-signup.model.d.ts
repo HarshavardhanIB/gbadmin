@@ -16,8 +16,6 @@ export declare class CustomerSignup extends Entity {
     termsAndConditions: boolean;
     weeklyHours: number;
     working_20hours: boolean;
-    form_id?: number;
-    customer_id?: number;
     [prop: string]: any;
     constructor(data?: Partial<CustomerSignup>);
 }

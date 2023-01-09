@@ -22,11 +22,11 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
-        // precision: 10,
-        // scale: 0,
+        precision: 10,
+        scale: 0,
         generated: 1,
-        id: 1
-        // mysql: {columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1},
+        id: 1,
+        mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
     }),
     tslib_1.__metadata("design:type", Number)
 ], CustomerPlanOptionsValues.prototype, "id", void 0);
@@ -50,17 +50,11 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", String)
 ], CustomerPlanOptionsValues.prototype, "planOptionsValue", void 0);
-tslib_1.__decorate([
-    (0, repository_1.property)({
-        type: 'number',
-    }),
-    tslib_1.__metadata("design:type", Number)
-], CustomerPlanOptionsValues.prototype, "customer_id", void 0);
 CustomerPlanOptionsValues = tslib_1.__decorate([
     (0, repository_1.model)({
         settings: {
             idInjection: false,
-            mysql: { table: 'customer_plan_options_values' }
+            mysql: { schema: 'gbadmin', table: 'customer_plan_options_values' }
         }
     }),
     tslib_1.__metadata("design:paramtypes", [Object])

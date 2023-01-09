@@ -1,15 +1,14 @@
-import {Entity, model, property, hasMany} from '@loopback/repository';
-import {InsurancePlans} from './insurance-plans.model';
+import { Entity, model, property } from '@loopback/repository';
 
 @model({
-  settings: {idInjection: false, mysql: {schema: 'gbadmin', table: 'plan_level'}}
+  settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'plan_level' } }
 })
 export class PlanLevel extends Entity {
   @property({
     type: 'string',
     length: 9,
     generated: 0,
-    mysql: {columnName: 'background_color', dataType: 'varchar', dataLength: 9, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'background_color', dataType: 'varchar', dataLength: 9, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   backgroundColor?: string;
 
@@ -19,7 +18,7 @@ export class PlanLevel extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: {columnName: 'child_max_age', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0},
+    mysql: { columnName: 'child_max_age', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0 },
   })
   childMaxAge: number;
 
@@ -27,7 +26,7 @@ export class PlanLevel extends Entity {
     type: 'string',
     length: 128,
     generated: 0,
-    mysql: {columnName: 'description', dataType: 'varchar', dataLength: 128, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'description', dataType: 'varchar', dataLength: 128, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   description?: string;
 
@@ -35,7 +34,7 @@ export class PlanLevel extends Entity {
     type: 'string',
     length: 45,
     generated: 0,
-    mysql: {columnName: 'disallowed_plan_levels', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'disallowed_plan_levels', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   disallowedPlanLevels?: string;
 
@@ -45,7 +44,7 @@ export class PlanLevel extends Entity {
     scale: 0,
     generated: 1,
     id: 1,
-    mysql: {columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1},
+    mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
   })
   id?: number;
 
@@ -54,7 +53,7 @@ export class PlanLevel extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: {columnName: 'level', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'level', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0 },
   })
   level?: number;
 
@@ -63,7 +62,7 @@ export class PlanLevel extends Entity {
     required: true,
     length: 45,
     generated: 0,
-    mysql: {columnName: 'name', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0},
+    mysql: { columnName: 'name', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
   })
   name: string;
 
@@ -73,7 +72,7 @@ export class PlanLevel extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: {columnName: 'ordering', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0},
+    mysql: { columnName: 'ordering', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0 },
   })
   ordering: number;
 
@@ -82,7 +81,7 @@ export class PlanLevel extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: {columnName: 'parent_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'parent_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0 },
   })
   parentId?: number;
 
@@ -90,7 +89,7 @@ export class PlanLevel extends Entity {
     type: 'boolean',
     precision: 1,
     generated: 0,
-    mysql: {columnName: 'published', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'published', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'Y', generated: 0 },
   })
   published?: boolean;
 
@@ -99,7 +98,7 @@ export class PlanLevel extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: {columnName: 'require_plan_level', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'require_plan_level', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0 },
   })
   requirePlanLevel?: number;
 
@@ -107,7 +106,7 @@ export class PlanLevel extends Entity {
     type: 'string',
     length: 9,
     generated: 0,
-    mysql: {columnName: 'text_color', dataType: 'varchar', dataLength: 9, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'text_color', dataType: 'varchar', dataLength: 9, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   textColor?: string;
 
@@ -115,12 +114,10 @@ export class PlanLevel extends Entity {
     type: 'string',
     length: 13,
     generated: 0,
-    mysql: {columnName: 'tooltip_title', dataType: 'enum', dataLength: 13, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'tooltip_title', dataType: 'enum', dataLength: 13, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   tooltipTitle?: string;
 
-  @hasMany(() => InsurancePlans, {keyTo: 'plan_level'})
-  plans: InsurancePlans[];
   // Define well-known properties here
 
   // Indexer property to allow additional data

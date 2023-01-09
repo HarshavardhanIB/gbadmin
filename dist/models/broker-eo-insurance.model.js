@@ -11,17 +11,6 @@ let BrokerEoInsurance = class BrokerEoInsurance extends repository_1.Entity {
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
-        precision: 10,
-        scale: 0,
-        generated: 1,
-        id: 1,
-        mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
-    }),
-    tslib_1.__metadata("design:type", Number)
-], BrokerEoInsurance.prototype, "id", void 0);
-tslib_1.__decorate([
-    (0, repository_1.property)({
-        type: 'number',
         required: true,
         precision: 10,
         scale: 0,
@@ -30,26 +19,6 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", Number)
 ], BrokerEoInsurance.prototype, "brokerId", void 0);
-tslib_1.__decorate([
-    (0, repository_1.property)({
-        type: 'string',
-        required: true,
-        length: 35,
-        generated: 0,
-        mysql: { columnName: 'insurer_name', dataType: 'varchar', dataLength: 35, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
-    }),
-    tslib_1.__metadata("design:type", String)
-], BrokerEoInsurance.prototype, "insurerName", void 0);
-tslib_1.__decorate([
-    (0, repository_1.property)({
-        type: 'string',
-        required: true,
-        length: 35,
-        generated: 0,
-        mysql: { columnName: 'policy_number', dataType: 'varchar', dataLength: 35, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
-    }),
-    tslib_1.__metadata("design:type", String)
-], BrokerEoInsurance.prototype, "policyNumber", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'string',
@@ -72,9 +41,34 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
+        precision: 10,
+        scale: 0,
+        generated: 1,
+        id: 1,
+        mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
     }),
     tslib_1.__metadata("design:type", Number)
-], BrokerEoInsurance.prototype, "broker_id", void 0);
+], BrokerEoInsurance.prototype, "id", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'string',
+        required: true,
+        length: 35,
+        generated: 0,
+        mysql: { columnName: 'insurer_name', dataType: 'varchar', dataLength: 35, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
+    }),
+    tslib_1.__metadata("design:type", String)
+], BrokerEoInsurance.prototype, "insurerName", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'string',
+        required: true,
+        length: 35,
+        generated: 0,
+        mysql: { columnName: 'policy_number', dataType: 'varchar', dataLength: 35, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
+    }),
+    tslib_1.__metadata("design:type", String)
+], BrokerEoInsurance.prototype, "policyNumber", void 0);
 BrokerEoInsurance = tslib_1.__decorate([
     (0, repository_1.model)({
         settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'broker_eo_insurance' } }

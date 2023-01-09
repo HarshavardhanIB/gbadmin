@@ -30,6 +30,15 @@ tslib_1.__decorate([
 ], PlansOptionsReporting.prototype, "id", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
+        type: 'string',
+        length: 35,
+        generated: 0,
+        mysql: { columnName: 'name', dataType: 'varchar', dataLength: 35, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
+    }),
+    tslib_1.__metadata("design:type", String)
+], PlansOptionsReporting.prototype, "name", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
         type: 'number',
         required: true,
         precision: 10,
