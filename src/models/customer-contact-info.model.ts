@@ -1,7 +1,35 @@
-import {Entity, model, property} from '@loopback/repository';
+import { Entity, model, property } from '@loopback/repository';
 
 @model({
-  settings: {idInjection: false, mysql: {schema: 'gbadmin', table: 'customer_contact_info'}}
+  settings: {
+    idInjection: false, foreignKeys: {
+
+      idx_customer_contact_id: {
+
+        name: 'idx_customer_contact_id',
+
+        entity: 'Customers',
+
+        entityKey: 'id',
+
+        foreignKey: 'customerId',
+
+      },
+
+      idx_contact_info_id: {
+
+        name: 'idx_contact_info_id',
+
+        entity: 'ContactInformation',
+
+        entityKey: 'id',
+
+        foreignKey: 'contactId',
+
+      },
+
+    }, mysql: { schema: 'gbadmin', table: 'customer_contact_info' }
+  }
 })
 export class CustomerContactInfo extends Entity {
   @property({
@@ -9,7 +37,7 @@ export class CustomerContactInfo extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: {columnName: 'contact_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'contact_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0 },
   })
   contactId?: number;
 
@@ -18,19 +46,25 @@ export class CustomerContactInfo extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: {columnName: 'customer_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'customer_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0 },
   })
   customerId?: number;
 
   @property({
     type: 'number',
-    precision: 10,
-    scale: 0,
-    generated: 1,
-    id: 1,
-    mysql: {columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1},
+    generated: true,
+    id: true
   })
   id?: number;
+  @property({
+    type: 'number',
+  })
+  customer_id?: number;
+
+  @property({
+    type: 'number',
+  })
+  contact_id?: number;
 
   // Define well-known properties here
 

@@ -1,4 +1,6 @@
-import { Entity, model, property } from '@loopback/repository';
+import { Entity, hasMany, model, property } from '@loopback/repository';
+import { InsurancePlans } from './insurance-plans.model';
+import { PlanLevel } from './plan-level.model';
 
 @model({
   settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'insurance_packages' } }
@@ -88,6 +90,8 @@ export class InsurancePackages extends Entity {
     mysql: { columnName: 'required_package', dataType: 'tinyint', dataLength: null, dataPrecision: 3, dataScale: 0, nullable: 'N', generated: 0 },
   })
   requiredPackage: number;
+  @hasMany(() => PlanLevel, { through: { model: () => InsurancePlans, keyFrom: 'package_id', keyTo: 'plan_level' } })
+  planGroups: PlanLevel[];
 
   // Define well-known properties here
 

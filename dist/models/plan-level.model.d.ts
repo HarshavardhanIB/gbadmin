@@ -1,4 +1,5 @@
 import { Entity } from '@loopback/repository';
+import { InsurancePlans } from './insurance-plans.model';
 export declare class PlanLevel extends Entity {
     backgroundColor?: string;
     childMaxAge: number;
@@ -13,6 +14,7 @@ export declare class PlanLevel extends Entity {
     requirePlanLevel?: number;
     textColor?: string;
     tooltipTitle?: string;
+    plans: InsurancePlans[];
     [prop: string]: any;
     constructor(data?: Partial<PlanLevel>);
 }

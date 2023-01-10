@@ -1,7 +1,23 @@
 import { Entity, model, property } from '@loopback/repository';
 
 @model({
-  settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'customer_signup' } }
+  settings: {
+    idInjection: false, foreignKeys: {
+
+      fk_customer_signup_customers_customer_id: {
+
+        name: 'fk_customer_signup_customers_customer_id',
+
+        entity: 'Customers',
+
+        entityKey: 'id',
+
+        foreignKey: 'customerId',
+
+      }
+
+    }, mysql: { schema: 'gbadmin', table: 'customer_signup' }
+  }
 })
 export class CustomerSignup extends Entity {
   @property({
@@ -146,7 +162,15 @@ export class CustomerSignup extends Entity {
     mysql: { columnName: 'working_20hours', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
   })
   working_20hours: boolean;
+  @property({
+    type: 'number',
+  })
+  form_id?: number;
 
+  @property({
+    type: 'number',
+  })
+  customer_id?: number;
   // Define well-known properties here
 
   // Indexer property to allow additional data

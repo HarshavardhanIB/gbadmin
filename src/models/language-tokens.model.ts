@@ -1,7 +1,7 @@
-import {Entity, model, property} from '@loopback/repository';
+import { Entity, model, property } from '@loopback/repository';
 
 @model({
-  settings: {idInjection: false, mysql: {schema: 'gbadmin', table: 'language_tokens'}}
+  settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'language_tokens' } }
 })
 export class LanguageTokens extends Entity {
   @property({
@@ -9,7 +9,7 @@ export class LanguageTokens extends Entity {
     required: true,
     length: 45,
     generated: 0,
-    mysql: {columnName: 'category', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0},
+    mysql: { columnName: 'category', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
   })
   category: string;
 
@@ -17,17 +17,14 @@ export class LanguageTokens extends Entity {
     type: 'string',
     length: 45,
     generated: 0,
-    mysql: {columnName: 'description', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'description', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   description?: string;
 
   @property({
     type: 'number',
-    precision: 10,
-    scale: 0,
-    generated: 1,
-    id: 1,
-    mysql: {columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1},
+    generated: true,
+    id: true
   })
   id?: number;
 
@@ -36,7 +33,7 @@ export class LanguageTokens extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: {columnName: 'item_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'item_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0 },
   })
   itemId?: number;
 
@@ -45,7 +42,7 @@ export class LanguageTokens extends Entity {
     required: true,
     length: 255,
     generated: 0,
-    mysql: {columnName: 'key', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0},
+    mysql: { columnName: 'key', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
   })
   key: string;
 
@@ -54,7 +51,7 @@ export class LanguageTokens extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: {columnName: 'translation_language_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'translation_language_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0 },
   })
   translationLanguageId?: number;
 
@@ -62,7 +59,7 @@ export class LanguageTokens extends Entity {
     type: 'string',
     length: 65535,
     generated: 0,
-    mysql: {columnName: 'value', dataType: 'text', dataLength: 65535, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0},
+    mysql: { columnName: 'value', dataType: 'text', dataLength: 65535, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   value?: string;
 

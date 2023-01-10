@@ -31,17 +31,41 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
-        precision: 10,
-        scale: 0,
-        generated: 1,
-        id: 1,
-        mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
+        generated: true,
+        id: true
     }),
     tslib_1.__metadata("design:type", Number)
 ], CustomerContactInfo.prototype, "id", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'number',
+    }),
+    tslib_1.__metadata("design:type", Number)
+], CustomerContactInfo.prototype, "customer_id", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'number',
+    }),
+    tslib_1.__metadata("design:type", Number)
+], CustomerContactInfo.prototype, "contact_id", void 0);
 CustomerContactInfo = tslib_1.__decorate([
     (0, repository_1.model)({
-        settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'customer_contact_info' } }
+        settings: {
+            idInjection: false, foreignKeys: {
+                idx_customer_contact_id: {
+                    name: 'idx_customer_contact_id',
+                    entity: 'Customers',
+                    entityKey: 'id',
+                    foreignKey: 'customerId',
+                },
+                idx_contact_info_id: {
+                    name: 'idx_contact_info_id',
+                    entity: 'ContactInformation',
+                    entityKey: 'id',
+                    foreignKey: 'contactId',
+                },
+            }, mysql: { schema: 'gbadmin', table: 'customer_contact_info' }
+        }
     }),
     tslib_1.__metadata("design:paramtypes", [Object])
 ], CustomerContactInfo);

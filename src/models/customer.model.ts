@@ -1,6 +1,24 @@
-import { Entity, model, property } from '@loopback/repository';
+import { belongsTo, Entity, hasMany, hasOne, model, property } from '@loopback/repository';
+import { ContactInformation } from './contact-information.model';
+import { CustomerContactInfo } from './customer-contact-info.model';
+import { CustomerPlanOptionsValues } from './customer-plan-options-values.model';
+import { CustomerPlans } from './customer-plans.model';
+import { CustomerRelatives } from './customer-relatives.model';
+import { CustomerSignup } from './customer-signup.model';
+import { Users } from './users.model';
 
-@model({ settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'customer' } } })
+@model({
+  settings: {
+    idInjection: false, foreignKeys: {
+      idx_customer_user_id: {
+        name: 'idx_customer_user_id',
+        entity: 'Users',
+        entityKey: 'id',
+        foreignKey: 'userId',
+      },
+    }, mysql: { schema: 'gbadmin', table: 'customer' }
+  }
+})
 export class Customer extends Entity {
   @property({
     type: 'number',
@@ -267,7 +285,22 @@ export class Customer extends Entity {
     mysql: { columnName: 'user_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0 },
   })
   userId?: number;
+  @belongsTo(() => Users, { name: 'user' })
+  user_id: number;
+  @hasMany(() => CustomerRelatives, { keyTo: 'customer_id' })
+  customerRelativeRelation: CustomerRelatives[];
 
+  // @hasMany(() => CustomerRelatives)
+  // customerRelativeRelation: CustomerRelatives[];
+  @hasMany(() => ContactInformation, { through: { model: () => CustomerContactInfo, keyFrom: 'customer_id', keyTo: 'contact_id' } })
+  contactInformations: ContactInformation[];
+
+  @hasMany(() => CustomerPlanOptionsValues, { keyTo: 'customer_id' })
+  customerPlanOptionsValues: CustomerPlanOptionsValues[];
+  @hasMany(() => CustomerPlans, { keyTo: 'customer_id' }) customerPlans: CustomerPlans[];
+
+  @hasOne(() => CustomerSignup, { keyTo: 'customer_id' })
+  customerSignup: CustomerSignup;
   // Define well-known properties here
 
   // Indexer property to allow additional data

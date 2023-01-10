@@ -1,9 +1,10 @@
-import {Entity, model, property} from '@loopback/repository';
+import { belongsTo, Entity, model, property } from '@loopback/repository';
+import { PlanLevel } from './plan-level.model';
 
 @model({
   settings: {
     idInjection: false,
-    mysql: {schema: 'gbadmin', table: 'signup_forms_plan_level_mapping'}
+    mysql: { schema: 'gbadmin', table: 'signup_forms_plan_level_mapping' }
   }
 })
 export class SignupFormsPlanLevelMapping extends Entity {
@@ -13,17 +14,14 @@ export class SignupFormsPlanLevelMapping extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: {columnName: 'form_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0},
+    mysql: { columnName: 'form_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0 },
   })
   formId: number;
 
   @property({
     type: 'number',
-    precision: 10,
-    scale: 0,
-    generated: 1,
-    id: 1,
-    mysql: {columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1},
+    generated: true,
+    id: true
   })
   id?: number;
 
@@ -33,9 +31,16 @@ export class SignupFormsPlanLevelMapping extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: {columnName: 'plan_level_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0},
+    mysql: { columnName: 'plan_level_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0 },
   })
   planLevelId: number;
+  @belongsTo(() => PlanLevel, { name: 'planLevels' })
+  plan_level_id: number;
+
+  @property({
+    type: 'number',
+  })
+  form_id?: number;
 
   // Define well-known properties here
 

@@ -20,3 +20,20 @@ export function genCrypt() {
   //console.log(shasum.digest("hex"));
   return shasum.digest("hex");
 }
+export async function intersection(a: any, b: any) {
+
+  var t;
+
+  if (b.length > a.length) t = b, b = a, a = t; // indexOf to loop over shorter
+
+  return a.filter(function (e: any) {
+
+    return b.indexOf(e) > -1;
+
+  }).filter(function (e: any, i: any, c: any) { // extra step to remove duplicates
+
+    return c.indexOf(e) === i;
+
+  });
+
+}

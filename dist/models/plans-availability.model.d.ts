@@ -10,6 +10,8 @@ export declare class PlansAvailability extends Entity {
     stateId: number;
     taxCode?: string;
     taxName?: string;
+    state_id: number;
+    plan_id: number;
     [prop: string]: any;
     constructor(data?: Partial<PlansAvailability>);
 }

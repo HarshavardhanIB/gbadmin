@@ -12,10 +12,7 @@ tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
         required: true,
-        precision: 10,
-        scale: 0,
-        generated: 0,
-        mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0 },
+        generated: true
     }),
     tslib_1.__metadata("design:type", Number)
 ], TieredRebatesData.prototype, "id", void 0);

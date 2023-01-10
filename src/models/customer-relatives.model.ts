@@ -1,7 +1,23 @@
-import { Entity, model, property } from '@loopback/repository';
+import { belongsTo, Entity, model, property } from '@loopback/repository';
+import { Customer } from './customer.model';
 
 @model({
-  settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'customer_relatives' } }
+  settings: {
+    idInjection: false, foreignKeys: {
+      fk_customer_relatives_customers_customer_id: {
+
+        name: 'idx_customer_relative_id',
+
+        entity: 'Customers',
+
+        entityKey: 'id',
+
+        foreignKey: 'customerId',
+
+      }
+
+    }, mysql: { schema: 'gbadmin', table: 'customer_relatives' }
+  }
 })
 export class CustomerRelatives extends Entity {
   @property({
@@ -136,7 +152,8 @@ export class CustomerRelatives extends Entity {
     mysql: { columnName: 'university_graduation_day', dataType: 'date', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   universityGraduationDay?: string;
-
+  @belongsTo(() => Customer, { name: 'customer' })
+  customer_id: number;
   // Define well-known properties here
 
   // Indexer property to allow additional data

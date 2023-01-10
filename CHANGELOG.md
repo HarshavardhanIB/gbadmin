@@ -1,4 +1,9 @@
 #GBPORTAL
+
+0.4.4
+
+updated models
+
 0.4.3
 
 added broker count service in broker controller and added the customer count based on the role in customer count service,added form configuration

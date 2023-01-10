@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Users = void 0;
 const tslib_1 = require("tslib");
 const repository_1 = require("@loopback/repository");
+const customer_model_1 = require("./customer.model");
 let Users = class Users extends repository_1.Entity {
     constructor(data) {
         super(data);
@@ -119,6 +120,10 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", String)
 ], Users.prototype, "username", void 0);
+tslib_1.__decorate([
+    (0, repository_1.hasOne)(() => customer_model_1.Customer, { keyTo: 'user_id' }),
+    tslib_1.__metadata("design:type", customer_model_1.Customer)
+], Users.prototype, "customer", void 0);
 Users = tslib_1.__decorate([
     (0, repository_1.model)({ settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'users' } } }),
     tslib_1.__metadata("design:paramtypes", [Object])

@@ -1,4 +1,9 @@
 import { Entity } from '@loopback/repository';
+import { ContactInformation } from './contact-information.model';
+import { CustomerPlanOptionsValues } from './customer-plan-options-values.model';
+import { CustomerPlans } from './customer-plans.model';
+import { CustomerRelatives } from './customer-relatives.model';
+import { CustomerSignup } from './customer-signup.model';
 export declare class Customer extends Entity {
     brokerId?: number;
     ccExpiry?: string;
@@ -32,6 +37,12 @@ export declare class Customer extends Entity {
     status?: string;
     uniqueSinId?: string;
     userId?: number;
+    user_id: number;
+    customerRelativeRelation: CustomerRelatives[];
+    contactInformations: ContactInformation[];
+    customerPlanOptionsValues: CustomerPlanOptionsValues[];
+    customerPlans: CustomerPlans[];
+    customerSignup: CustomerSignup;
     [prop: string]: any;
     constructor(data?: Partial<Customer>);
 }

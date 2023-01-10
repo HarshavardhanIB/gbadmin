@@ -1,9 +1,9 @@
-import {Entity, model, property} from '@loopback/repository';
+import { Entity, model, property } from '@loopback/repository';
 
 @model({
   settings: {
     idInjection: false,
-    mysql: {schema: 'gbadmin', table: 'financial_institutions_routing_numbers'}
+    mysql: { schema: 'gbadmin', table: 'financial_institutions_routing_numbers' }
   }
 })
 export class FinancialInstitutionsRoutingNumbers extends Entity {
@@ -12,7 +12,7 @@ export class FinancialInstitutionsRoutingNumbers extends Entity {
     required: true,
     length: 255,
     generated: 0,
-    mysql: {columnName: 'address', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0},
+    mysql: { columnName: 'address', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
   })
   address: string;
 
@@ -22,7 +22,7 @@ export class FinancialInstitutionsRoutingNumbers extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: {columnName: 'bank_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0},
+    mysql: { columnName: 'bank_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0 },
   })
   bankId: number;
 
@@ -31,7 +31,7 @@ export class FinancialInstitutionsRoutingNumbers extends Entity {
     required: true,
     length: 3,
     generated: 0,
-    mysql: {columnName: 'e_bank_code', dataType: 'char', dataLength: 3, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0},
+    mysql: { columnName: 'e_bank_code', dataType: 'char', dataLength: 3, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
   })
   eBankCode: string;
 
@@ -40,17 +40,14 @@ export class FinancialInstitutionsRoutingNumbers extends Entity {
     required: true,
     length: 5,
     generated: 0,
-    mysql: {columnName: 'e_transit_number', dataType: 'char', dataLength: 5, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0},
+    mysql: { columnName: 'e_transit_number', dataType: 'char', dataLength: 5, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
   })
   eTransitNumber: string;
 
   @property({
     type: 'number',
-    precision: 10,
-    scale: 0,
-    generated: 1,
-    id: 1,
-    mysql: {columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1},
+    generated: true,
+    id: true
   })
   id?: number;
 
@@ -59,7 +56,7 @@ export class FinancialInstitutionsRoutingNumbers extends Entity {
     required: true,
     length: 3,
     generated: 0,
-    mysql: {columnName: 'p_bank_code', dataType: 'char', dataLength: 3, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0},
+    mysql: { columnName: 'p_bank_code', dataType: 'char', dataLength: 3, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
   })
   pBankCode: string;
 
@@ -68,7 +65,7 @@ export class FinancialInstitutionsRoutingNumbers extends Entity {
     required: true,
     length: 5,
     generated: 0,
-    mysql: {columnName: 'p_transit_number', dataType: 'char', dataLength: 5, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0},
+    mysql: { columnName: 'p_transit_number', dataType: 'char', dataLength: 5, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
   })
   pTransitNumber: string;
 

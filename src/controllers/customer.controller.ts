@@ -31,11 +31,11 @@ import { UsersRepository, ContactInformationRepository, CustomerContactInfoRepos
 import { authorize } from '@loopback/authorization';
 import { basicAuthorization } from '../middleware/auth.midd';
 import { SecurityBindings, securityId, UserProfile } from '@loopback/security';
-@authenticate('jwt')
-@authorize({
-  allowedRoles: ['BROKER', 'ADMINISTRATOR'],
-  voters: [basicAuthorization]
-})
+// @authenticate('jwt')
+// @authorize({
+//   allowedRoles: ['BROKER', 'ADMINISTRATOR'],
+//   voters: [basicAuthorization]
+// })
 export class customerController {
   constructor(
     @repository(UsersRepository)
@@ -77,25 +77,25 @@ export class customerController {
   // currentUserProfile: UserProfile): Promise<any> {
   async customersCount(): Promise<any> {
     let customerCount = await this.CustomerRepository.count();
-    let activeCoustomers = await this.CustomerRepository.count({ status: 'active' })
-    let draftCoustomers = await this.CustomerRepository.count({ status: 'Draft' })
-    let holdCoustomers = await this.CustomerRepository.count({ status: 'Hold' })
-    let suspendedCoustomers = await this.CustomerRepository.count({ status: 'Suspended' })
-    let cancelledCoustomers = await this.CustomerRepository.count({ status: 'Cancelled' })
-    let otherCoustomers = await this.CustomerRepository.count({ status: '' })
-    console.log(activeCoustomers);
+    let active = await this.CustomerRepository.count({ status: 'active' })
+    let draft = await this.CustomerRepository.count({ status: 'Draft' })
+    let hold = await this.CustomerRepository.count({ status: 'Hold' })
+    let suspended = await this.CustomerRepository.count({ status: 'Suspended' })
+    let cancelled = await this.CustomerRepository.count({ status: 'Cancelled' })
+    let other = await this.CustomerRepository.count({ status: '' })
+    // console.log(activeCoustomers);
     // console.log("role>>", currentUserProfile.role);
     let response = {
       "statusCode": 200,
       "message": "Count of the customers ",
       data: {
         totalCustomersCount: customerCount.count,
-        activeCustomersCount: activeCoustomers.count,
-        draftCoustomers: draftCoustomers.count,
-        holdCoustomers: holdCoustomers.count,
-        suspendedCoustomers: suspendedCoustomers.count,
-        cancelledCoustomers: cancelledCoustomers.count,
-        otherCoustomers: otherCoustomers.count
+        activeCustomersCount: active.count,
+        draftCoustomers: draft.count,
+        holdCoustomers: hold.count,
+        suspendedCoustomers: suspended.count,
+        cancelledCoustomers: cancelled.count,
+        otherCoustomers: other.count
       }
     }
     return response;

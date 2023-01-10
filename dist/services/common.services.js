@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.genCrypt = exports.encryptPassword = exports.generateRandomPassword = exports.randomString = void 0;
+exports.intersection = exports.genCrypt = exports.encryptPassword = exports.generateRandomPassword = exports.randomString = void 0;
 const tslib_1 = require("tslib");
 const bcryptjs_1 = require("bcryptjs");
 const crypto = tslib_1.__importStar(require("crypto"));
@@ -29,4 +29,15 @@ function genCrypt() {
     return shasum.digest("hex");
 }
 exports.genCrypt = genCrypt;
+async function intersection(a, b) {
+    var t;
+    if (b.length > a.length)
+        t = b, b = a, a = t; // indexOf to loop over shorter
+    return a.filter(function (e) {
+        return b.indexOf(e) > -1;
+    }).filter(function (e, i, c) {
+        return c.indexOf(e) === i;
+    });
+}
+exports.intersection = intersection;
 //# sourceMappingURL=common.services.js.map

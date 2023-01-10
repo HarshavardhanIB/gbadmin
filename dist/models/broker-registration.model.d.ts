@@ -1,7 +1,6 @@
 import { Entity } from '@loopback/repository';
 export declare class BrokerRegistration extends Entity {
     brokerId?: number;
-    id: number;
     insuranceCompanyId?: number;
     [prop: string]: any;
     constructor(data?: Partial<BrokerRegistration>);

@@ -1,7 +1,7 @@
-import {Entity, model, property} from '@loopback/repository';
+import { Entity, model, property } from '@loopback/repository';
 
 @model({
-  settings: {idInjection: false, mysql: {schema: 'gbadmin', table: 'broker_eo_insurance'}}
+  settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'broker_eo_insurance' } }
 })
 export class BrokerEoInsurance extends Entity {
   @property({
@@ -10,7 +10,7 @@ export class BrokerEoInsurance extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: {columnName: 'broker_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0},
+    mysql: { columnName: 'broker_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0 },
   })
   brokerId: number;
 
@@ -19,7 +19,7 @@ export class BrokerEoInsurance extends Entity {
     required: true,
     length: 35,
     generated: 0,
-    mysql: {columnName: 'certificate_number', dataType: 'varchar', dataLength: 35, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0},
+    mysql: { columnName: 'certificate_number', dataType: 'varchar', dataLength: 35, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
   })
   certificateNumber: string;
 
@@ -27,17 +27,14 @@ export class BrokerEoInsurance extends Entity {
     type: 'date',
     required: true,
     generated: 0,
-    mysql: {columnName: 'expiry_date', dataType: 'date', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0},
+    mysql: { columnName: 'expiry_date', dataType: 'date', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
   })
   expiryDate: string;
 
   @property({
     type: 'number',
-    precision: 10,
-    scale: 0,
-    generated: 1,
-    id: 1,
-    mysql: {columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1},
+    generated: true,
+    id: true
   })
   id?: number;
 
@@ -46,7 +43,7 @@ export class BrokerEoInsurance extends Entity {
     required: true,
     length: 35,
     generated: 0,
-    mysql: {columnName: 'insurer_name', dataType: 'varchar', dataLength: 35, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0},
+    mysql: { columnName: 'insurer_name', dataType: 'varchar', dataLength: 35, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
   })
   insurerName: string;
 
@@ -55,7 +52,7 @@ export class BrokerEoInsurance extends Entity {
     required: true,
     length: 35,
     generated: 0,
-    mysql: {columnName: 'policy_number', dataType: 'varchar', dataLength: 35, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0},
+    mysql: { columnName: 'policy_number', dataType: 'varchar', dataLength: 35, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
   })
   policyNumber: string;
 

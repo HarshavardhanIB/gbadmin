@@ -5,13 +5,15 @@ exports.customerController = void 0;
 const tslib_1 = require("tslib");
 // import {inject} from '@loopback/core';
 const core_1 = require("@loopback/core");
-const authentication_1 = require("@loopback/authentication");
 const rest_1 = require("@loopback/rest");
 const repository_1 = require("@loopback/repository");
 const repositories_1 = require("../repositories");
-const authorization_1 = require("@loopback/authorization");
-const auth_midd_1 = require("../middleware/auth.midd");
 const security_1 = require("@loopback/security");
+// @authenticate('jwt')
+// @authorize({
+//   allowedRoles: ['BROKER', 'ADMINISTRATOR'],
+//   voters: [basicAuthorization]
+// })
 let customerController = class customerController {
     constructor(usersRepository, ContactInformationRepository, CustomerContactInfoRepository, CustomerPlanOptionsValuesRepository, CustomerPlansRepository, CustomerRelativesRepository, CustomerRepository, CustomerSignupRepository, response, user) {
         this.usersRepository = usersRepository;
@@ -40,25 +42,25 @@ let customerController = class customerController {
     // currentUserProfile: UserProfile): Promise<any> {
     async customersCount() {
         let customerCount = await this.CustomerRepository.count();
-        let activeCoustomers = await this.CustomerRepository.count({ status: 'active' });
-        let draftCoustomers = await this.CustomerRepository.count({ status: 'Draft' });
-        let holdCoustomers = await this.CustomerRepository.count({ status: 'Hold' });
-        let suspendedCoustomers = await this.CustomerRepository.count({ status: 'Suspended' });
-        let cancelledCoustomers = await this.CustomerRepository.count({ status: 'Cancelled' });
-        let otherCoustomers = await this.CustomerRepository.count({ status: '' });
-        console.log(activeCoustomers);
+        let active = await this.CustomerRepository.count({ status: 'active' });
+        let draft = await this.CustomerRepository.count({ status: 'Draft' });
+        let hold = await this.CustomerRepository.count({ status: 'Hold' });
+        let suspended = await this.CustomerRepository.count({ status: 'Suspended' });
+        let cancelled = await this.CustomerRepository.count({ status: 'Cancelled' });
+        let other = await this.CustomerRepository.count({ status: '' });
+        // console.log(activeCoustomers);
         // console.log("role>>", currentUserProfile.role);
         let response = {
             "statusCode": 200,
             "message": "Count of the customers ",
             data: {
                 totalCustomersCount: customerCount.count,
-                activeCustomersCount: activeCoustomers.count,
-                draftCoustomers: draftCoustomers.count,
-                holdCoustomers: holdCoustomers.count,
-                suspendedCoustomers: suspendedCoustomers.count,
-                cancelledCoustomers: cancelledCoustomers.count,
-                otherCoustomers: otherCoustomers.count
+                activeCustomersCount: active.count,
+                draftCoustomers: draft.count,
+                holdCoustomers: hold.count,
+                suspendedCoustomers: suspended.count,
+                cancelledCoustomers: cancelled.count,
+                otherCoustomers: other.count
             }
         };
         return response;
@@ -173,11 +175,6 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], customerController.prototype, "allCustmerDetails", null);
 customerController = tslib_1.__decorate([
-    (0, authentication_1.authenticate)('jwt'),
-    (0, authorization_1.authorize)({
-        allowedRoles: ['BROKER', 'ADMINISTRATOR'],
-        voters: [auth_midd_1.basicAuthorization]
-    }),
     tslib_1.__param(0, (0, repository_1.repository)(repositories_1.UsersRepository)),
     tslib_1.__param(1, (0, repository_1.repository)(repositories_1.ContactInformationRepository)),
     tslib_1.__param(2, (0, repository_1.repository)(repositories_1.CustomerContactInfoRepository)),

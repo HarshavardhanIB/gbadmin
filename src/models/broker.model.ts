@@ -1,6 +1,22 @@
-import { Entity, model, property } from '@loopback/repository';
+import { belongsTo, Entity, hasMany, hasOne, model, property } from '@loopback/repository';
+import { BrokerEoInsurance } from './broker-eo-insurance.model';
+import { BrokerLicensedStatesAndProvinces } from './broker-licensed-states-and-provinces.model';
+import { ContactInformation } from './contact-information.model';
+import { SignupForms } from './signup-forms.model';
+import { Users } from './users.model';
 
-@model({ settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'broker' } } })
+@model({
+  settings: {
+    idInjection: false, foreignKeys: {
+      idx_broker_user_id: {
+        name: 'idx_broker_user_id',
+        entity: 'Users',
+        entityKey: 'id',
+        foreignKey: 'userId',
+      },
+    }, mysql: { schema: 'gbadmin', table: 'broker' }
+  }
+})
 export class Broker extends Entity {
   @property({
     type: 'string',
@@ -244,6 +260,20 @@ export class Broker extends Entity {
     mysql: { columnName: 'wait_time', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0 },
   })
   waitTime?: number;
+  @belongsTo(() => Users, { name: 'user' })
+  user_id: number;
+
+  @belongsTo(() => ContactInformation, { name: 'contactInfo' })
+  contact_id: number;
+
+  @hasOne(() => BrokerEoInsurance, { keyTo: 'broker_id' })
+  brokerEoInsurance: BrokerEoInsurance;
+
+  @hasMany(() => BrokerLicensedStatesAndProvinces, { keyTo: 'broker_id' })
+  brokerLicensedStatesAndProvinces: BrokerLicensedStatesAndProvinces[];
+
+  @hasMany(() => SignupForms, { keyTo: 'broker_id' })
+  signupForms: SignupForms[];
 
   // Define well-known properties here
 

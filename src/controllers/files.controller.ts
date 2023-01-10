@@ -198,35 +198,6 @@ export class FilesController {
           console.log(newFilename);
           fs.rename(TEMP_UPLOADS_FOLDER + '/' + file.originalname, CUSTOMER_CHEQUES_FOLDER + '/' + filename + "." + ext, function (res) {
             console.log(res);
-            //return {files, fields: request.body};
-            // fs.readFile(newFilename, function (err, buffer) {
-            //   console.log(buffer);
-            // })
-            //var fileBuffer = Buffer.from(newFilename)
-            // let encoding: BufferEncoding = 'base64'; //utf8
-            // var fileBuffer = Buffer.from(newFilename, encoding);
-            // console.log(fileBuffer)
-
-
-            //data:pdf;base64, + buffer.toString()
-            //data:image/png;base64
-            //data:image/jpg;base64
-
-
-            // fs.writeFile(newFilenameBuffer, fileBuffer, {
-            //   encoding: encoding, //base64
-            //   // flag: "w",
-            //   // mode: 0o666
-            // },
-            //   (err) => {
-            //     if (err)
-            //       console.log(err);
-            //     else {
-            //       console.log("File written successfully\n");
-            //       console.log("The written has the following contents:");
-            //       console.log(fs.readFileSync(newFilename, encoding));
-            //     }
-            //   })
           })
 
         } catch (error) {
@@ -342,7 +313,41 @@ export class FilesController {
         }
       }
     }
-    return { files, fields: request.body };
+    else if (method == "corporateUpload") {
+      for (let file of files) {
+
+        var allowedMimes = ['image/jpg', 'image/jpeg', 'image/pjpeg', 'image/png', 'application/pdf'];
+        if (allowedMimes.includes(file.mimetype)) {
+
+          console.log(file.size);
+          if (file.size <= (300 * 1024)) {
+            //300KB
+          } else {
+            return { files: null, fields: { error: 'Invalid file size. File with max. of 300KB is allowed.' } };
+          }
+        } else {
+
+          return { files: null, fields: { error: 'Invalid file type. Only jpg, png image files are allowed.' } };
+        }
+        console.log(TEMP_UPLOADS_FOLDER + '/' + file.originalname);
+        try {
+          let filename = file.originalname.split(".")[0].trim().replaceAll(" ", '');
+          console.log(filename)
+          let ext = file.originalname.split(".")[1]
+          // let newFilename = CUSTOMER_CHEQUES_FOLDER + '/' + filename + "." + ext;
+          // let newFilenameBuffer = CUSTOMER_CHEQUES_FOLDER + '/' + filename + ".txt";
+          // console.log(newFilename);
+          // fs.rename(TEMP_UPLOADS_FOLDER + '/' + file.originalname, CUSTOMER_CHEQUES_FOLDER + '/' + filename + "." + ext, function (res) {
+          fs.rename(TEMP_UPLOADS_FOLDER + '/' + file.originalname, BROKERIMG_RESOURCES_FOLDER + '/' + filename + "." + ext, function (res) {
+            console.log(res);
+          })
+
+        } catch (error) {
+          console.log(error);
+        }
+      }
+      return { files, fields: request.body };
+    }
   }
 
   /**

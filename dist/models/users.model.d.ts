@@ -1,4 +1,5 @@
 import { Entity } from '@loopback/repository';
+import { Customer } from './customer.model';
 export declare class Users extends Entity {
     activation?: string;
     block: boolean;
@@ -12,6 +13,7 @@ export declare class Users extends Entity {
     registrationDate: string;
     role?: string;
     username?: string;
+    customer: Customer;
     [prop: string]: any;
     constructor(data?: Partial<Users>);
 }

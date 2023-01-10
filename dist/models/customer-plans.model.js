@@ -55,11 +55,8 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
-        precision: 10,
-        scale: 0,
-        generated: 1,
-        id: 1,
-        mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
+        generated: true,
+        id: true
     }),
     tslib_1.__metadata("design:type", Number)
 ], CustomerPlans.prototype, "id", void 0);
@@ -120,7 +117,16 @@ tslib_1.__decorate([
 ], CustomerPlans.prototype, "subscriptionId", void 0);
 CustomerPlans = tslib_1.__decorate([
     (0, repository_1.model)({
-        settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'customer_plans' } }
+        settings: {
+            idInjection: false, foreignKeys: {
+                fk_customer_plans_customers_customer_id: {
+                    name: 'fk_customer_plans_customers_customer_id',
+                    entity: 'Customers',
+                    entityKey: 'id',
+                    foreignKey: 'customerId',
+                }
+            }, mysql: { schema: 'gbadmin', table: 'customer_plans' }
+        }
     }),
     tslib_1.__metadata("design:paramtypes", [Object])
 ], CustomerPlans);

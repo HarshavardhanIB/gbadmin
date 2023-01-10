@@ -7,6 +7,8 @@ export declare class BrokerLicensedStatesAndProvinces extends Entity {
     licenseNumber: string;
     reminderEmail?: number;
     stateId: number;
+    state_id: number;
+    broker_id?: number;
     [prop: string]: any;
     constructor(data?: Partial<BrokerLicensedStatesAndProvinces>);
 }

@@ -21,18 +21,6 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
-        required: true,
-        precision: 10,
-        scale: 0,
-        generated: 0,
-        id: 1,
-        mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0 },
-    }),
-    tslib_1.__metadata("design:type", Number)
-], BrokerRegistration.prototype, "id", void 0);
-tslib_1.__decorate([
-    (0, repository_1.property)({
-        type: 'number',
         precision: 10,
         scale: 0,
         generated: 0,

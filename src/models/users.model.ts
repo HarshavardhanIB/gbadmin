@@ -1,4 +1,5 @@
-import { Entity, model, property } from '@loopback/repository';
+import { Entity, hasOne, model, property } from '@loopback/repository';
+import { Customer } from './customer.model';
 
 @model({ settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'users' } } })
 export class Users extends Entity {
@@ -100,7 +101,8 @@ export class Users extends Entity {
     mysql: { columnName: 'username', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   username?: string;
-
+  @hasOne(() => Customer, { keyTo: 'user_id' })
+  customer: Customer;
   // Define well-known properties here
 
   // Indexer property to allow additional data

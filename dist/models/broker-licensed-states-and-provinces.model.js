@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BrokerLicensedStatesAndProvinces = void 0;
 const tslib_1 = require("tslib");
 const repository_1 = require("@loopback/repository");
+const states_and_provinces_model_1 = require("./states-and-provinces.model");
 let BrokerLicensedStatesAndProvinces = class BrokerLicensedStatesAndProvinces extends repository_1.Entity {
     constructor(data) {
         super(data);
@@ -30,11 +31,8 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
-        precision: 10,
-        scale: 0,
-        generated: 1,
-        id: 1,
-        mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
+        generated: true,
+        id: true
     }),
     tslib_1.__metadata("design:type", Number)
 ], BrokerLicensedStatesAndProvinces.prototype, "id", void 0);
@@ -79,6 +77,16 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", Number)
 ], BrokerLicensedStatesAndProvinces.prototype, "stateId", void 0);
+tslib_1.__decorate([
+    (0, repository_1.belongsTo)(() => states_and_provinces_model_1.StatesAndProvinces, { name: 'stateFullDetails' }),
+    tslib_1.__metadata("design:type", Number)
+], BrokerLicensedStatesAndProvinces.prototype, "state_id", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'number',
+    }),
+    tslib_1.__metadata("design:type", Number)
+], BrokerLicensedStatesAndProvinces.prototype, "broker_id", void 0);
 BrokerLicensedStatesAndProvinces = tslib_1.__decorate([
     (0, repository_1.model)({
         settings: {

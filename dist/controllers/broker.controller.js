@@ -23,13 +23,11 @@ const services_1 = require("../services");
 //   voters: [basicAuthorization]
 // })
 let BrokerController = class BrokerController {
-    constructor(BrokerRepository, BrokerLicensedStatesAndProvincesRepository, BrokerSignupFormsPlansRepository, SignupFormsPlanLevelMappingRepository, TieredRebatesDataRepository, TieredRebatesRepository, UsersRepository, ContactInformationRepository, SignupFormsRepository, StatesAndProvincesRepository, CustomerSignupRepository, CustomerRepository, InsurancePlansRepository, PlanLevelRepository, BrokerEoInsuranceRepository, response, handler, http, img, bs, insurancePackages, plansAvalibility) {
+    constructor(BrokerRepository, BrokerLicensedStatesAndProvincesRepository, BrokerSignupFormsPlansRepository, SignupFormsPlanLevelMappingRepository, UsersRepository, ContactInformationRepository, SignupFormsRepository, StatesAndProvincesRepository, CustomerSignupRepository, CustomerRepository, InsurancePlansRepository, PlanLevelRepository, BrokerEoInsuranceRepository, response, handler, http, img, bs, insurancePackages, plansAvalibility) {
         this.BrokerRepository = BrokerRepository;
         this.BrokerLicensedStatesAndProvincesRepository = BrokerLicensedStatesAndProvincesRepository;
         this.BrokerSignupFormsPlansRepository = BrokerSignupFormsPlansRepository;
         this.SignupFormsPlanLevelMappingRepository = SignupFormsPlanLevelMappingRepository;
-        this.TieredRebatesDataRepository = TieredRebatesDataRepository;
-        this.TieredRebatesRepository = TieredRebatesRepository;
         this.UsersRepository = UsersRepository;
         this.ContactInformationRepository = ContactInformationRepository;
         this.SignupFormsRepository = SignupFormsRepository;
@@ -1520,8 +1518,8 @@ let BrokerController = class BrokerController {
             //check for broker -license statesalso
             console.log(`brokerplanIds`);
             console.log(brokerplanIds);
-            console.log(`brokerplanLevels`);
-            console.log(brokerplanLevels);
+            // console.log(`brokerplanLevels`)
+            // console.log(brokerplanLevels)
             const provinceData = await this.StatesAndProvincesRepository.findById(apiRequest.province_id);
             data.province = provinceData;
             //get plans valid for this customer -- state_id, plan_id
@@ -1618,7 +1616,10 @@ let BrokerController = class BrokerController {
                     published: true
                 },
             };
-            const packages = await this.InsurancePlansRepository.find(packageFilter);
+            console.log(packageFilter);
+            const packages = await this.insurancePackages.find(packageFilter);
+            console.log("packages>>>>>");
+            console.log(packages[0]);
             const packagesArray = [];
             for (const pckg of packages) {
                 //console.log(pckg.name)
@@ -1692,7 +1693,13 @@ let BrokerController = class BrokerController {
                         { "relation": "plans", "scope": plansFilter }
                     ]
                 };
+                // console.log(plansFilter);
+                // console.log(planLevelIds);
+                // console.log("plan levels >>>>");
+                // console.log(plansLevelFilter)
                 const planLevels = await this.insurancePackages.planGroups(pckg.id).find(plansLevelFilter);
+                // console.log("plan levels >>>>");
+                // console.log(planLevels);
                 const groupsArray = [];
                 for (const pl of planLevels) {
                     if (((_a = pl.plans) === null || _a === void 0 ? void 0 : _a.length) > 0) {
@@ -1723,6 +1730,7 @@ let BrokerController = class BrokerController {
                 if (groupsArray.length > 0)
                     packagesArray.push(packageObject);
             }
+            console.log(packagesArray);
             data.packages = packagesArray; //packages;
             return data;
         }
@@ -1739,23 +1747,15 @@ let BrokerController = class BrokerController {
             //   where: {
             //     formId: apiRequest.formId
             //   }
-            // });
+            // })
             const signupForm_PlanLevels = await this.SignupFormsPlanLevelMappingRepository.find({
                 where: {
                     formId: apiRequest.formId
                 }
             });
-            // await this.brokerPlansRepository.find({
-            //   where: {
-            //     brokerId: broker.id
-            //   },
-            //   // include: [
-            //   //   {relation: 'planOptions'} //brokerPlans -- brokerPlanOptions -- planOptions ()
-            //   // ]
-            // })
             //brokerPlanOptions -- planOptions -- planoptionvalues
             console.log(`brokerPlans or brokerSignupFormPlans`);
-            // console.log(brokerSignupFormPlans);
+            //console.log(brokerSignupFormPlans);
             //signupForm_PlanLevels
             console.log(`brokerPlanLevels or brokerSignupFormPlansLevels`);
             console.log(signupForm_PlanLevels);
@@ -1776,12 +1776,13 @@ let BrokerController = class BrokerController {
                 }
             }
             //check for broker -license statesalso
-            console.log(`brokerplanIds`);
-            console.log(brokerplanIds);
+            // console.log(`brokerplanIds`)
+            // console.log(brokerplanIds)
             console.log(`brokerplanLevels`);
             console.log(brokerplanLevels);
             const provinceData = await this.StatesAndProvincesRepository.findById(apiRequest.province_id);
             data.province = provinceData;
+            console.log(data);
             //get plans valid for this customer -- state_id, plan_id
             let plansforProvince = {
                 where: {
@@ -1792,12 +1793,12 @@ let BrokerController = class BrokerController {
                 include: [{ relation: 'plan' }]
             };
             //Remove this //comment this
-            if (brokerplanIds.length > 0) {
-                let brokerPlanFilter = { "planId": { "inq": brokerplanIds } };
-                plansforProvince.where.and.push(brokerPlanFilter);
-            }
+            // if (brokerplanIds.length > 0) {
+            //   let brokerPlanFilter = {"planId": {"inq": brokerplanIds}}
+            //   plansforProvince.where.and.push(brokerPlanFilter);
+            // }
             // if (brokerplanLevels.length > 0) {
-            //   let brokerPlanLevelsFilter = { "planLevel": { "inq": brokerplanLevels } }
+            //   let brokerPlanLevelsFilter = {"planLevel": {"inq": brokerplanLevels}}
             //   plansforProvince.where.and.push(brokerPlanLevelsFilter);
             // }
             // console.log(plansforProvince.where.and.length)
@@ -1814,8 +1815,19 @@ let BrokerController = class BrokerController {
                         planLevelIds.push(planIdData.plan.planLevel);
                 }
             }
+            console.log(`state - ${apiRequest.province_id} planIds`);
             console.log(planIds);
+            console.log(`state - ${apiRequest.province_id} plans---planlevels`);
             console.log(planLevelIds);
+            let filteredPlanLevels;
+            if (brokerplanLevels.length > 0) {
+                filteredPlanLevels = await (0, services_1.intersection)(planLevelIds, brokerplanLevels);
+            }
+            else {
+                filteredPlanLevels = planLevelIds;
+            }
+            console.log("filteredPlanLevels");
+            console.log(filteredPlanLevels);
             //console.log(age);
             // console.log(`children_coverage:${children_coverage}`);
             // let pcc: any = this.registrationService.planCoverageCalculations(apiRequest.having_spouse, apiRequest.spouse_details.is_spouse_having_healthcard, apiRequest.no_of_children, children_coverage);
@@ -1827,10 +1839,13 @@ let BrokerController = class BrokerController {
                 exclusive: ['COUPLE', 'FAMILY'],
                 inclusive: ['SINGLE']
             };
+            console.log("***************************");
+            console.log(pcc);
+            console.log(pcc.maritalStatus);
             data.customer = {};
             data.customer.maritalStatus = pcc.maritalStatus;
-            console.log(`excl. ${pcc.exclusivePlanCoverageArray}`);
-            console.log(`maritalStatus: ${pcc.maritalStatus}`);
+            // console.log(`excl. ${pcc.exclusivePlanCoverageArray}`);
+            // console.log(`maritalStatus: ${pcc.maritalStatus}`);
             let plansFilter = {
                 order: 'ordering ASC',
                 where: {
@@ -1876,7 +1891,7 @@ let BrokerController = class BrokerController {
                     published: true
                 },
             };
-            const packages = await this.InsurancePlansRepository.find(packageFilter);
+            const packages = await this.insurancePackages.find(packageFilter);
             const packagesArray = [];
             for (const pckg of packages) {
                 //console.log(pckg.name)
@@ -1940,7 +1955,8 @@ let BrokerController = class BrokerController {
                 let plansLevelFilter = {
                     order: 'ordering ASC',
                     where: {
-                        "id": { "inq": planLevelIds },
+                        //"id": {"inq": planLevelIds},
+                        "id": { "inq": filteredPlanLevels },
                         "published": true,
                         "requirePlanLevel": null
                     },
@@ -1951,9 +1967,11 @@ let BrokerController = class BrokerController {
                     ]
                 };
                 const planLevels = await this.insurancePackages.planGroups(pckg.id).find(plansLevelFilter);
+                console.log(plansLevelFilter);
                 const groupsArray = [];
                 for (const pl of planLevels) {
                     if (((_a = pl.plans) === null || _a === void 0 ? void 0 : _a.length) > 0) {
+                        const plansArray = [];
                         // for (const plan of pl.plans) {
                         //   plan.options = []
                         //   if (plan.id) {
@@ -1982,11 +2000,11 @@ let BrokerController = class BrokerController {
                     packagesArray.push(packageObject);
             }
             data.packages = packagesArray; //packages;
-            return data;
         }
         catch (error) {
             console.log(error);
         }
+        return data;
     }
 };
 tslib_1.__decorate([
@@ -2780,30 +2798,26 @@ BrokerController = tslib_1.__decorate([
     tslib_1.__param(1, (0, repository_1.repository)(repositories_1.BrokerLicensedStatesAndProvincesRepository)),
     tslib_1.__param(2, (0, repository_1.repository)(repositories_1.BrokerSignupFormsPlansRepository)),
     tslib_1.__param(3, (0, repository_1.repository)(repositories_1.SignupFormsPlanLevelMappingRepository)),
-    tslib_1.__param(4, (0, repository_1.repository)(repositories_1.TieredRebatesDataRepository)),
-    tslib_1.__param(5, (0, repository_1.repository)(repositories_1.TieredRebatesRepository)),
-    tslib_1.__param(6, (0, repository_1.repository)(repositories_1.UsersRepository)),
-    tslib_1.__param(7, (0, repository_1.repository)(repositories_1.ContactInformationRepository)),
-    tslib_1.__param(8, (0, repository_1.repository)(repositories_1.SignupFormsRepository)),
-    tslib_1.__param(9, (0, repository_1.repository)(repositories_1.StatesAndProvincesRepository)),
-    tslib_1.__param(10, (0, repository_1.repository)(repositories_1.CustomerSignupRepository)),
-    tslib_1.__param(11, (0, repository_1.repository)(repositories_1.CustomerRepository)),
-    tslib_1.__param(12, (0, repository_1.repository)(repositories_1.InsurancePlansRepository)),
-    tslib_1.__param(13, (0, repository_1.repository)(repositories_1.PlanLevelRepository)),
-    tslib_1.__param(14, (0, repository_1.repository)(repositories_1.BrokerEoInsuranceRepository)),
-    tslib_1.__param(15, (0, core_1.inject)(rest_1.RestBindings.Http.RESPONSE)),
-    tslib_1.__param(16, (0, core_1.inject)(keys_1.FILE_UPLOAD_SERVICE)),
-    tslib_1.__param(17, (0, core_1.service)(services_1.HttpService)),
-    tslib_1.__param(18, (0, core_1.service)(services_1.ResizeimgService)),
-    tslib_1.__param(19, (0, core_1.service)(services_1.BrokerService)),
-    tslib_1.__param(20, (0, repository_1.repository)(repositories_1.InsurancePackagesRepository)),
-    tslib_1.__param(21, (0, repository_1.repository)(repositories_1.PlansAvailabilityRepository)),
+    tslib_1.__param(4, (0, repository_1.repository)(repositories_1.UsersRepository)),
+    tslib_1.__param(5, (0, repository_1.repository)(repositories_1.ContactInformationRepository)),
+    tslib_1.__param(6, (0, repository_1.repository)(repositories_1.SignupFormsRepository)),
+    tslib_1.__param(7, (0, repository_1.repository)(repositories_1.StatesAndProvincesRepository)),
+    tslib_1.__param(8, (0, repository_1.repository)(repositories_1.CustomerSignupRepository)),
+    tslib_1.__param(9, (0, repository_1.repository)(repositories_1.CustomerRepository)),
+    tslib_1.__param(10, (0, repository_1.repository)(repositories_1.InsurancePlansRepository)),
+    tslib_1.__param(11, (0, repository_1.repository)(repositories_1.PlanLevelRepository)),
+    tslib_1.__param(12, (0, repository_1.repository)(repositories_1.BrokerEoInsuranceRepository)),
+    tslib_1.__param(13, (0, core_1.inject)(rest_1.RestBindings.Http.RESPONSE)),
+    tslib_1.__param(14, (0, core_1.inject)(keys_1.FILE_UPLOAD_SERVICE)),
+    tslib_1.__param(15, (0, core_1.service)(services_1.HttpService)),
+    tslib_1.__param(16, (0, core_1.service)(services_1.ResizeimgService)),
+    tslib_1.__param(17, (0, core_1.service)(services_1.BrokerService)),
+    tslib_1.__param(18, (0, repository_1.repository)(repositories_1.InsurancePackagesRepository)),
+    tslib_1.__param(19, (0, repository_1.repository)(repositories_1.PlansAvailabilityRepository)),
     tslib_1.__metadata("design:paramtypes", [repositories_1.BrokerRepository,
         repositories_1.BrokerLicensedStatesAndProvincesRepository,
         repositories_1.BrokerSignupFormsPlansRepository,
         repositories_1.SignupFormsPlanLevelMappingRepository,
-        repositories_1.TieredRebatesDataRepository,
-        repositories_1.TieredRebatesRepository,
         repositories_1.UsersRepository,
         repositories_1.ContactInformationRepository,
         repositories_1.SignupFormsRepository,

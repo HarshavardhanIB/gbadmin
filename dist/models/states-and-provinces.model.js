@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.StatesAndProvinces = void 0;
 const tslib_1 = require("tslib");
 const repository_1 = require("@loopback/repository");
+const plans_availability_model_1 = require("./plans-availability.model");
 let StatesAndProvinces = class StatesAndProvinces extends repository_1.Entity {
     constructor(data) {
         super(data);
@@ -94,6 +95,10 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", String)
 ], StatesAndProvinces.prototype, "zipcodes", void 0);
+tslib_1.__decorate([
+    (0, repository_1.hasMany)(() => plans_availability_model_1.PlansAvailability, { keyTo: 'state_id' }),
+    tslib_1.__metadata("design:type", Array)
+], StatesAndProvinces.prototype, "planAvailability", void 0);
 StatesAndProvinces = tslib_1.__decorate([
     (0, repository_1.model)({
         settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'states_and_provinces' } }
