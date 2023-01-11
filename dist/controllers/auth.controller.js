@@ -23,6 +23,7 @@ const email_services_1 = require("../services/email.services");
 const constants = tslib_1.__importStar(require("../services/constants"));
 const jwt_service_1 = require("../services/jwt.service");
 const models_1 = require("../models");
+const services_1 = require("../services");
 let NewUserRequest = class NewUserRequest extends admin_model_1.Admin {
 };
 tslib_1.__decorate([
@@ -80,7 +81,7 @@ exports.CredentialsRequestBody = {
     },
 };
 let AuthController = class AuthController {
-    constructor(jwtService, userService, user, userRepository, usersRepository, adminRepository, request) {
+    constructor(jwtService, userService, user, userRepository, usersRepository, adminRepository, request, service) {
         this.jwtService = jwtService;
         this.userService = userService;
         this.user = user;
@@ -88,6 +89,7 @@ let AuthController = class AuthController {
         this.usersRepository = usersRepository;
         this.adminRepository = adminRepository;
         this.request = request;
+        this.service = service;
     }
     async login(credentials) {
         // ensure the user exists, and the password is correct
@@ -249,6 +251,7 @@ let AuthController = class AuthController {
             let userNewPassword = await (0, common_services_1.generateRandomPassword)();
             // let encryptPswd = await encryptPassword(userNewPassword);
             const encryptPswd = await (0, bcryptjs_1.hash)(userNewPassword, await (0, bcryptjs_1.genSalt)());
+            let mailBody = await this.service.MailContent("forgotPassword", userNewPassword, inActiveUser, HTMLcontentFile);
             var htmlContent = `<h3>Hello </h3>
       <p>This is your temporary password to login : "${userNewPassword}"</p>`;
             if (inActiveUser) {
@@ -494,10 +497,11 @@ AuthController = tslib_1.__decorate([
     tslib_1.__param(4, (0, repository_1.repository)(repositories_1.UsersRepository)),
     tslib_1.__param(5, (0, repository_1.repository)(repositories_1.AdminRepository)),
     tslib_1.__param(6, (0, core_1.inject)(rest_1.RestBindings.Http.REQUEST)),
+    tslib_1.__param(7, (0, core_1.service)(services_1.AuthService)),
     tslib_1.__metadata("design:paramtypes", [jwt_service_1.JWTService,
         authentication_jwt_1.MyUserService, Object, authentication_jwt_1.UserRepository,
         repositories_1.UsersRepository,
-        repositories_1.AdminRepository, Object])
+        repositories_1.AdminRepository, Object, services_1.AuthService])
 ], AuthController);
 exports.AuthController = AuthController;
 //# sourceMappingURL=auth.controller.js.map

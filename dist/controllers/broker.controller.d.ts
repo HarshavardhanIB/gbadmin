@@ -59,4 +59,7 @@ export declare class BrokerController {
     formeConfig(): Promise<Response>;
     planId(apiRequest: any): Promise<any>;
     planlevels(apiRequest: any): Promise<any>;
+    broker_create_form_new(brokerId: number, apiRequest: any): Promise<Response>;
+    broker_create_form_new3(brokerIdOrName: string, trackingCode: number, apiRequest: any): Promise<Response>;
+    broker_create_form_new_dummy(brokerIdOrName: string, trackingCode: number, apiRequest: any): Promise<Response>;
 }

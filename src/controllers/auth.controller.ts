@@ -15,7 +15,7 @@ import {
 } from '@loopback/authentication-jwt';
 import moment from 'moment';
 import { UsersRepository, AdminRepository } from '../repositories'
-import { inject } from '@loopback/core';
+import { inject, service } from '@loopback/core';
 import { model, property, repository } from '@loopback/repository';
 import {
   get,
@@ -42,6 +42,7 @@ import * as constants from '../services/constants'
 import { JWTService } from '../services/jwt.service'
 import { Users } from '../models';
 import { email } from '../configurations';
+import { AuthService } from '../services';
 @model()
 export class NewUserRequest extends Admin {
   @property({
@@ -117,7 +118,8 @@ export class AuthController {
     @repository(AdminRepository)
     public adminRepository: AdminRepository,
     @inject(RestBindings.Http.REQUEST)
-    private request: Request
+    private request: Request,
+    @service(AuthService) public service: AuthService,
   ) { }
   @post('/auth/login', {
     responses: {
@@ -354,6 +356,7 @@ export class AuthController {
 
       // let encryptPswd = await encryptPassword(userNewPassword);
       const encryptPswd = await hash(userNewPassword, await genSalt());
+      let mailBody = await this.service.MailContent("forgotPassword", userNewPassword, inActiveUser, HTMLcontentFile);
       var htmlContent = `<h3>Hello </h3>
       <p>This is your temporary password to login : "${userNewPassword}"</p>`;
       if (inActiveUser) {

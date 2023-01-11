@@ -5,6 +5,7 @@ import { SchemaObject } from '@loopback/rest';
 import { UserProfile } from '@loopback/security';
 import { Admin } from '../models/admin.model';
 import { JWTService } from '../services/jwt.service';
+import { AuthService } from '../services';
 export declare class NewUserRequest extends Admin {
     password: string;
     username: string;
@@ -34,7 +35,8 @@ export declare class AuthController {
     usersRepository: UsersRepository;
     adminRepository: AdminRepository;
     private request;
-    constructor(jwtService: JWTService, userService: MyUserService, user: UserProfile, userRepository: UserRepository, usersRepository: UsersRepository, adminRepository: AdminRepository, request: Request);
+    service: AuthService;
+    constructor(jwtService: JWTService, userService: MyUserService, user: UserProfile, userRepository: UserRepository, usersRepository: UsersRepository, adminRepository: AdminRepository, request: Request, service: AuthService);
     login(credentials: Credentials): Promise<{
         token: string;
     }>;

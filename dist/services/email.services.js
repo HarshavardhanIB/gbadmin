@@ -26,6 +26,7 @@ async function mail(from, to, subject, html, text, attachments) {
         };
         const mailTransport = nodemailer.createTransport(transportOptions);
         await mailTransport.sendMail({
+            from: process.env.EMAIL_ID,
             to,
             replyTo: from,
             subject,

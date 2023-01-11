@@ -935,7 +935,7 @@ export class BrokerController {
                 let customPlanlevelObj: SignupFormsPlanLevelMapping = new SignupFormsPlanLevelMapping();
                 customPlanlevelObj.formId = signupForm.id || 0;
                 for (const pl of planLevels) {
-                  customPlanlevelObj.planlevelId = pl;
+                  customPlanlevelObj.planLevelId = pl;
                   await this.SignupFormsPlanLevelMappingRepository.create(customPlanlevelObj);
                 }
                 // for (const pl of planLevels) {
@@ -957,7 +957,7 @@ export class BrokerController {
                 //       if (countofsignupformplanlevelcondition.count > 0)// console.log("plan levels", planlevel);
                 //       { }
                 //       else {
-                //         customPlanlevelObj.planlevelId = planlevelloop.id || 0;
+                //         customPlanlevelObj.planLevelId = planlevelloop.id || 0;
                 //         let bsfl = await this.SignupFormsPlanLevelMappingRepository.create(customPlanlevelObj);
                 //         console.log("bsfl>>>>>", bsfl);
                 //       }
@@ -1093,6 +1093,7 @@ export class BrokerController {
                     name: { type: 'string', default: 'Health Benefits Application Form' },
                     // description: {type: 'string', default: ''},
                     link: { type: 'string', default: '' },
+                    planLevels: { type: 'array', default: '[]' }
                   }
                 }
 
@@ -1118,8 +1119,6 @@ export class BrokerController {
       //signup_form
       let signupFormData: SignupForms = new SignupForms();
       signupFormData.brokerId = broker.id || 1;
-
-
       console.log(apiRequest.formDetails)
       console.log(typeof apiRequest.formDetails)
       if (typeof apiRequest.formDetails == "string") {
@@ -1149,7 +1148,6 @@ export class BrokerController {
           console.log(`aliasLink2: ${aliasLink}`)
         }
         signupFormData.alias = aliasLink
-
         if (formDetails.name) {
           if (formDetails.name.toLowerCase().trim() == "default") {
             if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
@@ -1220,7 +1218,7 @@ export class BrokerController {
             }
           }
           for (const executivePlanLevel of executivePlanlevelArray) {
-            executivePlanlevelObj.planlevelId = executivePlanLevel;
+            executivePlanlevelObj.planLevelId = executivePlanLevel;
             await this.SignupFormsPlanLevelMappingRepository.create(executivePlanlevelObj);
           }
           console.log(`signupFormPlansArray: ${signupFormPlansArray.length}`)
@@ -1242,7 +1240,7 @@ export class BrokerController {
             });
             if (plkanLevels) {
               for (const planlevel of plkanLevels) {
-                executivePlanlevelObj.planlevelId = planlevel.id || 0;
+                executivePlanlevelObj.planLevelId = planlevel.id || 0;
                 await this.SignupFormsPlanLevelMappingRepository.create(executivePlanlevelObj);
               }
             }
@@ -1314,7 +1312,8 @@ export class BrokerController {
       await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formId: formId });
       let suf = await this.SignupFormsRepository.findById(formId);
       if (suf) {
-        await this.SignupFormsRepository.updateById(formId, { published: false });
+        // await this.SignupFormsRepository.updateById(formId, { published: false });
+        await this.SignupFormsRepository.deleteById(formId);
       }
       status = 200;
       message = "Form deleted successfull"
@@ -1948,7 +1947,7 @@ export class BrokerController {
                 let brokerSignUpformlevel: SignupFormsPlanLevelMapping = new SignupFormsPlanLevelMapping();
                 brokerSignUpformlevel.formId = formid || 0;
                 for (const planlevel of plkanLevels) {
-                  brokerSignUpformlevel.planlevelId = planlevel.id || 0;
+                  brokerSignUpformlevel.planLevelId = planlevel.id || 0;
                   await this.SignupFormsPlanLevelMappingRepository.create(brokerSignUpformlevel);
                 }
               }
@@ -3171,5 +3170,820 @@ export class BrokerController {
     return data;
 
   }
+  @post('/broker/{brokerId}/createForm2', {
+    responses: {
+      '200': {
+        description: 'Broker form creation',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                message: {
+                  type: 'string',
+                },
+                status: {
+                  type: 'string',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  //added based on name get the values
+  async broker_create_form_new(
+    @param.path.string('brokerId') brokerId: number,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
 
+              broker_name: {
+                type: 'string',
+                default: '',
+              },
+              formDetails: {
+                required: ['formType'],
+                type: 'array',
+                items: {
+                  properties: {
+                    formType: { type: 'string', default: 'REGULAR', enum: CONST.FORM_TYPE_ARRAY, },
+                    name: { type: 'string', default: 'Health Benefits Application Form' },
+                    // description: {type: 'string', default: ''},
+                    link: { type: 'string', default: '' },
+                    planLevelsisName: { type: 'boolean', default: 'false' },
+                    planLevels: { type: 'array', default: '[]' }
+                  }
+                }
+
+              },
+            }
+          }
+        },
+      }
+    }) apiRequest: any,
+  ): Promise<Response> {
+    let message, status, statusCode, data: any = {};
+
+    console.log(apiRequest);
+    let signUpformId: any;
+    try {
+
+      //handle form
+
+      const broker = await this.BrokerRepository.findById(brokerId);
+
+      //console.log("CONST.signupForm")
+      // console.log(CONST.signupForm)
+      //signup_form
+      let signupFormData: SignupForms = new SignupForms();
+      signupFormData.brokerId = broker.id || 1;
+      console.log(apiRequest.formDetails)
+      console.log(typeof apiRequest.formDetails)
+      if (typeof apiRequest.formDetails == "string") {
+        apiRequest.formDetails = JSON.parse(apiRequest.formDetails)
+        console.log(apiRequest.formDetails)
+        console.log(typeof apiRequest.formDetails)
+      }
+      console.log(apiRequest.formDetails.length)
+
+      data.form = []
+      for (const formDetails of apiRequest.formDetails) {
+
+        let link = await generateFormLink(broker.userId || 0)
+        signupFormData.link = await this.checkAndGenerateNewFormLink(link, broker.userId || 0)//generate_random_lin and user_id
+
+        let aliasLink = "";
+        console.log(`apiRequest.form.link: ${formDetails.link}`)
+        if (formDetails.link && formDetails.link != "") {
+          aliasLink = ("/" + formDetails.link)
+          console.log(`aliasLink1: ${aliasLink}`)
+        } else {
+          console.log(`broker.name: ${broker.name}`)
+          aliasLink = "/" + broker.name?.toLowerCase().split(" ")[0]
+          if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
+            aliasLink += "_exec"
+          }
+          console.log(`aliasLink2: ${aliasLink}`)
+        }
+        signupFormData.alias = aliasLink
+        if (formDetails.name) {
+          if (formDetails.name.toLowerCase().trim() == "default") {
+            if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
+              signupFormData.name = formDetails.name ?? CONST.signupFormExec.name
+            } else {
+              signupFormData.name = formDetails.name ?? CONST.signupForm.name
+            }
+          } else {
+            signupFormData.name = formDetails.name
+          }
+        } else {
+          if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
+            signupFormData.name = formDetails.name ?? CONST.signupFormExec.name
+          } else {
+            signupFormData.name = formDetails.name ?? CONST.signupForm.name
+          }
+        }
+
+        signupFormData.description = formDetails.description ?? CONST.signupForm.description
+        signupFormData.title = formDetails.title ?? CONST.signupForm.title
+        signupFormData.formType = formDetails.formType ?? CONST.signupForm.formType
+
+        signupFormData.keywords = formDetails.keywords ?? CONST.signupForm.keywords
+        // signupFormData.disclosureAgreement = formDetails.disclosureAgreement ?? CONST.signupForm.disclosure_agreement
+        // signupFormData.termsOfService = formDetails.termsOfService ?? CONST.signupForm.terms_of_service
+
+
+        signupFormData.inelligibilityPeriod = CONST.signupForm.ineligibilityPeriod
+        signupFormData.published = CONST.signupForm.published
+
+        if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
+          signupFormData.requireDentalHealthCoverage = false
+          signupFormData.requireSpouseEmail = true
+          signupFormData.warnRequiredDependantMedicalExam = true
+        } else {
+          signupFormData.requireDentalHealthCoverage = true
+          signupFormData.requireSpouseEmail = false
+          signupFormData.warnRequiredDependantMedicalExam = false
+        }
+
+        signupFormData.useCreditCardPaymentMethod = true
+        signupFormData.usePadPaymentMethod = true
+
+        signupFormData.isDemoForm = formDetails.isDemoform || false
+
+        const signupForm = await this.SignupFormsRepository.create(signupFormData);
+        signUpformId = signupForm.id;
+        data.form.push(signupForm)
+        console.log(`signupForm.id: ${signupForm.id}`)
+        //broker_signup_forms_plans
+        let signupFormPlansArray: BrokerSignupFormsPlans[] = [];
+        let signupFormPlans: BrokerSignupFormsPlans = new BrokerSignupFormsPlans();
+        signupFormPlans.formId = signupForm.id || 0;
+        if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
+          //get executive plan ids ---> package_id=5
+          let executivePlans = await this.InsurancePlansRepository.find({ where: { packageId: CONST.EXECUTIVE_PACKAGE_ID } })
+          let executivePlanlevelObj: SignupFormsPlanLevelMapping = new SignupFormsPlanLevelMapping();
+          executivePlanlevelObj.formId = signupForm.id || 0;
+          let executivePlanlevelArray: any = [];
+          for (const executivePlan of executivePlans) {
+            signupFormPlans.planId = executivePlan.id || 0
+            // console.log(`before push`)
+            // console.log(signupFormPlans);
+            signupFormPlansArray.push(signupFormPlans)
+            await this.BrokerSignupFormsPlansRepository.create(signupFormPlans);
+            if (!executivePlanlevelArray.includes(executivePlan.planLevel)) {
+              executivePlanlevelArray.push(executivePlan.planLevel);
+            }
+          }
+          for (const executivePlanLevel of executivePlanlevelArray) {
+            executivePlanlevelObj.planLevelId = executivePlanLevel;
+            await this.SignupFormsPlanLevelMappingRepository.create(executivePlanlevelObj);
+          }
+          console.log(`signupFormPlansArray: ${signupFormPlansArray.length}`)
+        }
+        if (formDetails.formType == CONST.SIGNUP_FORM.CUSTOM) {
+          let planLevels: any = [];
+          // var planLevels = formDetails.planLevels;
+          if (formDetails.planLevelsisName) {
+            let plsInRequest = formDetails.planLevels;
+            for (let pl of plsInRequest) {
+              if (pl == "PocketPills") {
+                pl = "Opt-In";
+              }
+              if (pl == "High-Cost Drugs (HCD)") {
+                pl = 'High-Cost Drugs';
+              }
+              let palLevel: any = await this.PlanLevelRepository.findOne({
+                where: {
+                  and: [
+                    { name: { like: `%${pl}%` } },
+                    { published: '1' }
+                  ]
+                },
+                // fields: { id: true }
+              })
+              if (palLevel) {
+                await planLevels.push(await palLevel.id)
+              }
+              console.log(palLevel);
+              console.log("plan levels after id");
+              console.log(planLevels);
+            }
+
+          }
+          else {
+            planLevels = formDetails.planLevels;
+          }
+          let executivePlanlevelObj: SignupFormsPlanLevelMapping = new SignupFormsPlanLevelMapping();
+          executivePlanlevelObj.formId = signupForm.id || 0;
+          for (const pl of planLevels) {
+            let plkanLevels = await this.PlanLevelRepository.find({
+              where: {
+                and: [
+                  { or: [{ id: pl }, { parentId: pl }] },
+                  { published: '1' }
+                ]
+              }, fields: {
+                id: true
+              }
+            });
+            if (plkanLevels) {
+              for (const planlevel of plkanLevels) {
+                executivePlanlevelObj.planLevelId = planlevel.id || 0;
+                await this.SignupFormsPlanLevelMappingRepository.create(executivePlanlevelObj);
+              }
+            }
+          }
+
+        }
+      }//forms
+
+      message = `Signup Form for ${broker.name} is created successfully`;
+      status = '200';
+      statusCode = 200;
+
+    } catch (error) {
+      await this.BrokerRepository.deleteAll({ brokerId: signUpformId });
+      console.error(error);
+      message = `Signup Form for ${brokerId} creation failed`
+      status = '202';
+      statusCode = 202
+    }
+
+    this.response.status(statusCode).send({
+      status: status,
+      message: message,
+      data: data,
+      date: new Date(),
+    });
+    return this.response;
+
+    //return {message, status, data}
+  }
+  @post('/broker/{brokerIdOrName}/createForm3/{trackingCode}', {
+    responses: {
+      '200': {
+        description: 'Broker form creation',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                message: {
+                  type: 'string',
+                },
+                status: {
+                  type: 'string',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  //added based on name get the values
+  async broker_create_form_new3(
+    @param.path.string('brokerIdOrName') brokerIdOrName: string, @param.path.string('trackingCode') trackingCode: number,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+
+              broker_name: {
+                type: 'string',
+                default: '',
+              },
+              formDetails: {
+                required: ['formType'],
+                type: 'array',
+                items: {
+                  properties: {
+                    formType: { type: 'string', default: 'REGULAR', enum: CONST.FORM_TYPE_ARRAY, },
+                    name: { type: 'string', default: 'Health Benefits Application Form' },
+                    // description: {type: 'string', default: ''},
+                    link: { type: 'string', default: '' },
+                    planLevelsisName: { type: 'boolean', default: 'false' },
+                    planLevels: { type: 'array', default: '[]' }
+                  }
+                }
+
+              },
+            }
+          }
+        },
+      }
+    }) apiRequest: any,
+  ): Promise<Response> {
+    let message, status, statusCode, data: any = {};
+
+    console.log(apiRequest);
+    let signUpformId: any;
+    let broker: any = await this.BrokerRepository.findOne({ where: { and: [{ salesTrackingCode: trackingCode }, { or: [{ id: brokerIdOrName }, { name: { like: `%${brokerIdOrName}%` } }] }] } });
+    try {
+      // console.log({ where: { and: [{ salesTrackingCode: trackingCode }, { or: [{ id: brokerIdOrName }, { name: { like: `%${brokerIdOrName}%` } }] }] } })
+      console.log(broker);
+      if (broker && broker != null) {
+        //console.log("CONST.signupForm")
+        // console.log(CONST.signupForm)
+        //signup_form
+        let signupFormData: SignupForms = new SignupForms();
+        signupFormData.brokerId = broker.id || 1;
+        console.log(apiRequest.formDetails)
+        console.log(typeof apiRequest.formDetails)
+        if (typeof apiRequest.formDetails == "string") {
+          apiRequest.formDetails = JSON.parse(apiRequest.formDetails)
+          console.log(apiRequest.formDetails)
+          console.log(typeof apiRequest.formDetails)
+        }
+        console.log(apiRequest.formDetails.length)
+
+        data.form = []
+        for (const formDetails of apiRequest.formDetails) {
+
+          let link = await generateFormLink(broker.userId || 0)
+          signupFormData.link = await this.checkAndGenerateNewFormLink(link, broker.userId || 0)//generate_random_lin and user_id
+
+          let aliasLink = "";
+          console.log(`apiRequest.form.link: ${formDetails.link}`)
+          if (formDetails.link && formDetails.link != "") {
+            aliasLink = ("/" + formDetails.link)
+            console.log(`aliasLink1: ${aliasLink}`)
+          } else {
+            console.log(`broker.name: ${broker.name}`)
+            aliasLink = "/" + broker.name?.toLowerCase().split(" ")[0]
+            if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
+              aliasLink += "_exec"
+            }
+            console.log(`aliasLink2: ${aliasLink}`)
+          }
+          signupFormData.alias = aliasLink
+          if (formDetails.name) {
+            if (formDetails.name.toLowerCase().trim() == "default") {
+              if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
+                signupFormData.name = formDetails.name ?? CONST.signupFormExec.name
+              } else {
+                signupFormData.name = formDetails.name ?? CONST.signupForm.name
+              }
+            } else {
+              signupFormData.name = formDetails.name
+            }
+          } else {
+            if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
+              signupFormData.name = formDetails.name ?? CONST.signupFormExec.name
+            } else {
+              signupFormData.name = formDetails.name ?? CONST.signupForm.name
+            }
+          }
+
+          signupFormData.description = formDetails.description ?? CONST.signupForm.description
+          signupFormData.title = formDetails.title ?? CONST.signupForm.title
+          signupFormData.formType = formDetails.formType ?? CONST.signupForm.formType
+
+          signupFormData.keywords = formDetails.keywords ?? CONST.signupForm.keywords
+          // signupFormData.disclosureAgreement = formDetails.disclosureAgreement ?? CONST.signupForm.disclosure_agreement
+          // signupFormData.termsOfService = formDetails.termsOfService ?? CONST.signupForm.terms_of_service
+
+
+          signupFormData.inelligibilityPeriod = CONST.signupForm.ineligibilityPeriod
+          signupFormData.published = CONST.signupForm.published
+
+          if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
+            signupFormData.requireDentalHealthCoverage = false
+            signupFormData.requireSpouseEmail = true
+            signupFormData.warnRequiredDependantMedicalExam = true
+          } else {
+            signupFormData.requireDentalHealthCoverage = true
+            signupFormData.requireSpouseEmail = false
+            signupFormData.warnRequiredDependantMedicalExam = false
+          }
+
+          signupFormData.useCreditCardPaymentMethod = true
+          signupFormData.usePadPaymentMethod = true
+
+          signupFormData.isDemoForm = formDetails.isDemoform || false
+
+          const signupForm = await this.SignupFormsRepository.create(signupFormData);
+          signUpformId = signupForm.id;
+          data.form.push(signupForm)
+          console.log(`signupForm.id: ${signupForm.id}`)
+          //broker_signup_forms_plans
+          let signupFormPlansArray: BrokerSignupFormsPlans[] = [];
+          let signupFormPlans: BrokerSignupFormsPlans = new BrokerSignupFormsPlans();
+          signupFormPlans.formId = signupForm.id || 0;
+          if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
+            //get executive plan ids ---> package_id=5
+            let executivePlans = await this.InsurancePlansRepository.find({ where: { packageId: CONST.EXECUTIVE_PACKAGE_ID } })
+            let executivePlanlevelObj: SignupFormsPlanLevelMapping = new SignupFormsPlanLevelMapping();
+            executivePlanlevelObj.formId = signupForm.id || 0;
+            let executivePlanlevelArray: any = [];
+            for (const executivePlan of executivePlans) {
+              signupFormPlans.planId = executivePlan.id || 0
+              // console.log(`before push`)
+              // console.log(signupFormPlans);
+              signupFormPlansArray.push(signupFormPlans)
+              await this.BrokerSignupFormsPlansRepository.create(signupFormPlans);
+              if (!executivePlanlevelArray.includes(executivePlan.planLevel)) {
+                executivePlanlevelArray.push(executivePlan.planLevel);
+              }
+            }
+            for (const executivePlanLevel of executivePlanlevelArray) {
+              executivePlanlevelObj.planLevelId = executivePlanLevel;
+              await this.SignupFormsPlanLevelMappingRepository.create(executivePlanlevelObj);
+            }
+            console.log(`signupFormPlansArray: ${signupFormPlansArray.length}`)
+          }
+          if (formDetails.formType == CONST.SIGNUP_FORM.CUSTOM) {
+            let planLevels: any = [];
+            // var planLevels = formDetails.planLevels;
+            if (formDetails.planLevelsisName) {
+              let plsInRequest = formDetails.planLevels;
+              for (let pl of plsInRequest) {
+                if (pl == "PocketPills") {
+                  pl = "Opt-In";
+                }
+                if (pl == "High-Cost Drugs (HCD)") {
+                  pl = 'High-Cost Drugs';
+                }
+                let palLevel: any = await this.PlanLevelRepository.findOne({
+                  where: {
+                    and: [
+                      { name: { like: `%${pl}%` } },
+                      { published: '1' }
+                    ]
+                  },
+                  // fields: { id: true }
+                })
+                if (palLevel) {
+                  await planLevels.push(await palLevel.id)
+                }
+                // console.log(palLevel);
+                // console.log("plan levels after id");
+                // console.log(planLevels);
+              }
+
+            }
+            else {
+              planLevels = formDetails.planLevels;
+            }
+            let executivePlanlevelObj: SignupFormsPlanLevelMapping = new SignupFormsPlanLevelMapping();
+            let brokerSignupformsPlansObj: BrokerSignupFormsPlans = new BrokerSignupFormsPlans();
+            brokerSignupformsPlansObj.formId = signupForm.id || 0;
+            executivePlanlevelObj.formId = signupForm.id || 0;
+            for (const pl of planLevels) {
+              let plkanLevels = await this.PlanLevelRepository.find({
+                where: {
+                  and: [
+                    { or: [{ id: pl }, { parentId: pl }] },
+                    { published: '1' }
+                  ]
+                }, fields: {
+                  id: true
+                }
+              });
+              if (plkanLevels) {
+                for (const planlevel of plkanLevels) {
+                  executivePlanlevelObj.planLevelId = planlevel.id || 0;
+                  await this.SignupFormsPlanLevelMappingRepository.create(executivePlanlevelObj);
+                  let plans = await this.InsurancePlansRepository.find({ where: { planLevel: planlevel.id }, fields: { id: true } });
+
+                  for (const plan of plans) {
+                    brokerSignupformsPlansObj.planId = plan.id || 0;
+                    console.log(brokerSignupformsPlansObj);
+                    await this.BrokerSignupFormsPlansRepository.create(brokerSignupformsPlansObj);
+
+                  }
+                }
+              }
+            }
+
+          }
+        }//forms
+
+        message = `Signup Form for ${broker.name} is created successfully`;
+        status = '200';
+        statusCode = 200;
+      }
+      else {
+        message = `Signup Form for ${brokerIdOrName} creation failed no broker details found`
+        status = '202';
+        statusCode = 202
+      }
+    } catch (error) {
+      try {
+        await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formId: signUpformId });
+        await this.BrokerSignupFormsPlansRepository.deleteAll({ formId: signUpformId });
+        await this.SignupFormsRepository.deleteById(signUpformId);
+      }
+      catch (error) {
+        console.log(error);
+      }
+      console.error(error);
+      message = `Signup Form for ${brokerIdOrName} creation failed`
+      status = '202';
+      statusCode = 202
+    }
+
+    this.response.status(statusCode).send({
+      status: status,
+      message: message,
+      data: data,
+      date: new Date(),
+    });
+    return this.response;
+
+    //return {message, status, data}
+  }
+  @post('/broker/{brokerIdOrName}/createForm_dummy/{trackingCode}', {
+    responses: {
+      '200': {
+        description: 'Broker form creation',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                message: {
+                  type: 'string',
+                },
+                status: {
+                  type: 'string',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  //added based on name get the values
+  async broker_create_form_new_dummy(
+    @param.path.string('brokerIdOrName') brokerIdOrName: string, @param.path.string('trackingCode') trackingCode: number,
+    @requestBody({
+      description: "This is dummy form to get the broker and plan level details for testing",
+      content: {
+
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+
+              broker_name: {
+                type: 'string',
+                default: '',
+              },
+              formDetails: {
+                required: ['formType'],
+                type: 'array',
+                items: {
+                  properties: {
+                    formType: { type: 'string', default: 'REGULAR', enum: CONST.FORM_TYPE_ARRAY, },
+                    name: { type: 'string', default: 'Health Benefits Application Form' },
+                    // description: {type: 'string', default: ''},
+                    link: { type: 'string', default: '' },
+                    planLevelsisName: { type: 'boolean', default: 'false' },
+                    planLevels: { type: 'array', default: '[]' }
+                  }
+                }
+
+              },
+            }
+          }
+        },
+      }
+    }) apiRequest: any,
+  ): Promise<Response> {
+    let message, status, statusCode, data: any = {};
+    let dummyDataRes: any = [];
+    console.log(apiRequest);
+    let signUpformId: any;
+    let dummybroker: any = await this.BrokerRepository.findOne({ where: { and: [{ salesTrackingCode: trackingCode }, { or: [{ id: brokerIdOrName }, { name: { like: `%${brokerIdOrName}%` } }] }] } });
+    console.log("broker details");
+    console.log(dummybroker);
+    try {
+      // console.log({ where: { and: [{ salesTrackingCode: trackingCode }, { or: [{ id: brokerIdOrName }, { name: { like: `%${brokerIdOrName}%` } }] }] } })
+      let broker = { "id": 1, 'userId': 1, 'name': 'dummy' };
+      if (broker && broker != null) {
+        //console.log("CONST.signupForm")
+        // console.log(CONST.signupForm)
+        //signup_form
+        let signupFormData: SignupForms = new SignupForms();
+        signupFormData.brokerId = broker.id || 1;
+        console.log(apiRequest.formDetails)
+        console.log(typeof apiRequest.formDetails)
+        if (typeof apiRequest.formDetails == "string") {
+          apiRequest.formDetails = JSON.parse(apiRequest.formDetails)
+          console.log(apiRequest.formDetails)
+          console.log(typeof apiRequest.formDetails)
+        }
+        console.log(apiRequest.formDetails.length)
+
+        data.form = []
+        let formIndex = 0;
+        for (const formDetails of apiRequest.formDetails) {
+
+          let link = await generateFormLink(broker.userId || 0)
+          signupFormData.link = await this.checkAndGenerateNewFormLink(link, broker.userId || 0)//generate_random_lin and user_id
+
+          let aliasLink = "";
+          console.log(`apiRequest.form.link: ${formDetails.link}`)
+          if (formDetails.link && formDetails.link != "") {
+            aliasLink = ("/" + formDetails.link)
+            console.log(`aliasLink1: ${aliasLink}`)
+          } else {
+            console.log(`broker.name: ${broker.name}`)
+            aliasLink = "/" + broker.name?.toLowerCase().split(" ")[0]
+            if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
+              aliasLink += "_exec"
+            }
+            console.log(`aliasLink2: ${aliasLink}`)
+          }
+          signupFormData.alias = aliasLink
+          if (formDetails.name) {
+            if (formDetails.name.toLowerCase().trim() == "default") {
+              if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
+                signupFormData.name = formDetails.name ?? CONST.signupFormExec.name
+              } else {
+                signupFormData.name = formDetails.name ?? CONST.signupForm.name
+              }
+            } else {
+              signupFormData.name = formDetails.name
+            }
+          } else {
+            if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
+              signupFormData.name = formDetails.name ?? CONST.signupFormExec.name
+            } else {
+              signupFormData.name = formDetails.name ?? CONST.signupForm.name
+            }
+          }
+
+          signupFormData.description = formDetails.description ?? CONST.signupForm.description
+          signupFormData.title = formDetails.title ?? CONST.signupForm.title
+          signupFormData.formType = formDetails.formType ?? CONST.signupForm.formType
+
+          signupFormData.keywords = formDetails.keywords ?? CONST.signupForm.keywords
+          // signupFormData.disclosureAgreement = formDetails.disclosureAgreement ?? CONST.signupForm.disclosure_agreement
+          // signupFormData.termsOfService = formDetails.termsOfService ?? CONST.signupForm.terms_of_service
+
+
+          signupFormData.inelligibilityPeriod = CONST.signupForm.ineligibilityPeriod
+          signupFormData.published = CONST.signupForm.published
+
+          if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
+            signupFormData.requireDentalHealthCoverage = false
+            signupFormData.requireSpouseEmail = true
+            signupFormData.warnRequiredDependantMedicalExam = true
+          } else {
+            signupFormData.requireDentalHealthCoverage = true
+            signupFormData.requireSpouseEmail = false
+            signupFormData.warnRequiredDependantMedicalExam = false
+          }
+
+          signupFormData.useCreditCardPaymentMethod = true
+          signupFormData.usePadPaymentMethod = true
+
+          signupFormData.isDemoForm = formDetails.isDemoform || false
+
+          // const signupForm = await this.SignupFormsRepository.create(signupFormData);
+          const signupForm = { 'id': ++formIndex };
+          signUpformId = signupForm.id;
+          data.form.push(signupForm)
+          console.log(`signupForm.id: ${signupForm.id}`)
+          //broker_signup_forms_plans
+          let signupFormPlansArray: BrokerSignupFormsPlans[] = [];
+          let signupFormPlans: BrokerSignupFormsPlans = new BrokerSignupFormsPlans();
+          signupFormPlans.formId = signupForm.id || 0;
+          if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
+            //get executive plan ids ---> package_id=5
+            let executivePlans = await this.InsurancePlansRepository.find({ where: { packageId: CONST.EXECUTIVE_PACKAGE_ID } })
+            let executivePlanlevelObj: SignupFormsPlanLevelMapping = new SignupFormsPlanLevelMapping();
+            executivePlanlevelObj.formId = signupForm.id || 0;
+            let executivePlanlevelArray: any = [];
+            for (const executivePlan of executivePlans) {
+              signupFormPlans.planId = executivePlan.id || 0
+              // console.log(`before push`)
+              // console.log(signupFormPlans);
+              signupFormPlansArray.push(signupFormPlans)
+              await this.BrokerSignupFormsPlansRepository.create(signupFormPlans);
+              if (!executivePlanlevelArray.includes(executivePlan.planLevel)) {
+                executivePlanlevelArray.push(executivePlan.planLevel);
+              }
+            }
+            for (const executivePlanLevel of executivePlanlevelArray) {
+              executivePlanlevelObj.planLevelId = executivePlanLevel;
+              await this.SignupFormsPlanLevelMappingRepository.create(executivePlanlevelObj);
+            }
+            console.log(`signupFormPlansArray: ${signupFormPlansArray.length}`)
+          }
+          if (formDetails.formType == CONST.SIGNUP_FORM.CUSTOM) {
+            let planLevels: any = [];
+            // var planLevels = formDetails.planLevels;
+            if (formDetails.planLevelsisName) {
+              let plsInRequest = formDetails.planLevels;
+              for (let pl of plsInRequest) {
+                if (pl == "PocketPills") {
+                  pl = "Opt-In";
+                }
+                if (pl == "High-Cost Drugs (HCD)") {
+                  pl = 'High-Cost Drugs';
+                }
+                let palLevel: any = await this.PlanLevelRepository.findOne({
+                  where: {
+                    and: [
+                      { name: { like: `%${pl}%` } },
+                      { published: '1' }
+                    ]
+                  },
+                  // fields: { id: true }
+                })
+                if (palLevel) {
+                  await planLevels.push(await palLevel.id)
+                }
+                // console.log(palLevel);
+                // console.log("plan levels after id");
+                // console.log(planLevels);
+              }
+
+            }
+            else {
+              planLevels = formDetails.planLevels;
+            }
+            let PlanlevelObj: SignupFormsPlanLevelMapping = new SignupFormsPlanLevelMapping();
+            let brokerSignupformsPlansObj: BrokerSignupFormsPlans = new BrokerSignupFormsPlans();
+            brokerSignupformsPlansObj.formId = signupForm.id || 0;
+
+            PlanlevelObj.formId = signupForm.id || 0;
+            for (const pl of planLevels) {
+              let plkanLevels = await this.PlanLevelRepository.find({
+                where: {
+                  and: [
+                    { or: [{ id: pl }, { parentId: pl }] },
+                    { published: '1' }
+                  ]
+                }, fields: {
+                  id: true
+                }
+              });
+              if (plkanLevels) {
+                for (const planlevel of plkanLevels) {
+                  PlanlevelObj.planLevelId = planlevel.id || 0;
+                  // await this.SignupFormsPlanLevelMappingRepository.create(executivePlanlevelObj);
+                  console.log(PlanlevelObj);
+                  let plans = await this.InsurancePlansRepository.find({ where: { planLevel: planlevel.id }, fields: { id: true } });
+
+                  for (const plan of plans) {
+                    brokerSignupformsPlansObj.planId = plan.id || 0;
+                    console.log(brokerSignupformsPlansObj);
+                    // await this.BrokerSignupFormsPlansRepository.create(brokerSignupformsPlansObj);
+
+                  }
+
+                }
+              }
+            }
+
+          }
+        }//forms
+
+        message = `Signup Form for ${broker.name} is created successfully`;
+        status = '200';
+        statusCode = 200;
+      }
+      else {
+        message = `Signup Form for ${brokerIdOrName} creation failed no broker details found`
+        status = '202';
+        statusCode = 202
+      }
+    } catch (error) {
+      try {
+        await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formId: signUpformId });
+        await this.BrokerSignupFormsPlansRepository.deleteAll({ formId: signUpformId });
+        await this.SignupFormsRepository.deleteById(signUpformId);
+      }
+      catch (error) {
+        console.log(error);
+      }
+      console.error(error);
+      message = `Signup Form for ${brokerIdOrName} creation failed`
+      status = '202';
+      statusCode = 202
+    }
+
+    this.response.status(statusCode).send({
+      status: status,
+      message: message,
+      data: data,
+      date: new Date(),
+    });
+    return this.response;
+
+    //return {message, status, data}
+  }
 }

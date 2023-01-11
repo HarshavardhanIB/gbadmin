@@ -10,3 +10,4 @@ export * from './validation.services';
 export * from './broker.service';
 export * from './database-changes.service';
 export * from './corporate.service';
+export * from './auth.service';
