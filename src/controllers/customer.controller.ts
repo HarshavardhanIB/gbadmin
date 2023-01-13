@@ -226,7 +226,7 @@ export class customerController {
             },
             count: {
               type: 'number',
-              default: 20
+              default: 0
             },
             strictOrpartial: {
               //when

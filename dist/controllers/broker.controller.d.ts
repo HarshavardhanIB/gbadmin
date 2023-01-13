@@ -66,4 +66,5 @@ export declare class BrokerController {
     customersBasedonbrokerId(brokerid: number): Promise<any>;
     customerdetailsBasedonbrokerIdandCustomerId(brokerid: number, customerId: number): Promise<any>;
     customerDetailsBasedOnBrokerIdandFormId(brokerid: number, customerId: number, formId: number): Promise<any>;
+    search(apiRequest: any): Promise<any>;
 }

@@ -1,5 +1,9 @@
 #GBPORTAL
 
+0.4.6
+
+added customers search/filter service in customer controller and added broker,form,customers based on the brokerid,formId and custoemid services in broker controller and also added broker search/filter service in broker controller
+
 0.4.5
 
 added plans bansed on formId,age and province id  2 services added broker controller
