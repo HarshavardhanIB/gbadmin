@@ -31,6 +31,10 @@ import { UsersRepository, ContactInformationRepository, CustomerContactInfoRepos
 import { authorize } from '@loopback/authorization';
 import { basicAuthorization } from '../middleware/auth.midd';
 import { SecurityBindings, securityId, UserProfile } from '@loopback/security';
+import * as CONST from '../constants';
+import moment from 'moment';
+import { from } from 'form-data';
+import { toArray } from 'lodash';
 // @authenticate('jwt')
 // @authorize({
 //   allowedRoles: ['BROKER', 'ADMINISTRATOR'],
@@ -191,6 +195,113 @@ export class customerController {
     }
     return response;
   }
+  @post('/admin/search', {
+    responses: {
+      200: {
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+            },
+          },
+        },
+        description: 'File',
+      },
+    }
+  })
+  async search(@requestBody({
+    description: 'search filter for the customers',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object',
+          properties: {
+            searchArray: {
+              type: 'array',
+              default: `[{"searchterm":"", "searchvalue":""},{"searchterm":"registrationdate","searchvalue":{from:"", to:""}}]`
+            },
+            status: {
+              type: 'string',
+              default: 'ALL',
+            },
+            count: {
+              type: 'number',
+              default: 20
+            },
+            strictOrpartial: {
+              //when
+              type: 'boolean',
+              default: false
+            }
+          }
+        }
+      }
+    }
+  }) apiRequest: any): Promise<any> {
+    let status, message, data: any;
+    try {
+      let filter: any = { where: { and: [] }, fields: { registrationDate: true, firstName: true, lastName: true, dob: true, status: true, gender: true }, limit: apiRequest.count };
+      let searchArray = apiRequest.searchArray;
+      if (apiRequest.status == "" || apiRequest.status == "ALL") {
+      }
+      else {
+        filter.where["status"] = apiRequest.status;
+      }
+      for (const seatObj of searchArray) {
+        let searchterm = seatObj.searchterm;
+        let searchvalue = seatObj.searchvalue;
+        if (searchterm == "registrationdate") {
+          let from = searchvalue.from != "" ? searchvalue.from : '2001-01-01';
+          let to = searchvalue.to != "" ? searchvalue.to : moment().format('YYYY-MM-DD');
+          filter.where.and.push({ "registrationDate": { "between": [from, to] } })
+          // filter.where.and.push({ and: [{ registrationDate: { gte: from } }, { registrationDate: { lt: to } }] })
+          console.log(from, "***", to)
+        }
+        else {
+          if (searchterm != "") {
+            let obj: any = {};
+            console.log(apiRequest.strictOrpartial)
+            if (apiRequest.strictOrpartial) {
+              obj[searchterm] = { like: `${searchvalue}` };
+              filter.where.and.push(obj);
+            }
+            else {
+              obj[searchterm] = searchvalue;
+              filter.where.and.push(obj);
+            }
+          }
+        }
 
+      }
+      // let andO = filter.where.and;
+      // for (const a of andO) {
+      //   console.log(a);
+      //   if (a.and) {
+      //     let aaa = a.and;
+      //     for (const aa of aaa) {
+      //       console.log(aa)
+      //     }
+      //   }
+      // }
+      let customers: any = await this.CustomerRepository.find(filter);
+      if (customers.length > 0) {
+        status = 200;
+        message = "Customer details"
+        data = customers;
+      }
+      else {
+        status = 201;
+        message = "No details found"
+      }
+    }
+    catch (error) {
+      status = 400;
+      message = "Error " + error.message
+    }
+    this.response.status(status).send({
+      status, message, data
+    })
+    return this.response;
+  }
 }
 

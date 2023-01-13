@@ -1,6 +1,7 @@
 import { Entity } from '@loopback/repository';
 import { Customer } from './customer.model';
 import { SignupFormsPlanLevelMapping } from './signup-forms-plan-level-mapping.model';
+import { BrokerSignupFormsPlans } from './broker-signup-forms-plans.model';
 export declare class SignupForms extends Entity {
     alias?: string;
     brokerId: number;
@@ -24,6 +25,7 @@ export declare class SignupForms extends Entity {
     customers: Customer[];
     signupFormsPlanLevelMappings: SignupFormsPlanLevelMapping[];
     broker_id: number;
+    brokerSignupFormsPlans: BrokerSignupFormsPlans[];
     [prop: string]: any;
     constructor(data?: Partial<SignupForms>);
 }

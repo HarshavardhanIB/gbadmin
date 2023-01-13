@@ -17,4 +17,5 @@ export declare class customerController {
     customersCount(): Promise<any>;
     customerslist(): Promise<Response>;
     allCustmerDetails(id: number): Promise<any>;
+    search(apiRequest: any): Promise<any>;
 }

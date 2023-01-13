@@ -38,11 +38,7 @@ export declare class BrokerController {
     deleteForm(formId: number): Promise<any>;
     deleteBrokerForm(Brokerid: number): Promise<any>;
     formConfig(formLink?: string, lang?: string): Promise<Response>;
-    modifyForm(formid: number, requestBody: {
-        newType: string;
-        planlevel?: Array<number>;
-        oldType: string;
-    }): Promise<Response>;
+    modifyForm(formid: number, requestBody: any): Promise<Response>;
     updateContact(id: number, ContactInformation: Omit<ContactInformation, 'id'>): Promise<any>;
     updateLiceceState(brokerId: number, requestBody: {
         states: Array<number>;
@@ -62,4 +58,12 @@ export declare class BrokerController {
     broker_create_form_new(brokerId: number, apiRequest: any): Promise<Response>;
     broker_create_form_new3(brokerIdOrName: string, trackingCode: number, apiRequest: any): Promise<Response>;
     broker_create_form_new_dummy(brokerIdOrName: string, trackingCode: number, apiRequest: any): Promise<Response>;
+    formDetails(formId: number): Promise<Response>;
+    addOrRemoveForm(formid: number, requestBody: any): Promise<Response>;
+    brokerDetails(id: number): Promise<any>;
+    brokerFormDetails(brokerid: number): Promise<any>;
+    brokerFormbasedonIdDetails(brokerid: number, formId: number): Promise<any>;
+    customersBasedonbrokerId(brokerid: number): Promise<any>;
+    customerdetailsBasedonbrokerIdandCustomerId(brokerid: number, customerId: number): Promise<any>;
+    customerDetailsBasedOnBrokerIdandFormId(brokerid: number, customerId: number, formId: number): Promise<any>;
 }

@@ -3,6 +3,7 @@ import { Broker } from './broker.model';
 import { CustomerSignup } from './customer-signup.model';
 import { Customer } from './customer.model';
 import { SignupFormsPlanLevelMapping } from './signup-forms-plan-level-mapping.model';
+import {BrokerSignupFormsPlans} from './broker-signup-forms-plans.model';
 
 @model({
   settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'signup_forms' } }
@@ -177,6 +178,9 @@ export class SignupForms extends Entity {
 
   @belongsTo(() => Broker, { name: 'broker' })
   broker_id: number;
+
+  @hasMany(() => BrokerSignupFormsPlans, {keyTo: 'form_id'})
+  brokerSignupFormsPlans: BrokerSignupFormsPlans[];
   // Define well-known properties here
 
   // Indexer property to allow additional data

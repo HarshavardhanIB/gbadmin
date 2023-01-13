@@ -1,11 +1,12 @@
 import { inject, Getter } from '@loopback/core';
 import { DefaultCrudRepository, repository, HasManyRepositoryFactory, HasManyThroughRepositoryFactory, BelongsToAccessor} from '@loopback/repository';
 import { GbadminDataSource } from '../datasources';
-import { SignupForms, SignupFormsRelations, Customer, CustomerSignup, SignupFormsPlanLevelMapping, Broker} from '../models';
+import { SignupForms, SignupFormsRelations, Customer, CustomerSignup, SignupFormsPlanLevelMapping, Broker, BrokerSignupFormsPlans} from '../models';
 import { SignupFormsPlanLevelMappingRepository } from './signup-forms-plan-level-mapping.repository';
 import { CustomerSignupRepository } from './customer-signup.repository';
 import { CustomerRepository } from './customer.repository';
 import {BrokerRepository} from './broker.repository';
+import {BrokerSignupFormsPlansRepository} from './broker-signup-forms-plans.repository';
 
 export class SignupFormsRepository extends DefaultCrudRepository<
   SignupForms,
@@ -22,6 +23,8 @@ export class SignupFormsRepository extends DefaultCrudRepository<
 
   public readonly broker: BelongsToAccessor<Broker, typeof SignupForms.prototype.id>;
 
+  public readonly brokerSignupFormsPlans: HasManyRepositoryFactory<BrokerSignupFormsPlans, typeof SignupForms.prototype.id>;
+
   constructor(
     @inject('datasources.gbadmin') dataSource: GbadminDataSource,
     @repository.getter('SignupFormsPlanLevelMappingRepository')
@@ -31,9 +34,11 @@ export class SignupFormsRepository extends DefaultCrudRepository<
     @repository.getter('CustomerRepository')
     protected customerRepositoryGetter: Getter<CustomerRepository>,
     @repository.getter('SignupFormsPlanLevelMappingRepository')
-    protected signupFormsPlanLevelMappingRepositoryGetter: Getter<SignupFormsPlanLevelMappingRepository>, @repository.getter('BrokerRepository') protected brokerRepositoryGetter: Getter<BrokerRepository>,
+    protected signupFormsPlanLevelMappingRepositoryGetter: Getter<SignupFormsPlanLevelMappingRepository>, @repository.getter('BrokerRepository') protected brokerRepositoryGetter: Getter<BrokerRepository>, @repository.getter('BrokerSignupFormsPlansRepository') protected brokerSignupFormsPlansRepositoryGetter: Getter<BrokerSignupFormsPlansRepository>,
   ) {
     super(SignupForms, dataSource);
+    this.brokerSignupFormsPlans = this.createHasManyRepositoryFactoryFor('brokerSignupFormsPlans', brokerSignupFormsPlansRepositoryGetter,);
+    this.registerInclusionResolver('brokerSignupFormsPlans', this.brokerSignupFormsPlans.inclusionResolver);
     this.broker = this.createBelongsToAccessorFor('broker', brokerRepositoryGetter,);
     this.registerInclusionResolver('broker', this.broker.inclusionResolver);
     this.signupFormsPlanLevelMappings = this.createHasManyRepositoryFactoryFor('signupFormsPlanLevelMappings', signupFormsPlanLevelMappingRepositoryGetter,);

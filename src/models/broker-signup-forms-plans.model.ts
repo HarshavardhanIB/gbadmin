@@ -3,7 +3,7 @@ import { Entity, model, property } from '@loopback/repository';
 @model({
   settings: {
     idInjection: false,
-    mysql: { schema: 'gbadmin', table: 'broker_signup_forms_plans' }
+    mysql: {schema: 'gbadmin', table: 'broker_signup_forms_plans'}
   }
 })
 export class BrokerSignupFormsPlans extends Entity {
@@ -11,7 +11,7 @@ export class BrokerSignupFormsPlans extends Entity {
     type: 'number',
     precision: 12,
     generated: 0,
-    mysql: { columnName: 'covered_percentage', dataType: 'float', dataLength: null, dataPrecision: 12, dataScale: null, nullable: 'Y', generated: 0 },
+    mysql: {columnName: 'covered_percentage', dataType: 'float', dataLength: null, dataPrecision: 12, dataScale: null, nullable: 'Y', generated: 0},
   })
   coveredPercentage?: number;
 
@@ -21,7 +21,7 @@ export class BrokerSignupFormsPlans extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: { columnName: 'form_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0 },
+    mysql: {columnName: 'form_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0},
   })
   formId: number;
 
@@ -38,7 +38,7 @@ export class BrokerSignupFormsPlans extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: { columnName: 'plan_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0 },
+    mysql: {columnName: 'plan_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0},
   })
   planId: number;
 
@@ -47,10 +47,14 @@ export class BrokerSignupFormsPlans extends Entity {
     precision: 10,
     scale: 0,
     generated: 0,
-    mysql: { columnName: 'rebate_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0 },
+    mysql: {columnName: 'rebate_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0},
   })
   rebateId?: number;
 
+  @property({
+    type: 'number',
+  })
+  form_id?: number;
   // Define well-known properties here
 
   // Indexer property to allow additional data

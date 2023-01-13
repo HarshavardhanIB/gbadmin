@@ -7,6 +7,7 @@ const broker_model_1 = require("./broker.model");
 const customer_signup_model_1 = require("./customer-signup.model");
 const customer_model_1 = require("./customer.model");
 const signup_forms_plan_level_mapping_model_1 = require("./signup-forms-plan-level-mapping.model");
+const broker_signup_forms_plans_model_1 = require("./broker-signup-forms-plans.model");
 let SignupForms = class SignupForms extends repository_1.Entity {
     constructor(data) {
         super(data);
@@ -205,6 +206,10 @@ tslib_1.__decorate([
     (0, repository_1.belongsTo)(() => broker_model_1.Broker, { name: 'broker' }),
     tslib_1.__metadata("design:type", Number)
 ], SignupForms.prototype, "broker_id", void 0);
+tslib_1.__decorate([
+    (0, repository_1.hasMany)(() => broker_signup_forms_plans_model_1.BrokerSignupFormsPlans, { keyTo: 'form_id' }),
+    tslib_1.__metadata("design:type", Array)
+], SignupForms.prototype, "brokerSignupFormsPlans", void 0);
 SignupForms = tslib_1.__decorate([
     (0, repository_1.model)({
         settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'signup_forms' } }

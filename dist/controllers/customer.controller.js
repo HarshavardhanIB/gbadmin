@@ -9,6 +9,7 @@ const rest_1 = require("@loopback/rest");
 const repository_1 = require("@loopback/repository");
 const repositories_1 = require("../repositories");
 const security_1 = require("@loopback/security");
+const moment_1 = tslib_1.__importDefault(require("moment"));
 // @authenticate('jwt')
 // @authorize({
 //   allowedRoles: ['BROKER', 'ADMINISTRATOR'],
@@ -145,6 +146,71 @@ let customerController = class customerController {
         };
         return response;
     }
+    async search(apiRequest) {
+        let status, message, data;
+        try {
+            let filter = { where: { and: [] }, fields: { registrationDate: true, firstName: true, lastName: true, dob: true, status: true, gender: true }, limit: apiRequest.count };
+            let searchArray = apiRequest.searchArray;
+            if (apiRequest.status == "" || apiRequest.status == "ALL") {
+            }
+            else {
+                filter.where["status"] = apiRequest.status;
+            }
+            for (const seatObj of searchArray) {
+                let searchterm = seatObj.searchterm;
+                let searchvalue = seatObj.searchvalue;
+                if (searchterm == "registrationdate") {
+                    let from = searchvalue.from != "" ? searchvalue.from : '2001-01-01';
+                    let to = searchvalue.to != "" ? searchvalue.to : (0, moment_1.default)().format('YYYY-MM-DD');
+                    filter.where.and.push({ "registrationDate": { "between": [from, to] } });
+                    // filter.where.and.push({ and: [{ registrationDate: { gte: from } }, { registrationDate: { lt: to } }] })
+                    console.log(from, "***", to);
+                }
+                else {
+                    if (searchterm != "") {
+                        let obj = {};
+                        console.log(apiRequest.strictOrpartial);
+                        if (apiRequest.strictOrpartial) {
+                            obj[searchterm] = { like: `${searchvalue}` };
+                            filter.where.and.push(obj);
+                        }
+                        else {
+                            obj[searchterm] = searchvalue;
+                            filter.where.and.push(obj);
+                        }
+                    }
+                }
+            }
+            // let andO = filter.where.and;
+            // for (const a of andO) {
+            //   console.log(a);
+            //   if (a.and) {
+            //     let aaa = a.and;
+            //     for (const aa of aaa) {
+            //       console.log(aa)
+            //     }
+            //   }
+            // }
+            let customers = await this.CustomerRepository.find(filter);
+            if (customers.length > 0) {
+                status = 200;
+                message = "Customer details";
+                data = customers;
+            }
+            else {
+                status = 201;
+                message = "No details found";
+            }
+        }
+        catch (error) {
+            status = 400;
+            message = "Error " + error.message;
+        }
+        this.response.status(status).send({
+            status, message, data
+        });
+        return this.response;
+    }
 };
 tslib_1.__decorate([
     (0, rest_1.get)('/admin/customers/count'),
@@ -174,6 +240,54 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:paramtypes", [Number]),
     tslib_1.__metadata("design:returntype", Promise)
 ], customerController.prototype, "allCustmerDetails", null);
+tslib_1.__decorate([
+    (0, rest_1.post)('/admin/search', {
+        responses: {
+            200: {
+                content: {
+                    'application/json': {
+                        schema: {
+                            type: 'object',
+                        },
+                    },
+                },
+                description: 'File',
+            },
+        }
+    }),
+    tslib_1.__param(0, (0, rest_1.requestBody)({
+        description: 'search filter for the customers',
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        searchArray: {
+                            type: 'array',
+                            default: `[{"searchterm":"", "searchvalue":""},{"searchterm":"registrationdate","searchvalue":{from:"", to:""}}]`
+                        },
+                        status: {
+                            type: 'string',
+                            default: 'ALL',
+                        },
+                        count: {
+                            type: 'number',
+                            default: 20
+                        },
+                        strictOrpartial: {
+                            //when
+                            type: 'boolean',
+                            default: false
+                        }
+                    }
+                }
+            }
+        }
+    })),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], customerController.prototype, "search", null);
 customerController = tslib_1.__decorate([
     tslib_1.__param(0, (0, repository_1.repository)(repositories_1.UsersRepository)),
     tslib_1.__param(1, (0, repository_1.repository)(repositories_1.ContactInformationRepository)),

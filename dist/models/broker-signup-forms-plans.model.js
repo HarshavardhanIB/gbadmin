@@ -57,6 +57,12 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", Number)
 ], BrokerSignupFormsPlans.prototype, "rebateId", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'number',
+    }),
+    tslib_1.__metadata("design:type", Number)
+], BrokerSignupFormsPlans.prototype, "form_id", void 0);
 BrokerSignupFormsPlans = tslib_1.__decorate([
     (0, repository_1.model)({
         settings: {

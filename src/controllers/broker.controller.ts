@@ -1,7 +1,7 @@
 // Uncomment these imports to begin using these cool features!
 
 import { inject, service } from "@loopback/core";
-import { repository } from "@loopback/repository";
+import { relation, repository } from "@loopback/repository";
 import { del, get, getModelSchemaRef, param, post, put, Request, requestBody, Response, response, RestBindings } from "@loopback/rest";
 import { publicEncrypt, sign } from "crypto";
 import { includes } from "lodash";
@@ -1831,19 +1831,37 @@ export class BrokerController {
   })
   async modifyForm(@param.path.number('formid') formid: number, @requestBody(
     {
+      description: 'Modify the existing form for with plan levels',
       content: {
         'application/json': {
           schema: {
-            type: 'object'
+            type: 'object',
+            properties: {
+              newType: {
+                type: 'string',
+                default: ''
+              },
+              oldType: {
+                type: 'string',
+                default: ''
+              },
+              planlevel: {
+                type: 'array',
+                default: '[]'
+              }
+
+            }
           }
         }
       }
     }
-  ) requestBody: {
-    newType: string,
-    planlevel?: Array<number>,
-    oldType: string,
-  }): Promise<Response> {
+  ) requestBody: any
+    //  {
+    //   newType: string,
+    //   planlevel?: Array<number>,
+    //   oldType: string,
+    // }
+  ): Promise<Response> {
     let planlevel: any = requestBody.planlevel;
     let newType = requestBody.newType;
     let oldType = requestBody.oldType;
@@ -1882,7 +1900,7 @@ export class BrokerController {
           // signUpform.usePadPaymentMethod = formData.usePadPaymentMethod;
           // signUpform.isDemoForm = formData.isDemoForm;
           await this.SignupFormsRepository.updateById(formid, signUpform);
-          await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formid: formid });
+          await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formId: formid });
         }
         else if (newType == CONST.SIGNUP_FORM.EXECUTIVE) {
           // let signUpform: SignupForms = new SignupForms();
@@ -1901,7 +1919,7 @@ export class BrokerController {
           // signUpform.usePadPaymentMethod = formData.usePadPaymentMethod;
           // signUpform.isDemoForm = formData.isDemoForm;
           let newform = await this.SignupFormsRepository.updateById(formid, signUpform);
-          await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formid: formid });
+          await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formId: formid });
           let brokerSignUpformlevel: SignupFormsPlanLevelMapping = new SignupFormsPlanLevelMapping();
           brokerSignUpformlevel.formId = formid || 0;
           let planlevels = CONST.EXECUTIVE_CARE_COMPLETE_PLAN_LEVELS.concat(CONST.EXECUTIVE_HEALTH_PLAN_LEVELS)
@@ -1913,7 +1931,7 @@ export class BrokerController {
         else {
           // let signUpform: SignupForms = new SignupForms();
           // signUpform.brokerId = formData.brokerId;
-          signUpform.formType = CONST.SIGNUP_FORM.EXECUTIVE;
+          signUpform.formType = CONST.SIGNUP_FORM.CUSTOM;
           // signUpform.published = formData.published;
           // signUpform.description = formData.description;
           // signUpform.keywords = formData.keywords;
@@ -1926,7 +1944,7 @@ export class BrokerController {
           // signUpform.usePadPaymentMethod = formData.usePadPaymentMethod;
           // signUpform.isDemoForm = formData.isDemoForm;
           let newform = await this.SignupFormsRepository.updateById(formid, signUpform);
-          await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formid: formid });
+          await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formId: formid });
           if (planlevel.length >= 0) {
             for (const pl of planlevel) {
               let plkanLevels = await this.PlanLevelRepository.find({
@@ -3986,4 +4004,456 @@ export class BrokerController {
 
     //return {message, status, data}
   }
+  @get('/broker/{formId}/formDetails', {
+    responses: {
+      '200': {
+        description: 'Broker form creation',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                message: {
+                  type: 'string',
+                },
+                status: {
+                  type: 'string',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  async formDetails(@param.path.number('formId') formId: number): Promise<Response> {
+    let message, signupFormPlans, status;
+    let data: any = [];
+    let formDetails: any = await this.SignupFormsRepository.findById(formId, { include: [{ relation: 'signupFormsPlanLevelMappings' }, { relation: 'brokerSignupFormsPlans' }] });
+    console.log(formDetails);
+    try {
+      if (formDetails) {
+        data = formDetails
+        status = 200;
+        message = "Form details"
+      }
+      else {
+        message = "No form details found"
+        status = 201
+      }
+    }
+    catch (error) {
+      console.log(error)
+      status = 402;
+      message = "Error" + error.message;
+    }
+    this.response.status(status).send({
+      message, status, data
+    })
+    return this.response;
+  }
+  @post('/broker/form/{formid}/modify')
+  @response(200, {
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object'
+        }
+      }
+    }
+  })
+  async addOrRemoveForm(@param.path.number('formid') formid: number, @requestBody(
+    {
+      description: 'Modify the existing form for with plan levels',
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              newType: {
+                type: 'string',
+                default: ''
+              },
+              oldType: {
+                type: 'string',
+                default: ''
+              },
+              nameOrId: {
+                type: 'boolean',
+                default: 'false'
+              },
+              planlevel: {
+                type: 'array',
+                default: '[]'
+              }
+
+            }
+          }
+        }
+      }
+    }
+  ) requestBody: any
+    //  {
+    //   newType: string,
+    //   planlevel?: Array<number>,
+    //   oldType: string,
+    // }
+  ): Promise<Response> {
+    let planlevel: any = requestBody.planlevel;
+    let newType = requestBody.newType;
+    let oldType = requestBody.oldType;
+    let message, statusCode, status, data: any = {};
+    try {
+
+      // let formData = await this.SignupFormsRepository.findOne({ where: { id: formid } })
+      // if (!formData) {
+      //   status = 201;
+      //   message = "Enter valid form id";
+      // }
+      // else {
+      if (oldType == newType && oldType != CONST.SIGNUP_FORM.CUSTOM) {
+        status = 201;
+        message = "the form is already is same "
+      }
+      else {
+        let signUpform: SignupForms = new SignupForms();
+        signUpform.id = formid;
+        // signUpform.brokerId = formData.brokerId;
+        if (newType == CONST.SIGNUP_FORM.REGULAR) {
+          // let signUpform: SignupForms = new SignupForms();
+          // signUpform.id = formid;
+          // signUpform.brokerId = formData.brokerId;
+          signUpform.formType = CONST.SIGNUP_FORM.REGULAR;
+          signUpform.name = CONST.signupForm.name;
+          // signUpform.published = formData.published;
+          // signUpform.description = formData.description;
+          // signUpform.keywords = formData.keywords;
+          // signUpform.link = formData.link;
+          // signUpform.alias = formData.alias;
+          signUpform.requireDentalHealthCoverage = true;
+          signUpform.requireSpouseEmail = false;
+          signUpform.warnRequiredDependantMedicalExam = false;
+          // signUpform.useCreditCardPaymentMethod = formData.useCreditCardPaymentMethod;
+          // signUpform.usePadPaymentMethod = formData.usePadPaymentMethod;
+          // signUpform.isDemoForm = formData.isDemoForm;
+          await this.SignupFormsRepository.updateById(formid, signUpform);
+          await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formId: formid });
+        }
+        else if (newType == CONST.SIGNUP_FORM.EXECUTIVE) {
+          // let signUpform: SignupForms = new SignupForms();
+          // signUpform.brokerId = formData.brokerId;
+          signUpform.formType = CONST.SIGNUP_FORM.EXECUTIVE;
+          signUpform.name = CONST.signupForm.name;
+          // signUpform.published = formData.published;
+          // signUpform.description = formData.description;
+          // signUpform.keywords = formData.keywords;
+          // signUpform.link = formData.link;
+          // signUpform.alias = formData.alias;
+          signUpform.requireDentalHealthCoverage = false;
+          signUpform.requireSpouseEmail = true;
+          signUpform.warnRequiredDependantMedicalExam = true;
+          // signUpform.useCreditCardPaymentMethod = formData.useCreditCardPaymentMethod;
+          // signUpform.usePadPaymentMethod = formData.usePadPaymentMethod;
+          // signUpform.isDemoForm = formData.isDemoForm;
+          let newform = await this.SignupFormsRepository.updateById(formid, signUpform);
+          await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formId: formid });
+          let brokerSignUpformlevel: SignupFormsPlanLevelMapping = new SignupFormsPlanLevelMapping();
+          brokerSignUpformlevel.formId = formid || 0;
+          let planlevels = CONST.EXECUTIVE_CARE_COMPLETE_PLAN_LEVELS.concat(CONST.EXECUTIVE_HEALTH_PLAN_LEVELS)
+          for (let planLevel of planlevels) {
+            brokerSignUpformlevel.planlevelId = planLevel;
+            await this.SignupFormsPlanLevelMappingRepository.create(brokerSignUpformlevel);
+          }
+        }
+        else {
+          let planLevesAfter: any;
+          // let signUpform: SignupForms = new SignupForms();
+          // signUpform.brokerId = formData.brokerId;
+          signUpform.formType = CONST.SIGNUP_FORM.CUSTOM;
+          // signUpform.published = formData.published;
+          // signUpform.description = formData.description;
+          // signUpform.keywords = formData.keywords;
+          // signUpform.link = formData.link;
+          // signUpform.alias = formData.alias;
+          signUpform.requireDentalHealthCoverage = true;
+          signUpform.requireSpouseEmail = false;
+          signUpform.warnRequiredDependantMedicalExam = false;
+          // signUpform.useCreditCardPaymentMethod = formData.useCreditCardPaymentMethod;
+          // signUpform.usePadPaymentMethod = formData.usePadPaymentMethod;
+          // signUpform.isDemoForm = formData.isDemoForm;
+          let newform = await this.SignupFormsRepository.updateById(formid, signUpform);
+          await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formId: formid });
+          await this.BrokerSignupFormsPlansRepository.deleteAll({ formId: formid });
+          if (requestBody.nameOrId) {
+            let plsInRequest = requestBody.planlevel;
+            for (let pl of plsInRequest) {
+              if (pl == "PocketPills") {
+                pl = "Opt-In";
+              }
+              if (pl == "High-Cost Drugs (HCD)") {
+                pl = 'High-Cost Drugs';
+              }
+              let palLevel: any = await this.PlanLevelRepository.findOne({
+                where: {
+                  and: [
+                    { name: { like: `%${pl}%` } },
+                    { published: '1' }
+                  ]
+                },
+                // fields: { id: true }
+              })
+              if (palLevel) {
+                await planLevesAfter.push(await palLevel.id)
+              }
+              // console.log(palLevel);
+              // console.log("plan levels after id");
+              // console.log(planLevels);
+            }
+          }
+          else {
+            planLevesAfter = planlevel;
+          }
+          if (planLevesAfter.length >= 0) {
+            for (const pl of planLevesAfter) {
+              let plkanLevels = await this.PlanLevelRepository.find({
+                where: {
+                  and: [
+                    { or: [{ id: pl }, { parentId: pl }] },
+                    { published: '1' }
+                  ]
+                }, fields: {
+                  id: true
+                }
+              });
+              if (!plkanLevels) {
+                status = 202;
+                message = "No plans found"
+              }
+              else {
+                let brokerSignUpformlevel: SignupFormsPlanLevelMapping = new SignupFormsPlanLevelMapping();
+                let brokerSignupformsPlansObj: BrokerSignupFormsPlans = new BrokerSignupFormsPlans();
+                brokerSignupformsPlansObj.formId = formid || 0;
+                brokerSignUpformlevel.formId = formid || 0;
+                for (const planlevel of plkanLevels) {
+                  brokerSignUpformlevel.planLevelId = planlevel.id || 0;
+                  await this.SignupFormsPlanLevelMappingRepository.create(brokerSignUpformlevel);
+                  let plans = await this.InsurancePlansRepository.find({ where: { planLevel: planlevel.id }, fields: { id: true } });
+
+                  for (const plan of plans) {
+                    brokerSignupformsPlansObj.planId = plan.id || 0;
+                    console.log(brokerSignupformsPlansObj);
+                    await this.BrokerSignupFormsPlansRepository.create(brokerSignupformsPlansObj);
+                  }
+                }
+              }
+            }
+          }
+        }
+        status = 200;
+        message = "Form modified successfully"
+      }
+      // }
+    } catch (error) {
+      status = 404;
+      message = "error while modify the form"
+    }
+    this.response.status(status).send({
+      status, message, date: new Date(), data,
+    });
+    return this.response;
+  }
+  @get('/broker/{id}/details')
+  async brokerDetails(@param.path.number('id') id: number): Promise<any> {
+    let final: any = [];
+    let responseObject, status: any;
+    try {
+      console.log("enter");
+      let data = await this.BrokerRepository.findOne({
+        where: { id: id }, include: [
+          {
+            relation: 'user', scope: {
+              fields: { username: true }
+            }
+          }, { relation: 'contactInfo' }, { relation: 'brokerEoInsurance' },
+          {
+            relation: 'brokerLicensedStatesAndProvinces', scope: {
+              include: [{ relation: 'stateFullDetails', scope: { fields: { name: true } } }]
+            },
+          },
+          {
+            relation: 'signupForms', scope: {
+              include: [{
+                relation: 'signupFormsPlanLevelMappings'
+              }
+                , { relation: 'customers', scope: { fields: { firstName: true, lastName: true, dob: true, gender: true, status: true, userId: true } } }]
+            }
+          }]
+      });
+      if (!data) {
+        status = 201;
+        responseObject = {
+          status: 201,
+          message: "No details found",
+          date: new Date(),
+          data: final
+        }
+      }
+      else {
+        status = 200;
+        let dataArray: any = data;
+        let userId = data.userId;
+        let userDetails: any = "";
+        if (userId == null || !userId) {
+          userDetails = "";
+        }
+        responseObject = {
+          status: 200,
+          message: "Broker Details",
+          date: new Date(),
+          data: data
+        }
+      }
+      this.response.status(status).send(responseObject);
+    }
+    catch (error) {
+      console.log(error);
+    }
+    return this.response;
+  }
+  @get('/broker/{brokerid}/forms')
+  async brokerFormDetails(@param.path.number('brokerid') brokerid: number): Promise<any> {
+    let status, message, data: any;
+    try {
+      let brokerRes = await this.BrokerRepository.findById(brokerid, { include: [{ relation: 'signupForms' }] });
+      if (brokerRes) {
+        data = brokerRes;
+        if (brokerRes.signupForms.length == 0) {
+          message = "No form details found";
+          status = 200;
+        }
+        else {
+          message = "Broker details";
+          status = 200;
+        }
+
+      }
+      else {
+        status = 201;
+        message = "No broker details found"
+      }
+    } catch (error) {
+      status = 201;
+      message = "No broker details found"
+    }
+    this.response.status(status).send({
+      status, message, data
+    })
+    return this.response;
+  }
+  @get('/broker/{brokerid}/form/{formId}/details')
+  async brokerFormbasedonIdDetails(@param.path.number('brokerid') brokerid: number, @param.path.number('formId') formId: number): Promise<any> {
+    let status, message, data: any;
+    try {
+      let brokerSignupForms = await this.SignupFormsRepository.find({ where: { and: [{ id: formId }, { brokerId: brokerid }] } });
+      if (brokerSignupForms) {
+        let data = brokerSignupForms;
+        status = 200;
+        message = "Broker form details";
+      }
+      else {
+        status = 201;
+        message = "No details found";
+      }
+    } catch (error) {
+      status = 201;
+      message = "No broker details found"
+    }
+    this.response.status(status).send({
+      status, message, data
+    })
+    return this.response;
+  }
+  @get('/broker/{brokerid}/customers')
+  async customersBasedonbrokerId(@param.path.number('brokerid') brokerid: number): Promise<any> {
+    let status, message, data: any, error;
+    try {
+      let brokerSignupFormwithCustomers = await this.SignupFormsRepository.find({ where: { brokerId: brokerid }, include: [{ relation: 'customers' }] });
+      if (brokerSignupFormwithCustomers.length > 0) {
+        status = 200;
+        message = "Customers details"
+        data = brokerSignupFormwithCustomers;
+      }
+      else {
+        status = 201;
+        message = "No customers details found"
+      }
+    }
+    catch (error) {
+      status = 401,
+        message = "Error",
+        error = error.message
+    }
+    this.response.status(status).send({
+      status, message, data, error
+    })
+    return this.response;
+  }
+  @get('/broker/{brokerid}/customer/{customerId}/details')
+  async customerdetailsBasedonbrokerIdandCustomerId(@param.path.number('brokerid') brokerid: number, @param.path.number('customerId') customerId: number): Promise<any> {
+    let status, message, data: any, error;
+    try {
+      let brokerSignupFormwithCustomers = await this.SignupFormsRepository.find({ where: { brokerId: brokerid }, include: [{ relation: 'customers' }] });
+      let customerdetails = await this.SignupFormsRepository.customers(customerId).find({ where: { brokerId: brokerid } })
+
+      if (customerdetails.length > 0) {
+        status = 200;
+        message = "Customer details";
+        data = customerdetails;
+
+      }
+      else {
+        status = 201;
+        message = "No customer found"
+      }
+    }
+    catch (error) {
+      status = 401,
+        message = "Error",
+        error = error.message
+    }
+    this.response.status(status).send({
+      status, message, data, error
+    })
+    return this.response;
+
+  }
+  @get('/broker/{brokerid}/form/{formId}/customer/{customerId}/details')
+  async customerDetailsBasedOnBrokerIdandFormId(
+    @param.path.number('brokerid') brokerid: number,
+    @param.path.number('customerId') customerId: number,
+    @param.path.number('formId') formId: number
+  ): Promise<any> {
+    let status, message, data, error;
+    try {
+      let formDetailsBasedonFormIdandBrokerId = await this.SignupFormsRepository.customers(customerId).find({ where: { id: formId, brokerId: brokerid } })
+      if (formDetailsBasedonFormIdandBrokerId.length > 0) {
+        status = 200;
+        message = "Custoemr details";
+        data = formDetailsBasedonFormIdandBrokerId;
+      }
+      else {
+        status = 201;
+        message = `No custromers found on this customerid ${customerId}`
+      }
+    } catch (error) {
+      status = 404;
+      message = "Error " + error.message
+    }
+    this.response.status(status).send({
+      status, message, data
+    })
+    return this.response;
+
+  }
+
 }

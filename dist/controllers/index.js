@@ -32,4 +32,5 @@ tslib_1.__exportStar(require("./states-and-provinces-plans-availability.controll
 tslib_1.__exportStar(require("./plans-availability-insurance-plans.controller"), exports);
 tslib_1.__exportStar(require("./insurance-plans-plans-availability.controller"), exports);
 tslib_1.__exportStar(require("./plan-level-insurance-plans.controller"), exports);
+tslib_1.__exportStar(require("./signup-forms-broker-signup-forms-plans.controller"), exports);
 //# sourceMappingURL=index.js.map

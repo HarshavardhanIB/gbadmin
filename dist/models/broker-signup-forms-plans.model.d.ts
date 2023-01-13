@@ -5,6 +5,7 @@ export declare class BrokerSignupFormsPlans extends Entity {
     id?: number;
     planId: number;
     rebateId?: number;
+    form_id?: number;
     [prop: string]: any;
     constructor(data?: Partial<BrokerSignupFormsPlans>);
 }
