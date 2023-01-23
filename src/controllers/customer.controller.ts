@@ -35,11 +35,11 @@ import * as CONST from '../constants';
 import moment from 'moment';
 import { from } from 'form-data';
 import { toArray } from 'lodash';
-// @authenticate('jwt')
-// @authorize({
-//   allowedRoles: ['BROKER', 'ADMINISTRATOR'],
-//   voters: [basicAuthorization]
-// })
+@authenticate('jwt')
+@authorize({
+  allowedRoles: ['BROKER', 'ADMINISTRATOR'],
+  voters: [basicAuthorization]
+})
 export class customerController {
   constructor(
     @repository(UsersRepository)

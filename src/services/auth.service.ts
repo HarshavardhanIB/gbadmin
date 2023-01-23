@@ -13,6 +13,9 @@ export class AuthService {
         htmlContent += `<p>Also, your account is not active yet. Please </p><a href="${link}"> Click here</a><p> to activate before logging-in.</p>`
       }
     }
+    else if (type == "signin") {
+      htmlContent += `<p>Your account is not active yet. Please </p><a href="${link}"> Click here</a><p> to activate your account.</p>`
+     }
     htmlContent += `<p>Regards,</p>`
     htmlContent += `Admin GroupBenfitz`
     return htmlContent;

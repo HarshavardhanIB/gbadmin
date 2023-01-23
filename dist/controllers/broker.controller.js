@@ -127,6 +127,7 @@ let BrokerController = class BrokerController {
         }
     }
     async brokerDetailsBasedonId(id) {
+        console.log(">>>>>>>>", id);
         let final = [];
         let responseObject, status;
         try {
@@ -3094,15 +3095,15 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], BrokerController.prototype, "getBroker", null);
 tslib_1.__decorate([
-    (0, rest_1.get)('/admin/broker/{id}'),
-    tslib_1.__param(0, rest_1.param.path.number('id')),
+    (0, rest_1.get)('/admin/broker/{brokerId}'),
+    tslib_1.__param(0, rest_1.param.path.number('brokerId')),
     tslib_1.__metadata("design:type", Function),
     tslib_1.__metadata("design:paramtypes", [Number]),
     tslib_1.__metadata("design:returntype", Promise)
 ], BrokerController.prototype, "brokerDetailsBasedonId", null);
 tslib_1.__decorate([
-    (0, rest_1.get)('/admin/broker/customerlist/{id}'),
-    tslib_1.__param(0, rest_1.param.path.number('id')),
+    (0, rest_1.get)('/admin/broker/{brokerId}/customerlist'),
+    tslib_1.__param(0, rest_1.param.path.number('brokerId')),
     tslib_1.__metadata("design:type", Function),
     tslib_1.__metadata("design:paramtypes", [Number]),
     tslib_1.__metadata("design:returntype", Promise)
@@ -4120,8 +4121,8 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], BrokerController.prototype, "addOrRemoveForm", null);
 tslib_1.__decorate([
-    (0, rest_1.get)('/broker/{id}/details'),
-    tslib_1.__param(0, rest_1.param.path.number('id')),
+    (0, rest_1.get)('/broker/{brokerId}/details'),
+    tslib_1.__param(0, rest_1.param.path.number('brokerId')),
     tslib_1.__metadata("design:type", Function),
     tslib_1.__metadata("design:paramtypes", [Number]),
     tslib_1.__metadata("design:returntype", Promise)

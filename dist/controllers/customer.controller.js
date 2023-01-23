@@ -5,16 +5,14 @@ exports.customerController = void 0;
 const tslib_1 = require("tslib");
 // import {inject} from '@loopback/core';
 const core_1 = require("@loopback/core");
+const authentication_1 = require("@loopback/authentication");
 const rest_1 = require("@loopback/rest");
 const repository_1 = require("@loopback/repository");
 const repositories_1 = require("../repositories");
+const authorization_1 = require("@loopback/authorization");
+const auth_midd_1 = require("../middleware/auth.midd");
 const security_1 = require("@loopback/security");
 const moment_1 = tslib_1.__importDefault(require("moment"));
-// @authenticate('jwt')
-// @authorize({
-//   allowedRoles: ['BROKER', 'ADMINISTRATOR'],
-//   voters: [basicAuthorization]
-// })
 let customerController = class customerController {
     constructor(usersRepository, ContactInformationRepository, CustomerContactInfoRepository, CustomerPlanOptionsValuesRepository, CustomerPlansRepository, CustomerRelativesRepository, CustomerRepository, CustomerSignupRepository, response, user) {
         this.usersRepository = usersRepository;
@@ -289,6 +287,11 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], customerController.prototype, "search", null);
 customerController = tslib_1.__decorate([
+    (0, authentication_1.authenticate)('jwt'),
+    (0, authorization_1.authorize)({
+        allowedRoles: ['BROKER', 'ADMINISTRATOR'],
+        voters: [auth_midd_1.basicAuthorization]
+    }),
     tslib_1.__param(0, (0, repository_1.repository)(repositories_1.UsersRepository)),
     tslib_1.__param(1, (0, repository_1.repository)(repositories_1.ContactInformationRepository)),
     tslib_1.__param(2, (0, repository_1.repository)(repositories_1.CustomerContactInfoRepository)),

@@ -162,7 +162,10 @@ let AuthController = class AuthController {
                     // <p>Please active your account</p>
                     //   <br></br>
                     //   <a href="${HTMLcontentFile}"> Click here to activate your account "</a>`;
+                    let mailBody = await this.service.MailContent("signin", "", true, HTMLcontentFile);
+                    console.log('>>>>', mailBody);
                     // await mail("", userMail, "Admin Portal Forgot Password Link", htmlContent, "click the link to activate your account", "");
+                    await (0, email_services_1.mail)("", userMail, "Admin Portal Activation Link", mailBody, "", "");
                     response = {
                         "statusCode": 201,
                         "message": "Please activate your account click on the link sent in your mail"
@@ -252,15 +255,16 @@ let AuthController = class AuthController {
             // let encryptPswd = await encryptPassword(userNewPassword);
             const encryptPswd = await (0, bcryptjs_1.hash)(userNewPassword, await (0, bcryptjs_1.genSalt)());
             let mailBody = await this.service.MailContent("forgotPassword", userNewPassword, inActiveUser, HTMLcontentFile);
-            var htmlContent = `<h3>Hello </h3>
-      <p>This is your temporary password to login : "${userNewPassword}"</p>`;
-            if (inActiveUser) {
-                htmlContent +=
-                    `<p>To active your account </p>
-        <a href="${HTMLcontentFile}"> Click here</a>`;
-            }
+            // var htmlContent = `<h3>Hello </h3>
+            // <p>This is your temporary password to login : "${userNewPassword}"</p>`;
+            // if (inActiveUser) {
+            //   htmlContent +=
+            //     `<p>To active your account </p>
+            //   <a href="${HTMLcontentFile}"> Click here</a>`;
+            // }
             await this.usersRepository.updateById(id, { password: encryptPswd });
-            await (0, email_services_1.mail)("", userEnterEmailId, "Admin Portal Forgot Password Link", htmlContent, "click on the link and reset your password", "");
+            // await mail("", userEnterEmailId, "Admin Portal Forgot Password Link", htmlContent, "click on the link and reset your password", "");
+            await (0, email_services_1.mail)("", userEnterEmailId, "Admin Portal Forgot Password Link", mailBody, "", "");
             let response = {
                 "statusCode": 200,
                 "message": "Password reset successfull.Check your email"

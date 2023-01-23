@@ -170,8 +170,9 @@ export class BrokerController {
       console.log(err);
     }
   }
-  @get('/admin/broker/{id}')
-  async brokerDetailsBasedonId(@param.path.number('id') id: number): Promise<any> {
+  @get('/admin/broker/{brokerId}')
+  async brokerDetailsBasedonId(@param.path.number('brokerId') id: number): Promise<any> {
+    console.log(">>>>>>>>", id);
     let final: any = [];
     let responseObject, status: any;
     try {
@@ -240,8 +241,8 @@ export class BrokerController {
       console.log(error);
     }
   }
-  @get('/admin/broker/customerlist/{id}')
-  async custmerCount(@param.path.number('id') id: number): Promise<any> {
+  @get('/admin/broker/{brokerId}/customerlist')
+  async custmerCount(@param.path.number('brokerId') id: number): Promise<any> {
     try {
       let customers: any = "";
       let customerCount: any = "";
@@ -4263,8 +4264,8 @@ export class BrokerController {
     });
     return this.response;
   }
-  @get('/broker/{id}/details')
-  async brokerDetails(@param.path.number('id') id: number): Promise<any> {
+  @get('/broker/{brokerId}/details')
+  async brokerDetails(@param.path.number('brokerId') id: number): Promise<any> {
     let final: any = [];
     let responseObject, status: any;
     try {
@@ -4555,5 +4556,4 @@ export class BrokerController {
     })
     return this.response;
   }
-
 }
