@@ -53,3 +53,4 @@ export * from './plan-level-features.repository';
 export * from './service-provider.repository';
 export * from './tax-table.repository';
 export * from './translation-languages.repository';
+export * from './broker-admins.repository';

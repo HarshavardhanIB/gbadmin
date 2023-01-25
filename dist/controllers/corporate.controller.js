@@ -15,14 +15,18 @@ const keys_1 = require("../keys");
 const files_controller_1 = require("./files.controller");
 const MESSAGE = tslib_1.__importStar(require("../messages"));
 const PATHS = tslib_1.__importStar(require("../paths"));
+const common_functions_1 = require("../common-functions");
+const moment_1 = tslib_1.__importDefault(require("moment"));
 let CorporateController = class CorporateController {
-    constructor(BrokerRepository, response, corporateService, usersRepository, ContactInformationRepository, handler) {
+    constructor(BrokerRepository, response, corporateService, usersRepository, BrokerAdminsRepository, ContactInformationRepository, handler, commonService) {
         this.BrokerRepository = BrokerRepository;
         this.response = response;
         this.corporateService = corporateService;
         this.usersRepository = usersRepository;
+        this.BrokerAdminsRepository = BrokerAdminsRepository;
         this.ContactInformationRepository = ContactInformationRepository;
         this.handler = handler;
+        this.commonService = commonService;
     }
     async brokerDetailsBasedonId(company) {
         let message, status, statusCode, data = {};
@@ -75,6 +79,7 @@ let CorporateController = class CorporateController {
             });
         });
         p.then(async (value) => {
+            let users = [];
             let brokerId;
             let userId;
             let contId;
@@ -101,6 +106,7 @@ let CorporateController = class CorporateController {
                 console.log(requestFiles);
                 try {
                     console.log(apiRequest);
+                    // after add stax bill
                     let contactDetailsObj = new models_1.ContactInformation();
                     contactDetailsObj.apt = apiRequest.apt;
                     contactDetailsObj.city = apiRequest.city;
@@ -114,19 +120,42 @@ let CorporateController = class CorporateController {
                     contactDetailsObj.primaryEmail = "";
                     contactDetailsObj.primaryPhone = apiRequest.phone_number;
                     let contactInfo = await this.ContactInformationRepository.create(contactDetailsObj);
-                    let groupAdmins = apiRequest.gropupAdmin;
-                    for (const groupAdmin of groupAdmins) {
-                        let userObj = new models_1.Users();
-                        userObj.username = groupAdmin.email;
-                    }
+                    let customerObj = new models_1.Customer();
                     let brokerObj = new models_1.Broker();
                     brokerObj.name = apiRequest.corporationName;
-                    brokerObj.brokerType = apiRequest.brokerType;
+                    brokerObj.brokerType = apiRequest.brokerType || 'CORPORATE';
                     brokerObj.logo = PATHS.BROKERPATH_STRING + requestFiles[0].originalname.split(".").trim().replaceAll(" ", "");
                     brokerObj.link = PATHS.BROKERPATH_STRING + requestFiles[0].originalname.split(".").trim().replaceAll(" ", "");
                     brokerObj.published = true;
                     brokerObj.contactId = contactInfo.id;
                     brokerObj.userId = 0;
+                    brokerObj.settingsAllowGroupBenefitsWallet = apiRequest.setupWallet ? 1 : 0;
+                    brokerObj.settingsEnableTieredHealthBenefits = apiRequest.setUplevelofCoverage ? 1 : 0;
+                    let broker = await this.BrokerRepository.create(brokerObj);
+                    let groupAdmins = apiRequest.gropupAdmin;
+                    for (const groupAdmin of groupAdmins) {
+                        let userObj = new models_1.Users();
+                        userObj.username = groupAdmin.email;
+                        let randomPswrd = await this.commonService.generateRandomPassword();
+                        userObj.password = await this.commonService.encryptPassword(randomPswrd);
+                        userObj.block = true;
+                        userObj.activation = await (0, common_functions_1.getActivationCode)();
+                        userObj.registrationDate = (0, moment_1.default)().format('YYYY-MM-DD');
+                        let user = await this.usersRepository.create(userObj);
+                        users.push(user.id);
+                    }
+                    let brokerAdmin = new models_1.BrokerAdmins();
+                    brokerAdmin.brokerId = broker.id;
+                    for (const user of users) {
+                        brokerAdmin.userId = user;
+                    }
+                    await this.BrokerRepository.updateById(broker.id, { userId: users[0] });
+                    await (0, services_1.mail)("", groupAdmins[0].email, "", "", "", "");
+                    this.response.status(200).send({
+                        status: '200',
+                        message: 'Corporate registratered successfully ',
+                        date: new Date(),
+                    });
                 }
                 catch (error) {
                     this.response.status(202).send({
@@ -322,11 +351,14 @@ CorporateController = tslib_1.__decorate([
     tslib_1.__param(1, (0, core_1.inject)(rest_1.RestBindings.Http.RESPONSE)),
     tslib_1.__param(2, (0, core_1.service)(services_1.Corporate)),
     tslib_1.__param(3, (0, repository_1.repository)(repositories_1.UsersRepository)),
-    tslib_1.__param(4, (0, repository_1.repository)(repositories_1.ContactInformationRepository)),
-    tslib_1.__param(5, (0, core_1.inject)(keys_1.FILE_UPLOAD_SERVICE)),
+    tslib_1.__param(4, (0, repository_1.repository)(repositories_1.BrokerAdminsRepository)),
+    tslib_1.__param(5, (0, repository_1.repository)(repositories_1.ContactInformationRepository)),
+    tslib_1.__param(6, (0, core_1.inject)(keys_1.FILE_UPLOAD_SERVICE)),
+    tslib_1.__param(7, (0, core_1.service)(services_1.CommonServiceService)),
     tslib_1.__metadata("design:paramtypes", [repositories_1.BrokerRepository, Object, services_1.Corporate,
         repositories_1.UsersRepository,
-        repositories_1.ContactInformationRepository, Function])
+        repositories_1.BrokerAdminsRepository,
+        repositories_1.ContactInformationRepository, Function, services_1.CommonServiceService])
 ], CorporateController);
 exports.CorporateController = CorporateController;
 //# sourceMappingURL=corporate.controller.js.map

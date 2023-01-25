@@ -42,3 +42,4 @@ export * from './plan-level-features.model';
 export * from './service-provider.model';
 export * from './tax-table.model';
 export * from './translation-languages.model';
+export * from './broker-admins.model';

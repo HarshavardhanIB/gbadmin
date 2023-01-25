@@ -55,4 +55,5 @@ tslib_1.__exportStar(require("./plan-level-features.repository"), exports);
 tslib_1.__exportStar(require("./service-provider.repository"), exports);
 tslib_1.__exportStar(require("./tax-table.repository"), exports);
 tslib_1.__exportStar(require("./translation-languages.repository"), exports);
+tslib_1.__exportStar(require("./broker-admins.repository"), exports);
 //# sourceMappingURL=index.js.map

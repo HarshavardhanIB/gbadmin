@@ -8,14 +8,15 @@ let AuthService = class AuthService {
     async MailContent(type, password, inActiveUser, link) {
         let htmlContent = `<h3>Hi,</h3>`;
         if (type == "forgotPassword") {
-            htmlContent += `<p>This is your temporary password to login: "${password}"
+            htmlContent += `<p>This is your temporary password to login: "${password}" <br></br>
       Please use above temporary password until you change your password from the portal.</p>`;
             if (inActiveUser) {
-                htmlContent += `<p>Also, your account is not active yet. Please </p><a href="${link}"> Click here</a><p> to activate before logging-in.</p>`;
+                htmlContent += `<p>Also, your account is not active yet.<br></br> Please <a href="${link}"> Click here</a> to activate before logging-in.</p>`;
             }
         }
         else if (type == "signin") {
-            htmlContent += `<p>Your account is not active yet. Please </p><a href="${link}"> Click here</a><p> to activate your account.</p>`;
+            htmlContent += `<p>Your account is not active yet.
+       Please <a href="${link}"> Click here</a> to activate your account.</p>`;
         }
         htmlContent += `<p>Regards,</p>`;
         htmlContent += `Admin GroupBenfitz`;

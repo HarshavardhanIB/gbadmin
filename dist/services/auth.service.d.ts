@@ -1,4 +1,4 @@
 export declare class AuthService {
     constructor();
-    MailContent(type: string, password: string, inActiveUser: boolean, link: string): Promise<string>;
+    MailContent(type: string, password: string, inActiveUser: any, link: string): Promise<string>;
 }

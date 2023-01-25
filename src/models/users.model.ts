@@ -13,12 +13,10 @@ export class Users extends Entity {
 
   @property({
     type: 'boolean',
-    required: true,
     precision: 1,
-    generated: 0,
     mysql: { columnName: 'block', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
   })
-  block: boolean;
+  block?: boolean;
 
   @property({
     type: 'number',

@@ -56,4 +56,5 @@ tslib_1.__exportStar(require("./plan-level-features.model"), exports);
 tslib_1.__exportStar(require("./service-provider.model"), exports);
 tslib_1.__exportStar(require("./tax-table.model"), exports);
 tslib_1.__exportStar(require("./translation-languages.model"), exports);
+tslib_1.__exportStar(require("./broker-admins.model"), exports);
 //# sourceMappingURL=index.js.map

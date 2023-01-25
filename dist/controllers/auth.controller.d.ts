@@ -5,6 +5,7 @@ import { SchemaObject } from '@loopback/rest';
 import { UserProfile } from '@loopback/security';
 import { Admin } from '../models/admin.model';
 import { JWTService } from '../services/jwt.service';
+import { Users } from '../models';
 import { AuthService } from '../services';
 export declare class NewUserRequest extends Admin {
     password: string;
@@ -51,4 +52,5 @@ export declare class AuthController {
     }, currentUserProfile: UserProfile): Promise<any>;
     app(): Promise<any>;
     ip(): Promise<any>;
+    useraInfo(): Promise<(Users & import("../models").UsersRelations)[]>;
 }

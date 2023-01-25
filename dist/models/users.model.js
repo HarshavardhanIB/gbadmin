@@ -21,9 +21,7 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'boolean',
-        required: true,
         precision: 1,
-        generated: 0,
         mysql: { columnName: 'block', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
     }),
     tslib_1.__metadata("design:type", Boolean)

@@ -22,7 +22,7 @@ export declare class FilesController {
     } | {
         files: any[];
         fields: any;
-    } | undefined>;
+    }>;
     /**
   * Validate file names to prevent them goes beyond the designated directory
   * @param fileName - File name

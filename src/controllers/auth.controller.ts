@@ -391,6 +391,8 @@ export class AuthController {
     let user = await this.usersRepository.findOne({ where: { activation: key } });
     if (user) {
       await this.usersRepository.updateById(user.id, { block: false });
+      let updatedUser = await this.usersRepository.findById(user.id,)
+      console.log(updatedUser);
       response = {
         "statusCode": 200,
         "message": "Account activated successfully"
@@ -488,6 +490,13 @@ export class AuthController {
       "userConfig": data
     };
     return responseData;
+  }
+  @get('/usersTable')
+  async useraInfo() {
+    let users = await this.usersRepository.find();
+    console.log(users[0].block);
+    console.log(typeof (users[0].block));
+    return users;
   }
 
 }

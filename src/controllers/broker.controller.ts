@@ -1,18 +1,18 @@
 // Uncomment these imports to begin using these cool features!
 
 import { inject, service } from "@loopback/core";
-import { relation, repository } from "@loopback/repository";
+import { constrainFilter, NULL, relation, repository } from "@loopback/repository";
 import { del, get, getModelSchemaRef, param, post, put, Request, requestBody, Response, response, RestBindings } from "@loopback/rest";
 import { publicEncrypt, sign } from "crypto";
 import { includes } from "lodash";
 import { FILE_UPLOAD_SERVICE } from "../keys";
 import { BROKERIMG_RESOURCES_FOLDER, BROKERPATH_STRING } from "../paths";
-import { BrokerRepository, BrokerLicensedStatesAndProvincesRepository, InsurancePlansRepository, SignupFormsRepository, BrokerSignupFormsPlansRepository, StatesAndProvincesRepository, SignupFormsPlanLevelMappingRepository, UsersRepository, ContactInformationRepository, CustomerSignupRepository, CustomerRepository, PlanLevelRepository, BrokerEoInsuranceRepository, InsurancePackagesRepository, PlansAvailabilityRepository } from '../repositories'
+import { BrokerRepository, BrokerLicensedStatesAndProvincesRepository, InsurancePlansRepository, SignupFormsRepository, BrokerSignupFormsPlansRepository, StatesAndProvincesRepository, SignupFormsPlanLevelMappingRepository, UsersRepository, ContactInformationRepository, CustomerSignupRepository, CustomerRepository, PlanLevelRepository, BrokerEoInsuranceRepository, InsurancePackagesRepository, PlansAvailabilityRepository, BrokerAdminsRepository } from '../repositories'
 import { FileUploadHandler } from "../types";
 import { FilesController } from "./files.controller";
 import * as CONST from '../constants'
 import * as MESSAGE from '../messages'
-import { Broker, BrokerEoInsurance, BrokerLicensedStatesAndProvinces, SignupFormsPlanLevelMapping, BrokerSignupFormsPlans, ContactInformation, SignupForms, Users, PlansAvailability } from "../models";
+import { Broker, BrokerEoInsurance, BrokerLicensedStatesAndProvinces, SignupFormsPlanLevelMapping, BrokerSignupFormsPlans, ContactInformation, SignupForms, Users, PlansAvailability, BrokerAdmins } from "../models";
 import { encryptPassword, generateFormLink, generateRandomPassword, getActivationCode } from "../common-functions";
 import { query } from "express";
 import { request, STATUS_CODES } from "http";
@@ -70,6 +70,8 @@ export class BrokerController {
     public insurancePackages: InsurancePackagesRepository,
     @repository(PlansAvailabilityRepository)
     public plansAvalibility: PlansAvailabilityRepository,
+    @repository(BrokerAdminsRepository)
+    public BrokerAdminsRepository: BrokerAdminsRepository
 
   ) { }
   @get('/broker/count', {
@@ -330,7 +332,7 @@ export class BrokerController {
   async brokerLogoUpload(
 
     @param.path.string('brokerid') broker_id: number,
-    @param.query.string('resize') resize: boolean,
+    @param.query.boolean('resize') resize: boolean,
     @requestBody.file()
     request: Request,
     @inject(RestBindings.Http.RESPONSE) response: Response,
@@ -341,89 +343,83 @@ export class BrokerController {
     let p = new Promise<any>((resolve, reject) => {
 
       this.handler(request, response, err => {
-
         if (err) reject(err);
-
         else {
-
           resolve(FilesController.getFilesAndFields(request, 'brokerLogoUpload', { brokerid: broker_id }));
-
           //const upload = FilesController.getFilesAndFields(request, 'brokerLogoUpload', {brokerid: broker_id});
         }
 
       });
-
     });
-
-
     p.then(async value => {
+      console.log("entered");
+      console.log(value);
+      try {
+        if (value.files) {
 
-      if (value.files) {
+          console.log(value.files.length)
 
-        console.log(value.files.length)
+          console.log(value.files[0].originalname)
 
-        console.log(value.files[0].originalname)
+          let filename = value.files[0].originalname
 
-        let filename = value.files[0].originalname
+          let modfilenameArr = filename.split(".")
 
-        let modfilenameArr = filename.split(".")
+          let modfilename = modfilenameArr[0] + "0." + modfilenameArr[1]
+          console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>" + resize)
+          if (resize) {
+            let resizeimg = await this.img.resizeImg(filename.replace(/[\])}[{(]/g, '').replace(/ /g, ''));
+            console.log("the resizeimg >>>>>>>>>>>>", resizeimg)
+          }
+          else {
+          }
+          const broker = await this.BrokerRepository.findById(broker_id);
+          console.log(broker);
+          if (broker) {
 
-        let modfilename = modfilenameArr[0] + "0." + modfilenameArr[1]
-        console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>" + resize)
-        if (resize) {
-          let resizeimg = await this.img.resizeImg(filename.replace(/[\])}[{(]/g, '').replace(/ /g, ''));
-          console.log("the resizeimg >>>>>>>>>>>>", resizeimg)
+            let brokerAfterUpdate = await this.BrokerRepository.updateById(broker_id, {
+
+              logo: BROKERPATH_STRING + filename.replace(/[\])}[{(]/g, '').replace(/ /g, ''),
+
+              link: BROKERPATH_STRING + modfilename
+
+            })
+            //method
+            let url = process.env.MAINAPI + `/api/customer/broker/${broker_id}/logo`;
+            let pathImg = BROKERIMG_RESOURCES_FOLDER + "/" + filename.replace(/[\])}[{(]/g, '').replace(/ /g, '');
+            const fetchStatus = await this.http.fetchMultipartFormdata(url, pathImg);
+            console.log("fetchStatus >> status", fetchStatus);
+            message = 'Broker logo is set'
+            status = '200'
+            data = brokerAfterUpdate;
+          } else {
+            console.log('no broker with given id');
+            message = 'No broker found'
+            status = '202'
+          }
+          let response = {
+            status, message, data: data
+          }
+          return response;
         }
-        else {
+      } catch (error) {
+        console.log(error)
+        status = '201';
+        message = "error " + error.message
+        let response = {
+          status, message
         }
-        const broker = await this.BrokerRepository.findById(broker_id);
-        console.log(broker);
-        if (broker) {
-
-          await this.BrokerRepository.updateById(broker_id, {
-
-            logo: BROKERPATH_STRING + filename.replace(/[\])}[{(]/g, '').replace(/ /g, ''),
-
-            link: BROKERPATH_STRING + modfilename
-
-          })
-          //method
-          let url = process.env.MAINAPI + `/api/customer/broker/${broker_id}/logo`;
-
-          let pathImg = BROKERIMG_RESOURCES_FOLDER + "/" + filename.replace(/[\])}[{(]/g, '').replace(/ /g, '');
-          const fetchStatus = await this.http.fetchMultipartFormdata(url, pathImg);
-          console.log("fetchStatus >> status", fetchStatus);
-          message = 'Broker logo is set'
-          status = '200'
-        } else {
-          console.log('no broker with given id');
-          message = 'No broker found'
-          status = '202'
-        }
-
+        return response;
       }
-
     })
     p.catch(onrejected => {
-
       message = 'Broker logo is not set'
-
       status = '202'
-
+      let response = {
+        status, message
+      }
+      return response;
     })
-    this.response.status(parseInt('200')).send({
-
-      status: '200',
-
-      message: 'Broker logo',
-
-      date: new Date(),
-
-      data: data
-
-    });
-    return this.response;
-
   }
   @post('/broker/registration', {
     responses: {
@@ -549,18 +545,38 @@ export class BrokerController {
                 }
 
               },
-              EOInsurense: {
-                type: 'string'
+              EOinsurence: {
+                type: 'object',
+                default: { EOInsurense: '', EOCertificate: '', policy: '', EOIexpiryDate: new Date().toISOString().slice(0, 10) },
+                items: {
+                  properties: {
+                    EOInsurense: {
+                      type: 'string', default: ''
+                    },
+                    EOCertificate: {
+                      type: 'string', default: ''
+                    },
+                    policy: {
+                      type: 'string', default: ''
+                    },
+                    EOIexpiryDate: {
+                      type: 'string', default: new Date().toISOString().slice(0, 10)
+                    }
+                  }
+                }
               },
-              EOCertificate: {
-                type: 'string'
-              },
-              policy: {
-                type: 'string'
-              },
-              EOIexpiryDate: {
-                type: 'string', default: new Date().toISOString().slice(0, 10)
-              },
+              // EOInsurense: {
+              //   type: 'string'
+              // },
+              // EOCertificate: {
+              //   type: 'string'
+              // },
+              // policy: {
+              //   type: 'string'
+              // },
+              // EOIexpiryDate: {
+              //   type: 'string', default: new Date().toISOString().slice(0, 10)
+              // },
               apt: {
                 type: 'string',
                 default: '',
@@ -710,10 +726,7 @@ export class BrokerController {
           const contactInfoHOME = await this.ContactInformationRepository.create(contactInfoData);
           console.log(`contactInfoHOME - ${contactInfoHOME.id}`)
           //broker
-
           let brokerData: Broker = new Broker();
-
-
           //broker parent
           if (apiRequest.parent_id && apiRequest.parent_id != 0) {
             brokerData.parentId = apiRequest.parent_id;
@@ -747,9 +760,12 @@ export class BrokerController {
           brokerData.contactId = contactInfoHOME.id;
           brokerData.brokerType = apiRequest.brokerType || CONST.broker.brokerType
           brokerData.discoverable = true;
-          const broker = await this.BrokerRepository.create(brokerData);
+          const broker: any = await this.BrokerRepository.create(brokerData);
           //brokerData.logo=?
-
+          let brokerAdmin: BrokerAdmins = new BrokerAdmins();
+          brokerAdmin.brokerId = broker.id;
+          brokerAdmin.userId = user.id || 0;
+          await this.BrokerAdminsRepository.create(brokerAdmin);
           brokerId = broker.id;
           contId = broker.contactId;
           userId = broker.userId;
@@ -818,13 +834,15 @@ export class BrokerController {
             }
           }
           //handle form
-          if (apiRequest.EOCertificate && apiRequest.EOIexpiryDate && apiRequest.EOInsurense && apiRequest.policy) {
+          // if (apiRequest.EOCertificate && apiRequest.EOIexpiryDate && apiRequest.EOInsurense && apiRequest.policy) {
+          if (apiRequest.EOinsurence) {
+            let EoinsurenceObj = apiRequest.EOinsurence;
             let EOInsurence: BrokerEoInsurance = new BrokerEoInsurance();
             EOInsurence.brokerId = broker?.id || 1;
-            EOInsurence.certificateNumber = apiRequest.EOCertificate;
-            EOInsurence.expiryDate = apiRequest.EOIexpiryDate;
-            EOInsurence.insurerName = apiRequest.EOInsurense;
-            EOInsurence.policyNumber = apiRequest.policy;
+            EOInsurence.certificateNumber = EoinsurenceObj.EOCertificate;
+            EOInsurence.expiryDate = EoinsurenceObj.EOIexpiryDate;
+            EOInsurence.insurerName = EoinsurenceObj.EOInsurense;
+            EOInsurence.policyNumber = EoinsurenceObj.policy;
             await this.BrokerEoInsuranceRepository.create(EOInsurence);
           }
 
@@ -834,9 +852,6 @@ export class BrokerController {
             //signup_form
             let signupFormData: SignupForms = new SignupForms();
             signupFormData.brokerId = broker?.id || 1;
-
-
-
             console.log(apiRequest.formDetails)
             console.log(typeof apiRequest.formDetails)
             apiRequest.formDetails = JSON.parse(apiRequest.formDetails)
@@ -869,16 +884,12 @@ export class BrokerController {
               } else {
                 signupFormData.name = formDetails.name ?? CONST.signupForm.name
               }
-
               signupFormData.description = formDetails.description ?? CONST.signupForm.description
               signupFormData.title = formDetails.title ?? CONST.signupForm.title
               signupFormData.formType = formDetails.formType ?? CONST.signupForm.formType
               signupFormData.keywords = formDetails.keywords ?? CONST.signupForm.keywords
               // signupFormData.disclosureAgreement = formDetails.disclosureAgreement ?? CONST.signupForm.disclosure_agreement
               // signupFormData.termsOfService = formDetails.termsOfService ?? CONST.signupForm.terms_of_service
-
-
-
               signupFormData.inelligibilityPeriod = CONST.signupForm.ineligibilityPeriod
               signupFormData.published = CONST.signupForm.published
 
@@ -4484,7 +4495,7 @@ export class BrokerController {
             },
             count: {
               type: 'number',
-              default: 0
+              default: 9
             },
             strictOrpartial: {
               //when
@@ -4498,7 +4509,7 @@ export class BrokerController {
   }) apiRequest: any): Promise<any> {
     let status, message, data: any;
     try {
-      let filter: any = { where: { and: [] }, fields: { policyStartDate: true, name: true, brokerType: true, logo: true, userId: true, contactId: true }, limit: apiRequest.count };
+      let filter: any = { where: { and: [] }, fields: { id: true, policyStartDate: true, name: true, brokerType: true, logo: true, userId: true, contactId: true }, limit: apiRequest.count };
       let searchArray = apiRequest.searchArray;
       for (const seatObj of searchArray) {
         let searchterm = seatObj.searchterm;
@@ -4506,7 +4517,8 @@ export class BrokerController {
         if (searchterm == "policyStartDate") {
           let from = searchvalue.from != "" ? searchvalue.from : '2001-01-01';
           let to = searchvalue.to != "" ? searchvalue.to : moment().format('YYYY-MM-DD');
-          filter.where.and.push({ "policyStartDate": { "between": [from, to] } })
+          // filter.where.and.push({ "policyStartDate": { "between": [from, to] } })
+          // filter.where.and.push({ or: [{ "policyStartDate": { "between": [from, to] } }, { "policyStartDate": NULL }] })
           // filter.where.and.push({ and: [{ registrationDate: { gte: from } }, { registrationDate: { lt: to } }] })
           console.log(from, "***", to)
         }
@@ -4515,7 +4527,7 @@ export class BrokerController {
             let obj: any = {};
             console.log(apiRequest.strictOrpartial)
             if (apiRequest.strictOrpartial) {
-              obj[searchterm] = { like: `${searchvalue}` };
+              obj[searchterm] = { like: `%${searchvalue}%` };
               filter.where.and.push(obj);
             }
             else {
@@ -4536,6 +4548,10 @@ export class BrokerController {
       //     }
       //   }
       // }
+
+      // console.log(filter.where.and[1].or[1])
+      // console.log(filter.where.and[1].or[0])
+      // console.log(filter.where.and.or[1])
       let customers: any = await this.BrokerRepository.find(filter);
       if (customers.length > 0) {
         status = 200;
@@ -4548,12 +4564,677 @@ export class BrokerController {
       }
     }
     catch (error) {
+      console.log(error);
       status = 400;
       message = "Error " + error.message
+
     }
     this.response.status(status).send({
       status, message, data
     })
     return this.response;
   }
+
+  @post('/broker/registration2', {
+    responses: {
+      200: {
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+            },
+          },
+        },
+        description: 'File',
+      },
+    },
+  })
+  async broker_registration_new(
+    @requestBody({
+      description: "Registration details of a broker with new changes of admin group",
+      content: {
+        'multipart/form-data': {
+          // Skip body parsing
+          'x-parser': 'stream',
+          schema: {
+            //required: ['name', 'email'],
+            type: 'object',
+            properties: {
+
+              // contact_type: {
+              //   type: 'string',
+              //   default: 'BROKER',
+              // },
+              name: {
+                type: 'string',
+                default: '',
+              },
+              brokerType: {
+                type: 'string',
+                default: 'BROKERAGE',
+                enum: CONST.BROKER_TYPE_ARRAY,
+              },
+              email: {
+                type: 'string',
+                default: '',
+              },
+              secondary_email: {
+                type: 'string',
+                default: '',
+              },
+              logo: {
+                type: 'string',
+                format: 'binary'
+              },
+
+              useParentsLogo: {
+                type: 'boolean',
+                default: 'false',
+              },
+              parent_id: {
+                type: 'number',
+                default: '0',
+              },
+              parent_name: {
+                type: 'string',
+                default: '',
+              },
+              license: {
+                // required: ['formType'],
+                type: 'object',
+                properties: {
+
+                  provinces_ids: {
+                    type: 'array',
+                    items: {
+                      type: 'number'
+
+                    }
+                  },
+                  provinces_names: {
+                    type: 'array',
+                    items: {
+                      type: 'string'
+                    }
+                  },
+                  expiry_date: { type: 'string', default: new Date().toISOString().slice(0, 10) },
+                  reminder_email: { type: 'number', default: '7', description: 'send a reminder x days before' },
+                  licence_nums: { type: "array", default: "" }
+                }
+              },
+              licenses: {
+                required: [''],
+                type: 'array',
+                items: {
+                  properties: {
+                    provinces_id: { type: 'number', default: '0' },
+                    provinces_name: { type: 'string', default: '' },
+                    expiry_date: { type: 'string', default: new Date().toISOString().slice(0, 10) },
+                    reminder_email: { type: 'number', default: '7', description: 'send a reminder x days before' },
+                    license_num: { type: "array", default: "" },
+                    license_coverage: { type: 'string', default: 'LIFE_ACCIDENT_AND_SICKNESS', enum: CONST.LICENSE_COVERAGE }
+                  }
+                }
+              },
+              sales_tracking_code: {
+                type: 'string',
+                default: '',
+              },
+
+              createSignupForm: {
+                type: 'boolean',
+                default: '',
+              },
+              formDetails: {
+                required: ['formType'],
+                type: 'array',
+                items: {
+                  properties: {
+                    formType: { type: 'string', default: 'REGULAR', enum: CONST.FORM_TYPE_ARRAY, },
+                    name: { type: 'string', default: 'Health Benefits Application Form' },
+                    description: { type: 'string', default: '' },
+                    link: { type: 'string', default: '' },
+                    planLevels: { type: 'array', default: '' },
+                  }
+                }
+
+              },
+              EOinsurence: {
+                type: 'object',
+                default: { EOInsurense: '', EOCertificate: '', policy: '', EOIexpiryDate: new Date().toISOString().slice(0, 10) },
+                items: {
+                  properties: {
+                    EOInsurense: {
+                      type: 'string', default: ''
+                    },
+                    EOCertificate: {
+                      type: 'string', default: ''
+                    },
+                    policy: {
+                      type: 'string', default: ''
+                    },
+                    EOIexpiryDate: {
+                      type: 'string', default: new Date().toISOString().slice(0, 10)
+                    }
+                  }
+                }
+              },
+              // EOInsurense: {
+              //   type: 'string'
+              // },
+              // EOCertificate: {
+              //   type: 'string'
+              // },
+              // policy: {
+              //   type: 'string'
+              // },
+              // EOIexpiryDate: {
+              //   type: 'string', default: new Date().toISOString().slice(0, 10)
+              // },
+              apt: {
+                type: 'string',
+                default: '',
+              },
+              street_address_line1: {
+                type: 'string',
+                default: '',
+              },
+              street_address_line2: {
+                type: 'string',
+                default: '',
+              },
+              city: {
+                type: 'string',
+                default: '',
+              },
+              province: {
+                type: 'string',
+                default: '',
+              },
+              province_id: {
+                type: 'number',
+                default: '0',
+              },
+              state: {
+                type: 'string',
+                default: '',
+              },
+              state_id: {
+                type: 'number',
+                default: '0',
+              },
+              country: {
+                type: 'string',
+                default: '',
+              },
+              country_id: {
+                type: 'number',
+                default: '0',
+              },
+              postal_code: {
+                type: 'string',
+                default: '',
+              },
+              phone_number: {
+                type: 'string',
+                default: '',
+              },
+              secondary_phone: {
+                type: 'string',
+                default: '',
+              },
+
+            }
+
+          },
+        },
+      },
+    })
+    request: Request,
+    @inject(RestBindings.Http.RESPONSE) response: Response,
+  ): Promise<Response> {
+    let message: string, status: string, statusCode: number, data: any = {};
+    let p = new Promise<any>((resolve, reject) => {
+      this.handler(request, response, err => {
+        if (err) reject(err);
+        else {
+          resolve(FilesController.getFilesAndFields(request, 'brokerLogoUpload', {}));
+          // const upload = FilesController.getFilesAndFields(request, 'brokerLogoUpload', { brokerid: broker_id });
+        }
+      });
+    });
+    p.then(async value => {
+      let brokerId;
+      let userId;
+      let contId;
+      let signupFormId;
+      let adminBroker;
+      console.log("entry")
+      if (!value.fields) {
+        this.response.status(422).send({
+          status: '422',
+          error: `Missing input fields`,
+          message: MESSAGE.ERRORS.missingDetails,
+          date: new Date(),
+        });
+        return this.response;
+      }
+
+      if (value.fields) {
+
+        if (value.fields.error) {
+          this.response.status(422).send({
+            status: '422',
+            error: value.fields.error,
+            message: value.fields.error,
+            date: new Date(),
+          });
+          return this.response;
+        }
+
+        let apiRequest = value.fields;
+        let BroId: any;
+
+
+        try {
+
+          //validations
+          let user: any;
+          user = await this.UsersRepository.findOne({ where: { username: apiRequest.email } });
+          if (user) {
+            // this.response.status(409).send({
+            //   error: `User with this email ${apiRequest.email} is already registered`,
+            //   message: 'Account already exists, please contact the provider',
+            //   date: new Date(),
+            //   data: "Check users -- customers/brokers"
+            // });
+            // return this.response;
+          }
+          else {
+            const todayDate = new Date().toISOString().slice(0, 10);
+            let userData: Users = new Users();
+            userData.username = apiRequest.email;
+            userData.role = CONST.USER_ROLE.BROKER;
+            let password = await generateRandomPassword()
+            userData.password = await encryptPassword(password);
+            // userData.activation = this.registrationService.getActivationCode();
+            userData.activation = await getActivationCode();
+            userData.block = true;
+            userData.registrationDate = todayDate;
+            user = await this.UsersRepository.create(userData);
+            console.log(`user - ${user.id}`)
+          }
+          //User
+          //Contact Info
+          let contactInfoData: ContactInformation = new ContactInformation();
+          contactInfoData.primaryEmail = apiRequest.email
+          contactInfoData.secondaryEmail = apiRequest.secondary_email
+          contactInfoData.primaryPhone = apiRequest.phone_number
+          contactInfoData.secondaryPhone = apiRequest.secondary_phone
+          contactInfoData.apt = apiRequest.apt;
+          contactInfoData.line1 = apiRequest.street_address_line1
+          contactInfoData.line2 = apiRequest.street_address_line2
+          contactInfoData.city = apiRequest.city
+          contactInfoData.state = apiRequest.province
+          //contactInfoData.country = Buffer.from(apiRequest.country || ''); //varbinary
+          contactInfoData.country = apiRequest.country || ''; //varchar
+          contactInfoData.postalCode = apiRequest.postal_code
+          contactInfoData.contactType = CONST.CONTACT_TYPE.BROKER;
+          contactInfoData.addressType = CONST.ADDRESS_TYPE.HOME_ADDRESS;
+          const contactInfoHOME = await this.ContactInformationRepository.create(contactInfoData);
+          console.log(`contactInfoHOME - ${contactInfoHOME.id}`)
+          //broker
+          let brokerData: Broker = new Broker();
+          // brokerData.logo=
+          //broker parent
+          if (apiRequest.parent_id && apiRequest.parent_id != 0) {
+            brokerData.parentId = apiRequest.parent_id;
+            let parentBroker = await this.BrokerRepository.findById(apiRequest.parent_id)
+            if (parentBroker) {
+              brokerData.parentId = parentBroker.id;
+              brokerData.description = parentBroker.name
+              if (apiRequest.useParentsLogo) {
+                brokerData.logo = parentBroker.logo;
+                brokerData.link = parentBroker.link;
+              }
+            }
+
+          } else if (apiRequest.parent_name && apiRequest.parent_name != '') {
+            let parentBroker = await this.BrokerRepository.findOne({ where: { name: apiRequest.parent_name } })
+            if (parentBroker) {
+              brokerData.parentId = parentBroker.id;
+              brokerData.description = parentBroker.name
+              if (apiRequest.useParentsLogo) {
+                brokerData.logo = parentBroker.logo;
+                brokerData.link = parentBroker.link;
+              }
+            }
+          }
+
+          brokerData.name = apiRequest.name;
+          brokerData.salesTrackingCode = apiRequest.sales_tracking_code
+          brokerData.useCreditCardPaymentMethod = true;
+          brokerData.usePadPaymentMethod = true;
+          brokerData.published = true;
+          brokerData.userId = user.id;
+          brokerData.contactId = contactInfoHOME.id;
+          brokerData.brokerType = apiRequest.brokerType || CONST.broker.brokerType
+          brokerData.discoverable = true;
+          brokerData.salesTrackingType = apiRequest.salesTrackingType || ' ';
+          brokerData.settingsAllowGroupBenefitsWallet = apiRequest.settingsAllowGroupBenefitsWallet || 0;
+          brokerData.settingsAllowInvoicePaymentMethod = apiRequest.settingsAllowInvoicePaymentMethod || 0;
+          brokerData.settingsEnableTieredHealthBenefits = apiRequest.settingsEnableTieredHealthBenefits || 0;
+          brokerData.settingsRolloverEmployeeLimitNextYear = apiRequest.settingsRolloverEmployeeLimitNextYear || 0;
+          brokerData.useInvoicePaymentMethod = apiRequest.useInvoicePaymentMethod || false;
+          const broker: any = await this.BrokerRepository.create(brokerData);
+          //brokerData.logo=?
+          let brokerAdmin: BrokerAdmins = new BrokerAdmins();
+          brokerAdmin.brokerId = broker.id;
+          brokerAdmin.userId = user.id || 0;
+          adminBroker = await this.BrokerAdminsRepository.create(brokerAdmin);
+          brokerId = broker.id;
+          contId = broker.contactId;
+          userId = broker.userId;
+          console.log(`Broker - ${brokerId}`)
+
+          //broker
+          //broker_licensed_states_and_provinces
+          let brokerLicensesArray: BrokerLicensedStatesAndProvinces[] = [];
+          let brokerLicenses: BrokerLicensedStatesAndProvinces = new BrokerLicensedStatesAndProvinces();
+          brokerLicenses.brokerId = brokerId || 0;
+
+
+          let brokerLicensedProvinces = [];
+          // if (apiRequest.license) {
+          //   apiRequest.license = JSON.parse(apiRequest.license)
+          //   brokerLicenses.expiryDate = apiRequest.license.expiry_date
+          //   brokerLicenses.reminderEmail = apiRequest.license.reminder_email
+
+          //   if (apiRequest.license.provinces_ids && apiRequest.license.provinces_ids.length > 0) {
+          //     brokerLicensedProvinces = apiRequest.license.provinces_ids
+          //   } else if (apiRequest.license.provinces_names && apiRequest.license.provinces_names.length > 0) {
+          //     let provinces = await this.StatesAndProvincesRepository.find({
+          //       where: {
+          //         or: [
+          //           { shortName: { inq: apiRequest.license.provinces_names } },
+          //           { name: { inq: apiRequest.license.provinces_names } }
+          //         ]
+          //       }
+          //     })
+
+          //     console.log(provinces);
+
+          //     for (const province of provinces) {
+          //       brokerLicensedProvinces.push(province.id);
+          //     }
+          //   }
+          //   let licenceNums = apiRequest.license.licence_nums;
+          //   // for (const brokerLicensedProvince of brokerLicensedProvinces) {
+          //   if (licenceNums.length == brokerLicensedProvinces.length) {
+          //     for (let i = 0; i < brokerLicensedProvinces.length; i++) {
+          //       // brokerLicenses.stateId = brokerLicensedProvince;
+          //       brokerLicenses.stateId = brokerLicensedProvinces[i];
+          //       brokerLicenses.licenseNumber = licenceNums[i];
+          //       console.log(`before push`)
+          //       console.log(brokerLicenses);
+          //       brokerLicensesArray.push(brokerLicenses)
+          //       await this.BrokerLicensedStatesAndProvincesRepository.create(brokerLicenses);
+          //     }
+          //   }
+          //   console.log(`brokerLicensesArray: ${brokerLicensesArray.length}`)
+          //   // if (brokerLicensesArray.length > 0)
+          //   //   await this.brokerLicensedProvincesRepo.create(brokerLicensesArray);
+          // }
+          if (apiRequest.licenses) {
+            apiRequest.licenses = JSON.parse(apiRequest.licenses);
+            let brokerLicenses: BrokerLicensedStatesAndProvinces = new BrokerLicensedStatesAndProvinces();
+            brokerLicenses.brokerId = brokerId || 0;
+            let licenses = apiRequest.licenses;
+            for (const license of licenses) {
+              brokerLicenses.expiryDate = license.expiry_date
+              brokerLicenses.reminderEmail = license.reminder_email
+              brokerLicenses.licenseNumber = license.license_num
+              brokerLicenses.licenseCoverage = license.license_coverage
+              brokerLicenses.stateId = license.provinces_id;
+              await this.BrokerLicensedStatesAndProvincesRepository.create(brokerLicenses);
+            }
+          }
+          //handle form
+          // if (apiRequest.EOCertificate && apiRequest.EOIexpiryDate && apiRequest.EOInsurense && apiRequest.policy) {
+
+          if (apiRequest.EOinsurence) {
+            let EoinsurenceObj: any = JSON.parse(apiRequest.EOinsurence);
+            console.log(EoinsurenceObj.length);
+            console.log(EoinsurenceObj.policy)
+            console.log("eo insurence >>>>", EoinsurenceObj)
+            console.log(typeof (EoinsurenceObj))
+            console.log(typeof (apiRequest.EOinsurence))
+            let EOInsurence: BrokerEoInsurance = new BrokerEoInsurance();
+            EOInsurence.brokerId = broker?.id || 1;
+            EOInsurence.certificateNumber = EoinsurenceObj.EOCertificate;
+            EOInsurence.expiryDate = EoinsurenceObj.EOIexpiryDate;
+            EOInsurence.insurerName = EoinsurenceObj.EOInsurense;
+            EOInsurence.policyNumber = EoinsurenceObj.policy;
+            console.log(EOInsurence);
+            await this.BrokerEoInsuranceRepository.create(EOInsurence);
+          }
+          if (apiRequest.createSignupForm) {
+            //console.log("CONST.signupForm")
+            // console.log(CONST.signupForm)
+            //signup_form
+            let signupFormData: SignupForms = new SignupForms();
+            signupFormData.brokerId = broker?.id || 1;
+            console.log(apiRequest.formDetails)
+            console.log(typeof apiRequest.formDetails)
+            apiRequest.formDetails = JSON.parse(apiRequest.formDetails)
+            console.log(apiRequest.formDetails)
+            console.log(typeof apiRequest.formDetails)
+            console.log(apiRequest.formDetails.length)
+            data.form = []
+            console.log("form details in api", apiRequest.formDetails);
+            for (const formDetails of apiRequest.formDetails) {
+              console.log("entery ", formDetails)
+              let link = await generateFormLink(user.id || 0)
+              signupFormData.link = await this.checkAndGenerateNewFormLink(link, user.id || 0)//generate_random_lin and user_id
+
+              let aliasLink = "";
+              console.log(`apiRequest.form.link: ${formDetails.link}`)
+              if (formDetails.link && formDetails.link != "") {
+                aliasLink = ("/" + formDetails.link)
+                console.log(`aliasLink1: ${aliasLink}`)
+              } else {
+                console.log(`broker.name: ${broker.name}`)
+                aliasLink = "/" + broker.name?.toLowerCase().split(" ")[0]
+                if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
+                  aliasLink += "_exec"
+                }
+                console.log(`aliasLink2: ${aliasLink}`)
+              }
+              signupFormData.alias = aliasLink
+              if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
+                signupFormData.name = formDetails.name ?? CONST.signupFormExec.name
+              } else {
+                signupFormData.name = formDetails.name ?? CONST.signupForm.name
+              }
+              signupFormData.description = formDetails.description ?? CONST.signupForm.description
+              signupFormData.title = formDetails.title ?? CONST.signupForm.title
+              signupFormData.formType = formDetails.formType ?? CONST.signupForm.formType
+              signupFormData.keywords = formDetails.keywords ?? CONST.signupForm.keywords
+              // signupFormData.disclosureAgreement = formDetails.disclosureAgreement ?? CONST.signupForm.disclosure_agreement
+              // signupFormData.termsOfService = formDetails.termsOfService ?? CONST.signupForm.terms_of_service
+              signupFormData.inelligibilityPeriod = CONST.signupForm.ineligibilityPeriod
+              signupFormData.published = CONST.signupForm.published
+
+              if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
+                signupFormData.requireDentalHealthCoverage = false
+                signupFormData.requireSpouseEmail = true
+                signupFormData.warnRequiredDependantMedicalExam = true
+              } else {
+                signupFormData.requireDentalHealthCoverage = true
+                signupFormData.requireSpouseEmail = false
+                signupFormData.warnRequiredDependantMedicalExam = false
+              }
+
+              signupFormData.useCreditCardPaymentMethod = true
+              signupFormData.usePadPaymentMethod = true
+
+              signupFormData.isDemoForm = formDetails.isDemoform || false
+
+              const signupForm = await this.SignupFormsRepository.create(signupFormData);
+              console.log(signupForm);
+
+              signupFormId = signupForm.id || 0;
+
+              data.form.push(signupForm)
+              console.log(`signupForm.id: ${signupForm.id}`)
+              //broker_signup_forms_plans
+              let signupFormPlansArray: BrokerSignupFormsPlans[] = [];
+              let signupFormPlans: BrokerSignupFormsPlans = new BrokerSignupFormsPlans();
+              signupFormPlans.formId = signupForm.id || 0;
+
+              if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
+                //get executive plan ids ---> package_id=5
+
+                let executivePlans = await this.InsurancePlansRepository.find({ where: { packageId: CONST.EXECUTIVE_PACKAGE_ID } })
+                let executivePlanlevelObj: SignupFormsPlanLevelMapping = new SignupFormsPlanLevelMapping();
+                executivePlanlevelObj.formId = signupForm.id || 0;
+                let executivePlanlevelArray: any = [];
+                for (const executivePlan of executivePlans) {
+                  signupFormPlans.planId = executivePlan.id || 0
+                  // console.log(`before push`)
+                  // console.log(signupFormPlans);
+                  signupFormPlansArray.push(signupFormPlans)
+                  await this.BrokerSignupFormsPlansRepository.create(signupFormPlans);
+                  if (!executivePlanlevelArray.includes(executivePlan.planLevel)) {
+                    executivePlanlevelArray.push(executivePlan.planLevel);
+                  }
+                }
+                for (const executivePlanLevel of executivePlanlevelArray) {
+                  executivePlanlevelObj.planLevelId = executivePlanLevel;
+                  await this.SignupFormsPlanLevelMappingRepository.create(executivePlanlevelObj);
+                }
+                console.log(`signupFormPlansArray: ${signupFormPlansArray.length}`)
+              }
+              if (formDetails.formType == CONST.SIGNUP_FORM.CUSTOM) {
+                let planLevels = formDetails.planLevels;
+                let customPlanlevelObj: SignupFormsPlanLevelMapping = new SignupFormsPlanLevelMapping();
+                customPlanlevelObj.formId = signupForm.id || 0;
+                for (const pl of planLevels) {
+                  customPlanlevelObj.planLevelId = pl;
+                  await this.SignupFormsPlanLevelMappingRepository.create(customPlanlevelObj);
+                }
+                // for (const pl of planLevels) {
+                //   let planLevelsInRepo = await this.PlanLevelRepository.find({
+                //     where: {
+                //       and: [
+                //         { or: [{ id: pl }, { parentId: pl }] },
+                //         { published: '1' }
+                //       ]
+                //     }, fields: {
+                //       id: true
+                //     }
+                //   });
+                //   if (planLevelsInRepo) {
+                //     console.log("plan", planLevelsInRepo);
+                //     for (const planlevelloop of planLevelsInRepo) {
+                //       let countofsignupformplanlevelcondition = await this.SignupFormsPlanLevelMappingRepository.count({ and: [{ formId: signupForm.id }, { planlevelId: planlevelloop.id }] })
+                //       console.log(countofsignupformplanlevelcondition);
+                //       if (countofsignupformplanlevelcondition.count > 0)// console.log("plan levels", planlevel);
+                //       { }
+                //       else {
+                //         customPlanlevelObj.planLevelId = planlevelloop.id || 0;
+                //         let bsfl = await this.SignupFormsPlanLevelMappingRepository.create(customPlanlevelObj);
+                //         console.log("bsfl>>>>>", bsfl);
+                //       }
+                //     }
+                //   }
+                // }
+
+              }
+            }//forms
+
+          }
+
+          //handle logo
+          if (value.files) {
+            console.log(`Logo -${value.files.length}`)
+
+            if (value.files.length > 0) {
+              console.log(value.files[0].originalname)
+
+              console.log(`file.originalname`);
+              let originalname = value.files[0].originalname;
+              console.log(originalname)
+              originalname = originalname.replace(/[\])}[{(]/g, '').replace(/ /g, '')
+              console.log(originalname)
+              let filename = originalname
+              let modfilenameArr = filename.split(".")
+              let modfilename = modfilenameArr[0] + "0." + modfilenameArr[1]
+
+              // const broker = await this.BrokerRepository.findById(brokerId);
+              if (broker) {
+                await this.BrokerRepository.updateById(brokerId, {
+                  logo: BROKERPATH_STRING + filename,
+                  link: BROKERPATH_STRING + modfilename
+                })
+                message = 'Broker logo is set'
+                status = '200'
+              } else {
+                console.log('no broker with given id');
+                message = 'No broker found'
+                status = '202'
+              }
+            } else {
+              console.log(`No logo needed`)
+            }
+
+          }
+
+          data.broker = broker;
+
+          message = 'Broker registration successful';
+          status = '200';
+          statusCode = 200;
+
+        } catch (error) {
+          console.error(error);
+          message = 'Broker registration failed'
+          status = '202';
+          statusCode = 202
+          await this.BrokerLicensedStatesAndProvincesRepository.deleteAll({ brokerId: brokerId })
+          await this.BrokerSignupFormsPlansRepository.deleteAll({ brokerId: brokerId });
+          await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formId: signupFormId });
+          await this.BrokerEoInsuranceRepository.deleteAll({ brokerId: brokerId });
+          await this.ContactInformationRepository.deleteById(contId);
+          await this.BrokerLicensedStatesAndProvincesRepository.deleteAll({ brokerId: brokerId });
+          await this.BrokerAdminsRepository.deleteById(adminBroker?.id);
+          await this.UsersRepository.deleteById(userId);
+          await this.SignupFormsRepository.deleteAll({ brokerId: brokerId });
+          await this.BrokerRepository.deleteById(brokerId);
+        }
+
+      }
+
+      this.response.status(parseInt(status)).send({
+        status: status,
+        message: message,
+        date: new Date(),
+        data: data
+      });
+
+    })
+    p.catch(onrejected => {
+      message = 'Broker logo is not set'
+      status = '202'
+      this.response.status(parseInt(status)).send({
+        status: status,
+        message: message,
+        date: new Date(),
+        data: data
+      });
+    })
+    return this.response;
+  }
+
+
 }

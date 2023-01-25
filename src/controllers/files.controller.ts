@@ -348,6 +348,7 @@ export class FilesController {
       }
       return { files, fields: request.body };
     }
+    return { files, fields: request.body };
   }
 
   /**

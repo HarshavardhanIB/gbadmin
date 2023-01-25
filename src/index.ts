@@ -15,8 +15,7 @@ import 'dotenv/config';
 
 // let config: any = dotenv.config();
 // console.log(config);
-export async function main(options: ApplicationConfig = {})
-{
+export async function main(options: ApplicationConfig = {}) {
   let config: any = require('dotenv').config();
   const app = new GroupBenfitsAdminPortalApplication(options);
   await app.boot();
@@ -30,7 +29,7 @@ export async function main(options: ApplicationConfig = {})
   return app;
 }
 
-if (require.main === module) {
+if (require.main === module) { 
   // Run the application
   const config = {
     rest: {

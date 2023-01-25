@@ -6,16 +6,18 @@ import { repository } from '@loopback/repository';
 import { get, param, post, Request, requestBody, response, Response, RestBindings } from '@loopback/rest';
 import { request } from 'http';
 import { nextTick } from 'process';
-import { Broker, ContactInformation, Users } from '../models';
+import { Broker, BrokerAdmins, ContactInformation, Customer, Users } from '../models';
 import * as CONST from '../constants'
-import { BrokerRepository, ContactInformationRepository, UsersRepository } from '../repositories'
-import { Corporate } from '../services';
+import { BrokerAdminsRepository, BrokerRepository, ContactInformationRepository, UsersRepository } from '../repositories'
+import { CommonServiceService, Corporate, mail } from '../services';
 import { FILE_UPLOAD_SERVICE } from '../keys';
 import { FileUploadHandler } from "../types";
 import { FilesController } from './files.controller';
 import { values } from 'lodash';
 import * as MESSAGE from '../messages'
 import * as PATHS from '../paths';
+import { getActivationCode } from '../common-functions';
+import moment from 'moment';
 export class CorporateController {
   constructor(
     @repository(BrokerRepository)
@@ -24,9 +26,12 @@ export class CorporateController {
     @service(Corporate) public corporateService: Corporate,
     @repository(UsersRepository)
     public usersRepository: UsersRepository,
+    @repository(BrokerAdminsRepository)
+    public BrokerAdminsRepository: BrokerAdminsRepository,
     @repository(ContactInformationRepository)
     public ContactInformationRepository: ContactInformationRepository,
     @inject(FILE_UPLOAD_SERVICE) public handler: FileUploadHandler,
+    @service(CommonServiceService) public commonService: CommonServiceService,
   ) { }
   @get('/corporate/{company}logo')
   async brokerDetailsBasedonId(@param.path.string('company') company: string): Promise<Response> {
@@ -231,6 +236,7 @@ export class CorporateController {
       });
     });
     p.then(async value => {
+      let users: any = [];
       let brokerId;
       let userId;
       let contId;
@@ -257,6 +263,7 @@ export class CorporateController {
         console.log(requestFiles);
         try {
           console.log(apiRequest);
+          // after add stax bill
           let contactDetailsObj: ContactInformation = new ContactInformation();
           contactDetailsObj.apt = apiRequest.apt;
           contactDetailsObj.city = apiRequest.city;
@@ -270,23 +277,42 @@ export class CorporateController {
           contactDetailsObj.primaryEmail = "";
           contactDetailsObj.primaryPhone = apiRequest.phone_number;
           let contactInfo = await this.ContactInformationRepository.create(contactDetailsObj);
-          let groupAdmins: any = apiRequest.gropupAdmin;
-          for (const groupAdmin of groupAdmins) {
-            let userObj: Users = new Users();
-            userObj.username = groupAdmin.email;
-          }
+          let customerObj: Customer = new Customer();
           let brokerObj: Broker = new Broker();
           brokerObj.name = apiRequest.corporationName;
-          brokerObj.brokerType = apiRequest.brokerType;
+          brokerObj.brokerType = apiRequest.brokerType || 'CORPORATE';
           brokerObj.logo = PATHS.BROKERPATH_STRING + requestFiles[0].originalname.split(".").trim().replaceAll(" ", "");
           brokerObj.link = PATHS.BROKERPATH_STRING + requestFiles[0].originalname.split(".").trim().replaceAll(" ", "");
           brokerObj.published = true;
           brokerObj.contactId = contactInfo.id;
           brokerObj.userId = 0;
-
-
-
-
+          brokerObj.settingsAllowGroupBenefitsWallet = apiRequest.setupWallet ? 1 : 0;
+          brokerObj.settingsEnableTieredHealthBenefits = apiRequest.setUplevelofCoverage ? 1 : 0;
+          let broker: any = await this.BrokerRepository.create(brokerObj);
+          let groupAdmins: any = apiRequest.gropupAdmin;
+          for (const groupAdmin of groupAdmins) {
+            let userObj: Users = new Users();
+            userObj.username = groupAdmin.email;
+            let randomPswrd = await this.commonService.generateRandomPassword();
+            userObj.password = await this.commonService.encryptPassword(randomPswrd);
+            userObj.block = true;
+            userObj.activation = await getActivationCode();
+            userObj.registrationDate = moment().format('YYYY-MM-DD');
+            let user = await this.usersRepository.create(userObj);
+            users.push(user.id);
+          }
+          let brokerAdmin: BrokerAdmins = new BrokerAdmins();
+          brokerAdmin.brokerId = broker.id;
+          for (const user of users) {
+            brokerAdmin.userId = user;
+          }
+          await this.BrokerRepository.updateById(broker.id, { userId: users[0] });
+          await mail("", groupAdmins[0].email, "", "", "", "")
+          this.response.status(200).send({
+            status: '200',
+            message: 'Corporate registratered successfully ',
+            date: new Date(),
+          });
         } catch (error) {
 
           this.response.status(202).send({

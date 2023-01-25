@@ -295,6 +295,7 @@ let FilesController = class FilesController {
             }
             return { files, fields: request.body };
         }
+        return { files, fields: request.body };
     }
     /**
   * Validate file names to prevent them goes beyond the designated directory

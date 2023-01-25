@@ -19,4 +19,5 @@ tslib_1.__exportStar(require("./broker.service"), exports);
 tslib_1.__exportStar(require("./database-changes.service"), exports);
 tslib_1.__exportStar(require("./corporate.service"), exports);
 tslib_1.__exportStar(require("./auth.service"), exports);
+tslib_1.__exportStar(require("./common-service.service"), exports);
 //# sourceMappingURL=index.js.map

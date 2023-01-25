@@ -11,3 +11,4 @@ export * from './broker.service';
 export * from './database-changes.service';
 export * from './corporate.service';
 export * from './auth.service';
+export * from './common-service.service';

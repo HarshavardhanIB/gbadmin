@@ -285,6 +285,8 @@ let AuthController = class AuthController {
         let user = await this.usersRepository.findOne({ where: { activation: key } });
         if (user) {
             await this.usersRepository.updateById(user.id, { block: false });
+            let updatedUser = await this.usersRepository.findById(user.id);
+            console.log(updatedUser);
             response = {
                 "statusCode": 200,
                 "message": "Account activated successfully"
@@ -366,6 +368,12 @@ let AuthController = class AuthController {
             "userConfig": data
         };
         return responseData;
+    }
+    async useraInfo() {
+        let users = await this.usersRepository.find();
+        console.log(users[0].block);
+        console.log(typeof (users[0].block));
+        return users;
     }
 };
 tslib_1.__decorate([
@@ -493,6 +501,12 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:paramtypes", []),
     tslib_1.__metadata("design:returntype", Promise)
 ], AuthController.prototype, "ip", null);
+tslib_1.__decorate([
+    (0, rest_1.get)('/usersTable'),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", []),
+    tslib_1.__metadata("design:returntype", Promise)
+], AuthController.prototype, "useraInfo", null);
 AuthController = tslib_1.__decorate([
     tslib_1.__param(0, (0, core_1.inject)(authentication_jwt_1.TokenServiceBindings.TOKEN_SERVICE)),
     tslib_1.__param(1, (0, core_1.inject)(authentication_jwt_1.UserServiceBindings.USER_SERVICE)),

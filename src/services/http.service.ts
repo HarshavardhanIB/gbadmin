@@ -28,12 +28,11 @@ export class HttpService {
       const formFile = fs.createReadStream(path);
       const form = new FormData();
       form.append("file", formFile);
-      
+
       // let satstus = await fetch(url, requestOptions)
       let status = await axios.post(url, form);
       console.log(">>>>>>>", status)
-      // if(status)
-      // {}
+      
       return true;
     }
     catch (error) {

@@ -29,8 +29,6 @@ let HttpService = class HttpService {
             // let satstus = await fetch(url, requestOptions)
             let status = await axios_1.default.post(url, form);
             console.log(">>>>>>>", status);
-            // if(status)
-            // {}
             return true;
         }
         catch (error) {
