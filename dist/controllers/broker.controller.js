@@ -295,6 +295,10 @@ let BrokerController = class BrokerController {
                         message = 'Broker logo is set';
                         status = '200';
                         data = brokerAfterUpdate;
+                        let response = {
+                            status, message, data: data
+                        };
+                        return response;
                     }
                     else {
                         console.log('no broker with given id');
@@ -3181,6 +3185,7 @@ let BrokerController = class BrokerController {
                     console.log(`contactInfoHOME - ${contactInfoHOME.id}`);
                     //broker
                     let brokerData = new models_1.Broker();
+                    // brokerData.logo=
                     //broker parent
                     if (apiRequest.parent_id && apiRequest.parent_id != 0) {
                         brokerData.parentId = apiRequest.parent_id;

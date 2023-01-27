@@ -392,6 +392,10 @@ export class BrokerController {
             message = 'Broker logo is set'
             status = '200'
             data = brokerAfterUpdate;
+            let response = {
+              status, message, data: data
+            }
+            return response;
           } else {
             console.log('no broker with given id');
             message = 'No broker found'
