@@ -82,7 +82,19 @@ export const STATUS: any = {
   SUSPENDED: 'Suspended',
   CANCELLED: 'Cancelled'
 }
-
+export const EOI={
+EXPIRE:"E&O insurece is expired",
+}
+export const LICENCE={
+  EXPIRE:"expired",
+  FOUND:"Licences are found",
+  NOLICENCES:"No Licences",
+}
+export const MIN="Min"  
+export const MAX="Max"
+export const PARTIAL='Partial'
+export const NONE='None';
+export const NODATA='No data found';
 export const HEALTH_DENTAL_PACKAGE_ID = 1
 export const HEALTH_DENTAL_PACKAGES = [1]
 export const GREENSHEILD_PACKAGES = [1] //Health&Dental

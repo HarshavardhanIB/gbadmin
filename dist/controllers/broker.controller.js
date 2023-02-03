@@ -79,7 +79,7 @@ let BrokerController = class BrokerController {
         return this.response;
     }
     async getBroker() {
-        let brokerList = [];
+        let statusCode, message, brokerList = [];
         var Brokers;
         try {
             console.log(">>>>>1 st");
@@ -111,48 +111,44 @@ let BrokerController = class BrokerController {
                 let brokerId = broker.id;
                 let contactId = broker.contactId;
                 let brokerEOI = await this.BrokerEoInsuranceRepository.findOne({ where: { brokerId: brokerId } });
-                !brokerEOI || brokerEOI != repository_1.Null ? EOIStatus = "No data found" : new Date(brokerEOI.expiryDate) < today ? EOIStatus = "E&O insurece is expired" : EOIStatus = brokerEOI;
+                !brokerEOI || brokerEOI != repository_1.Null ? EOIStatus = CONST.NODATA : new Date(brokerEOI.expiryDate) < today ? EOIStatus = CONST.EOI.EXPIRE : EOIStatus = brokerEOI;
                 let licences = await this.BrokerLicensedStatesAndProvincesRepository.find({ where: { brokerId: brokerId } });
                 if (licences.length > 0) {
                     for (let licence of licences) {
                         if (licence.expiryDate != undefined) {
-                            new Date(licence.expiryDate) < today ? LicecncesStatus = licence.licenseNumber + " is expired  " : LicecncesStatus = "  Licences are found  ";
+                            new Date(licence.expiryDate) < today ? LicecncesStatus = licence.licenseNumber + " " + CONST.LICENCE.EXPIRE : LicecncesStatus = CONST.LICENCE.FOUND;
                         }
                     }
                 }
                 else {
-                    LicecncesStatus = "No Licences";
+                    LicecncesStatus = CONST.LICENCE.NOLICENCES;
                 }
                 if (contactId) {
                     let contactDetails = await this.ContactInformationRepository.findById(contactId);
-                    // console.log("Contacct details",contactDetails.length)
-                    // console.log(">>>>>>>>",contactDetails)
                     if (contactDetails) {
-                        console.log(">>>>", contactDetails.toObject.length);
-                        console.log("><<><><>", contactDetails);
                         contactDetails.primaryEmail && contactDetails.secondaryEmail && contactDetails.line1 && contactDetails.city && contactDetails.apt ? contactStatus = "Max details" : contactStatus = "min";
-                        console.log(contactDetails.primaryEmail && contactDetails.secondaryEmail && contactDetails.line1 && contactDetails.city && contactDetails.apt);
-                        console.log(contactDetails.primaryEmail && contactDetails.secondaryEmail && contactDetails.line1 && contactDetails.city && contactDetails.apt ? contactStatus = "Max details" : contactStatus = "Partial");
                         contactDetails.apt == undefined || contactDetails.line1 == undefined ? contactStatus = 'Partial' : contactStatus = contactStatus;
                     }
                     else {
-                        contactStatus = "None";
+                        contactStatus = CONST.NONE;
                     }
                 }
                 else {
-                    contactStatus = "None";
+                    contactStatus = CONST.NONE;
                 }
                 broker.LicecncesStatus = LicecncesStatus;
                 broker.EOIStatus = EOIStatus;
                 let status = { "broker": broker, "LicecncesStatus": LicecncesStatus, "EOIStatus": EOIStatus, "contactStatus": contactStatus };
                 brokerList.push(status);
+                statusCode = 200;
+                message = MESSAGE.BROKER_MSG.BROKERS_PRMARY_DETAILS;
             }
         }
         catch (err) {
             console.log(err);
         }
         this.response.status(parseInt("200")).send({
-            brokerList
+            brokerList, statusCode, message
         });
         return this.response;
     }
@@ -190,18 +186,18 @@ let BrokerController = class BrokerController {
                 let today = (0, moment_1.default)(new Date(), "YYYY-MM-DD").toDate();
                 let contactId = data.contactId || 0;
                 let brokerEOI = await this.BrokerEoInsuranceRepository.findOne({ where: { brokerId: id } });
-                !brokerEOI || brokerEOI != repository_1.Null ? EOIStatus = "No data found" : new Date(brokerEOI.expiryDate) < today ? EOIStatus = "E&O insurece is expired" : EOIStatus = brokerEOI;
+                !brokerEOI || brokerEOI != repository_1.Null ? EOIStatus = CONST.NODATA : new Date(brokerEOI.expiryDate) < today ? EOIStatus = CONST.EOI.EXPIRE : EOIStatus = brokerEOI;
                 let licences = await this.BrokerLicensedStatesAndProvincesRepository.find({ where: { brokerId: id } });
                 console.log(licences);
                 if (licences.length > 0) {
                     for (let licence of licences) {
                         if (licence.expiryDate != undefined) {
-                            new Date(licence.expiryDate) < today ? LicecncesStatus = licence.licenseNumber + " is expired  " : LicecncesStatus = "  Licences are found  ";
+                            new Date(licence.expiryDate) < today ? LicecncesStatus = licence.licenseNumber + " " + CONST.LICENCE.EXPIRE : LicecncesStatus = CONST.LICENCE.FOUND;
                         }
                     }
                 }
                 else {
-                    LicecncesStatus = "No Licences";
+                    LicecncesStatus = CONST.LICENCE.NOLICENCES;
                 }
                 if (contactId && contactId != 0) {
                     let contactDetails = await this.ContactInformationRepository.findById(contactId);
@@ -210,17 +206,15 @@ let BrokerController = class BrokerController {
                     if (contactDetails) {
                         console.log(">>>>", contactDetails.toObject.length);
                         console.log("><<><><>", contactDetails);
-                        contactDetails.primaryEmail && contactDetails.secondaryEmail && contactDetails.line1 && contactDetails.city && contactDetails.apt ? contactStatus = "Max details" : contactStatus = "min";
-                        console.log(contactDetails.primaryEmail && contactDetails.secondaryEmail && contactDetails.line1 && contactDetails.city && contactDetails.apt);
-                        console.log(contactDetails.primaryEmail && contactDetails.secondaryEmail && contactDetails.line1 && contactDetails.city && contactDetails.apt ? contactStatus = "Max details" : contactStatus = "Partial");
-                        contactDetails.apt == undefined || contactDetails.line1 == undefined ? contactStatus = 'Partial' : contactStatus = contactStatus;
+                        contactDetails.primaryEmail && contactDetails.secondaryEmail && contactDetails.line1 && contactDetails.city && contactDetails.apt ? contactStatus = CONST.MAX : contactStatus = CONST.MIN;
+                        contactDetails.apt == undefined || contactDetails.line1 == undefined ? contactStatus = CONST.PARTIAL : contactStatus = contactStatus;
                     }
                     else {
-                        contactStatus = "None";
+                        contactStatus = CONST.NONE;
                     }
                 }
                 else {
-                    contactStatus = "None";
+                    contactStatus = CONST.NONE;
                 }
                 brokerStatus = { "LicecncesStatus": LicecncesStatus, "EOIStatus": EOIStatus, "contactinfoStatus": contactStatus };
             }
@@ -228,7 +222,7 @@ let BrokerController = class BrokerController {
                 status = 201;
                 responseObject = {
                     status: 201,
-                    message: "No details found",
+                    message: CONST.NODATA,
                     date: new Date(),
                     data: final,
                 };
@@ -241,21 +235,9 @@ let BrokerController = class BrokerController {
                 if (userId == null || !userId) {
                     userDetails = "";
                 }
-                else {
-                    // userDetails = await this.UsersRepository.findOne({ where: { id: userId }, fields: { username: true } });
-                    // dataArray['emailId'] = userDetails
-                }
-                // let contactInfo = await this.ContactInformationRepository.find({ where: { id: data.contactId }, fields: { primaryEmail: true, primaryPhone: true, addressType: true, apt: true, line1: true, city: true, state: true, country: true } });
-                // let signupForm = await this.BrokerSignupFormsPlansRepository.find({ where: { brokerId: id } });
-                // console.log(signupForm);
-                // dataArray['signupFormds'] = signupForm
-                // if (contactInfo) {
-                // final.push(contactInfo);
-                // }
-                // final.push(dataArray);
                 responseObject = {
                     status: 200,
-                    message: "Broker Details",
+                    message: MESSAGE.BROKER_MSG.BROKER_DETAILS,
                     date: new Date(),
                     data: data,
                     brokerStatus: brokerStatus
@@ -286,7 +268,7 @@ let BrokerController = class BrokerController {
             }
             let responseObj = {
                 "statusCode": 200,
-                "message": "List of customers and count",
+                "message": MESSAGE.BROKER_MSG.CUSTOMERS_DETAILS_COUNT,
                 "customerCount": countofCustomers,
                 "data": final
             };
@@ -333,7 +315,7 @@ let BrokerController = class BrokerController {
                     resolve(files_controller_1.FilesController.getFilesAndFields(request, 'brokerLogoUpload', { brokerid: broker_id }));
                     //const upload = FilesController.getFilesAndFields(request, 'brokerLogoUpload', {brokerid: broker_id});
                     status = '201';
-                    message = "Something went wrong";
+                    message = MESSAGE.ERRORS.someThingwentWrong;
                 }
             });
         });
@@ -2279,6 +2261,7 @@ let BrokerController = class BrokerController {
             let signupFormId;
             let adminBroker;
             console.log("entry");
+            console.log(value);
             if (!value.fields) {
                 this.response.status(422).send({
                     status: '422',
@@ -2691,7 +2674,7 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], BrokerController.prototype, "brokerCount", null);
 tslib_1.__decorate([
-    (0, rest_1.get)(paths_2.BROKER.BROKER),
+    (0, rest_1.get)(paths_2.BROKER.BROKERS),
     (0, rest_1.response)(200, {
         description: 'List of customers',
     }),

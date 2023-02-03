@@ -40,5 +40,8 @@ exports.CORPORATE_MSG = {
 };
 exports.BROKER_MSG = {
     BROKERCOUNT: "The brokers count",
+    BROKERS_PRMARY_DETAILS: "Broker primary details",
+    BROKER_DETAILS: "Broker Details",
+    CUSTOMERS_DETAILS_COUNT: "List of customers and count"
 };
 //# sourceMappingURL=messages.js.map

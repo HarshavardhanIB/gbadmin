@@ -11,6 +11,19 @@ export declare const PLAN_COVERAGE_LIST: any;
 export declare const GENDER: any;
 export declare const GENDER_LIST: any;
 export declare const STATUS: any;
+export declare const EOI: {
+    EXPIRE: string;
+};
+export declare const LICENCE: {
+    EXPIRE: string;
+    FOUND: string;
+    NOLICENCES: string;
+};
+export declare const MIN = "Min";
+export declare const MAX = "Max";
+export declare const PARTIAL = "Partial";
+export declare const NONE = "None";
+export declare const NODATA = "No data found";
 export declare const HEALTH_DENTAL_PACKAGE_ID = 1;
 export declare const HEALTH_DENTAL_PACKAGES: number[];
 export declare const GREENSHEILD_PACKAGES: number[];

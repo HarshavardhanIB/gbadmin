@@ -38,6 +38,7 @@ export declare const CORPORATE: {
 export declare const BROKER: {
     COUNT: string;
     BROKER: string;
+    BROKERS: string;
     BROKERID: string;
     CUSTOMERLIST: string;
     LOGO: string;

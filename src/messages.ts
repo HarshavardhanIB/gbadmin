@@ -1,6 +1,6 @@
 //Registration
 
-export const ERRORS: any = {
+export const ERRORS = {
   recaptcha: `Invalid Recaptcha`,
   quebec: `We are not currently operating in Quebec. Please check back with us in 2023`,
   email: `Please enter valid email`,
@@ -41,5 +41,7 @@ export const CORPORATE_MSG={
 }
 export const BROKER_MSG={
 BROKERCOUNT:"The brokers count",
-
+BROKERS_PRMARY_DETAILS:"Broker primary details",
+BROKER_DETAILS:"Broker Details",
+CUSTOMERS_DETAILS_COUNT:"List of customers and count"
 }

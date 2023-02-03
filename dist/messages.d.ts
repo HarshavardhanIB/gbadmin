@@ -1,4 +1,23 @@
-export declare const ERRORS: any;
+export declare const ERRORS: {
+    recaptcha: string;
+    quebec: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    phone: string;
+    apt: string;
+    postalCode: string;
+    minAge: string;
+    maxAge: string;
+    minWorkingHours: string;
+    maxWorkingHours: string;
+    bankCode: string;
+    branchCode: string;
+    accountNo: string;
+    missingDetails: string;
+    invalidBankDetails: string;
+    someThingwentWrong: string;
+};
 export declare const MAIL: any;
 export declare const EMAIL_EXISTS: any;
 export declare const CORPORATE_MSG: {
@@ -10,4 +29,7 @@ export declare const CORPORATE_MSG: {
 };
 export declare const BROKER_MSG: {
     BROKERCOUNT: string;
+    BROKERS_PRMARY_DETAILS: string;
+    BROKER_DETAILS: string;
+    CUSTOMERS_DETAILS_COUNT: string;
 };

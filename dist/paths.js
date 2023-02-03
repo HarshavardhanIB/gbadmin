@@ -51,8 +51,9 @@ exports.CORPORATE = {
 };
 // broker paths
 exports.BROKER = {
-    COUNT: '/broker/count',
+    COUNT: '/brokers/count',
     BROKER: '/broker',
+    BROKERS: '/brokers',
     BROKERID: '/broker/{brokerId}',
     CUSTOMERLIST: '/admin/broker/{brokerId}/customerlist',
     LOGO: '/broker/{brokerid}/logo',
@@ -62,9 +63,9 @@ exports.BROKER = {
     UPDATE_CONTACTINFO: '/broker/{brokerId}/updateContactInfo',
     UPDATE_LICENSE: '/broker/updateLicenseState/{brokerId}',
     UPDATE_EOI: '/broker/updateLicenceEO/{brokerId}',
-    CHANGE_EMAIL: '/broker/change_emailId/{brokerId}',
-    FORM_CONFIG: '/broker/FormConfig',
-    PLAN_LEVELS: '/broker/plans/pl',
+    CHANGE_EMAIL: '/broker/changeEmailId/{brokerId}',
+    FORM_CONFIG: '/broker/formConfig',
+    PLAN_LEVELS: '/broker/plans/planlevels',
     CREATE_FORM: '/broker/{brokerId}/createForm',
     CREATE_FORM_WITH_SALESTRACKING_CODE: '/broker/{brokerIdOrName}/createForm/{trackingCode}',
     FORM_DETAILS: '/broker/{formId}/formDetails',
