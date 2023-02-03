@@ -1,6 +1,6 @@
 import { DefaultCrudRepository } from '@loopback/repository';
-import { GbadminDataSource } from '../datasources';
+import { GroupBenefitzDataSource } from '../datasources';
 import { BrokerEoInsurance, BrokerEoInsuranceRelations } from '../models';
 export declare class BrokerEoInsuranceRepository extends DefaultCrudRepository<BrokerEoInsurance, typeof BrokerEoInsurance.prototype.id, BrokerEoInsuranceRelations> {
-    constructor(dataSource: GbadminDataSource);
+    constructor(dataSource: GroupBenefitzDataSource);
 }

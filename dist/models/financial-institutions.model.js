@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FinancialInstitutions = void 0;
 const tslib_1 = require("tslib");
 const repository_1 = require("@loopback/repository");
+const financial_institutions_routing_numbers_model_1 = require("./financial-institutions-routing-numbers.model");
 let FinancialInstitutions = class FinancialInstitutions extends repository_1.Entity {
     constructor(data) {
         super(data);
@@ -46,11 +47,15 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", String)
 ], FinancialInstitutions.prototype, "name", void 0);
+tslib_1.__decorate([
+    (0, repository_1.hasMany)(() => financial_institutions_routing_numbers_model_1.FinancialInstitutionsRoutingNumbers, { keyTo: 'bank_id' }),
+    tslib_1.__metadata("design:type", Array)
+], FinancialInstitutions.prototype, "branches", void 0);
 FinancialInstitutions = tslib_1.__decorate([
     (0, repository_1.model)({
         settings: {
             idInjection: false,
-            mysql: { schema: 'gbadmin', table: 'financial_institutions' }
+            mysql: { schema: 'group_benefitz', table: 'financial_institutions' }
         }
     }),
     tslib_1.__metadata("design:paramtypes", [Object])

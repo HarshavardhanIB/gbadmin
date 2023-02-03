@@ -1,8 +1,12 @@
-import { Entity, hasMany, model, property } from '@loopback/repository';
-import { InsurancePlans } from './insurance-plans.model';
+import {Entity, hasMany, model, property} from '@loopback/repository';
+import {EquitablePlanLevelMapping} from './equitable-plan-level-mapping.model';
+import {GreenshieldPlanLevelMapping} from './greenshield-plan-level-mapping.model';
+import {InsurancePlans} from './insurance-plans.model';
+import {PlanFeatures} from './plan-features.model';
+import {PlanLevelFeatures} from './plan-level-features.model';
 
 @model({
-  settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'plan_level' } }
+  settings: {idInjection: false, mysql: {schema: 'group_benefitz', table: 'plan_level'}}
 })
 export class PlanLevel extends Entity {
   @property({
@@ -118,6 +122,19 @@ export class PlanLevel extends Entity {
     mysql: { columnName: 'tooltip_title', dataType: 'enum', dataLength: 13, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   tooltipTitle?: string;
+  
+  @hasMany(() => GreenshieldPlanLevelMapping, {keyTo: 'plan_level_id'})
+  greenshieldPackages: GreenshieldPlanLevelMapping[];
+
+  @hasMany(() => PlanLevelFeatures, {keyTo: 'plan_level_id'})
+  planLevelFeatures: PlanLevelFeatures[];
+
+  @hasMany(() => PlanFeatures, {through: {model: () => PlanLevelFeatures, keyFrom: 'planLevelId', keyTo: 'planFeatureId'}})
+  planFeatures: PlanFeatures[];
+
+  @hasMany(() => EquitablePlanLevelMapping, {keyTo: 'plan_level_id'})
+  equitablePackages: EquitablePlanLevelMapping[];
+  
   @hasMany(() => InsurancePlans, { keyTo: 'plan_level' })
   plans: InsurancePlans[];
   // Define well-known properties here

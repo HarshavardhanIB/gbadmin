@@ -1,19 +1,17 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.CorporateBrokerPackagesRepository = void 0;
-const tslib_1 = require("tslib");
-const core_1 = require("@loopback/core");
-const repository_1 = require("@loopback/repository");
-const datasources_1 = require("../datasources");
-const models_1 = require("../models");
-let CorporateBrokerPackagesRepository = class CorporateBrokerPackagesRepository extends repository_1.DefaultCrudRepository {
-    constructor(dataSource) {
-        super(models_1.CorporateBrokerPackages, dataSource);
-    }
-};
-CorporateBrokerPackagesRepository = tslib_1.__decorate([
-    tslib_1.__param(0, (0, core_1.inject)('datasources.gbadmin')),
-    tslib_1.__metadata("design:paramtypes", [datasources_1.GbadminDataSource])
-], CorporateBrokerPackagesRepository);
-exports.CorporateBrokerPackagesRepository = CorporateBrokerPackagesRepository;
+// import {inject} from '@loopback/core';
+// import {DefaultCrudRepository} from '@loopback/repository';
+// import {GroupBenefitzDataSource} from '../datasources';
+// import {CorporateBrokerPackages, CorporateBrokerPackagesRelations} from '../models';
+// export class CorporateBrokerPackagesRepository extends DefaultCrudRepository<
+//   CorporateBrokerPackages,
+//   typeof CorporateBrokerPackages.prototype.id,
+//   CorporateBrokerPackagesRelations
+// > {
+//   constructor(
+//     @inject('datasources.groupBenefitz') dataSource: GroupBenefitzDataSource,
+//   ) {
+//     super(CorporateBrokerPackages, dataSource);
+//   }
+// }
 //# sourceMappingURL=corporate-broker-packages.repository.js.map

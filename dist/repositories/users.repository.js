@@ -15,9 +15,9 @@ let UsersRepository = class UsersRepository extends repository_1.DefaultCrudRepo
     }
 };
 UsersRepository = tslib_1.__decorate([
-    tslib_1.__param(0, (0, core_1.inject)('datasources.gbadmin')),
+    tslib_1.__param(0, (0, core_1.inject)('datasources.groupBenefitz')),
     tslib_1.__param(1, repository_1.repository.getter('CustomerRepository')),
-    tslib_1.__metadata("design:paramtypes", [datasources_1.GbadminDataSource, Function])
+    tslib_1.__metadata("design:paramtypes", [datasources_1.GroupBenefitzDataSource, Function])
 ], UsersRepository);
 exports.UsersRepository = UsersRepository;
 //# sourceMappingURL=users.repository.js.map

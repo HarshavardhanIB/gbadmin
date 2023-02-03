@@ -7,6 +7,7 @@ export declare class LanguageTokens extends Entity {
     key: string;
     translationLanguageId?: number;
     value?: string;
+    translation_language_id: number;
     [prop: string]: any;
     constructor(data?: Partial<LanguageTokens>);
 }

@@ -3,7 +3,21 @@ import { Entity, model, property } from '@loopback/repository';
 @model({
   settings: {
     idInjection: false,
-    mysql: { schema: 'gbadmin', table: 'greenshield_plan_level_mapping' }
+    foreignKeys: {
+      idx_plans_availability_plan_id: {
+        name: 'fk_greenshield_plan_level_state_id',
+        entity: 'StatesAndProvinces',
+        entityKey: 'id',
+        foreignKey: 'stateId',
+      },
+      idx_plans_availability_state_id: {
+        name: 'fk_greenshield_plan_level_plan_level_id',
+        entity: 'PlanLevel',
+        entityKey: 'id',
+        foreignKey: 'planLevelId',
+      },
+    },
+    mysql: {schema: 'group_benefitz', table: 'greenshield_plan_level_mapping'}
   }
 })
 export class GreenshieldPlanLevelMapping extends Entity {

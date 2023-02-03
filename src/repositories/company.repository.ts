@@ -1,6 +1,6 @@
 // import {inject} from '@loopback/core';
 // import {DefaultCrudRepository} from '@loopback/repository';
-// import {GbadminDataSource} from '../datasources';
+// import {GroupBenefitzDataSource} from '../datasources';
 // import {Company, CompanyRelations} from '../models';
 
 // export class CompanyRepository extends DefaultCrudRepository<
@@ -9,7 +9,7 @@
 //   CompanyRelations
 // > {
 //   constructor(
-//     @inject('datasources.gbadmin') dataSource: GbadminDataSource,
+//     @inject('datasources.groupBenefitz') dataSource: GroupBenefitzDataSource,
 //   ) {
 //     super(Company, dataSource);
 //   }

@@ -42,7 +42,7 @@ export class SignupFormsSignupFormsPlanLevelMappingController {
     @param.path.number('id') id: number,
     @param.query.object('filter') filter?: Filter<SignupFormsPlanLevelMapping>,
   ): Promise<SignupFormsPlanLevelMapping[]> {
-    return this.signupFormsRepository.signupFormsPlanLevelMappings(id).find(filter);
+    return this.signupFormsRepository.signupFormPlanLevels(id).find(filter);
   }
 
   @post('/signup-forms/{id}/signup-forms-plan-level-mappings', {
@@ -67,7 +67,7 @@ export class SignupFormsSignupFormsPlanLevelMappingController {
       },
     }) signupFormsPlanLevelMapping: Omit<SignupFormsPlanLevelMapping, 'id'>,
   ): Promise<SignupFormsPlanLevelMapping> {
-    return this.signupFormsRepository.signupFormsPlanLevelMappings(id).create(signupFormsPlanLevelMapping);
+    return this.signupFormsRepository.signupFormPlanLevels(id).create(signupFormsPlanLevelMapping);
   }
 
   @patch('/signup-forms/{id}/signup-forms-plan-level-mappings', {
@@ -90,7 +90,7 @@ export class SignupFormsSignupFormsPlanLevelMappingController {
     signupFormsPlanLevelMapping: Partial<SignupFormsPlanLevelMapping>,
     @param.query.object('where', getWhereSchemaFor(SignupFormsPlanLevelMapping)) where?: Where<SignupFormsPlanLevelMapping>,
   ): Promise<Count> {
-    return this.signupFormsRepository.signupFormsPlanLevelMappings(id).patch(signupFormsPlanLevelMapping, where);
+    return this.signupFormsRepository.signupFormPlanLevels(id).patch(signupFormsPlanLevelMapping, where);
   }
 
   @del('/signup-forms/{id}/signup-forms-plan-level-mappings', {
@@ -105,6 +105,6 @@ export class SignupFormsSignupFormsPlanLevelMappingController {
     @param.path.number('id') id: number,
     @param.query.object('where', getWhereSchemaFor(SignupFormsPlanLevelMapping)) where?: Where<SignupFormsPlanLevelMapping>,
   ): Promise<Count> {
-    return this.signupFormsRepository.signupFormsPlanLevelMappings(id).delete(where);
+    return this.signupFormsRepository.signupFormPlanLevels(id).delete(where);
   }
 }

@@ -1,6 +1,6 @@
 import {inject} from '@loopback/core';
 import {DefaultCrudRepository} from '@loopback/repository';
-import {GbadminDataSource} from '../datasources';
+import {GroupBenefitzDataSource} from '../datasources';
 import {BrokerAvailablePlanLevels, BrokerAvailablePlanLevelsRelations} from '../models';
 
 export class BrokerAvailablePlanLevelsRepository extends DefaultCrudRepository<
@@ -9,7 +9,7 @@ export class BrokerAvailablePlanLevelsRepository extends DefaultCrudRepository<
   BrokerAvailablePlanLevelsRelations
 > {
   constructor(
-    @inject('datasources.gbadmin') dataSource: GbadminDataSource,
+    @inject('datasources.groupBenefitz') dataSource: GroupBenefitzDataSource,
   ) {
     super(BrokerAvailablePlanLevels, dataSource);
   }

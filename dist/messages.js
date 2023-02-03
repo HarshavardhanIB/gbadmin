@@ -1,7 +1,7 @@
 "use strict";
 //Registration
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EMAIL_EXISTS = exports.MAIL = exports.ERRORS = void 0;
+exports.BROKER_MSG = exports.CORPORATE_MSG = exports.EMAIL_EXISTS = exports.MAIL = exports.ERRORS = void 0;
 exports.ERRORS = {
     recaptcha: `Invalid Recaptcha`,
     quebec: `We are not currently operating in Quebec. Please check back with us in 2023`,
@@ -19,7 +19,8 @@ exports.ERRORS = {
     branchCode: `Branch code must be only numbers of length 5`,
     accountNo: `Account number must be only numbers of length between 5 and 12`,
     missingDetails: `Input details are insufficient`,
-    invalidBankDetails: `Invalid bank details`
+    invalidBankDetails: `Invalid bank details`,
+    someThingwentWrong: 'Something went wrong'
 };
 exports.MAIL = {
     SENT: "Mail sent successfully",
@@ -28,5 +29,16 @@ exports.MAIL = {
 exports.EMAIL_EXISTS = {
     ACCESSIBLE_ACCOUNT: `The email address already exists.Please contact your broker for assistance at {{broker_mail}}`,
     INACCESSIBLE_ACCOUNT: `The email address already exists.Please contact GroupBenefitz Admin at {{admin_mail}}`
+};
+//corporate messages
+exports.CORPORATE_MSG = {
+    REGISTRATION_SUCCESS: 'Corporate registratered successfully ',
+    REGISTRATION_FAIL: 'Corporate registration failed',
+    LOGO_NOT_SET: 'logo is not set',
+    LOGO: 'logo',
+    NOLOGO: 'No logo found'
+};
+exports.BROKER_MSG = {
+    BROKERCOUNT: "The brokers count",
 };
 //# sourceMappingURL=messages.js.map

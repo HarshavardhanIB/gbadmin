@@ -1,4 +1,7 @@
-#GBPORTAL
+#CHANGE LOG
+1.0.0.0 - RELEASE(v...)
+-----------------------------------------------------------------
+
 
 0.4.6
 
@@ -43,3 +46,30 @@ addded
 
 0.1.0
 adding customer details and count
+0.0.1
+
+ - Initial setup
+ - Models, Repositories, Datasource, Related Controllers generation
+
+-------------------------------------------------------------------------------------------------------------------
+
+MAJOR SOFTWARES
+
+ #NodeJS        v16
+ #Loopback      v4
+--------------------------------------------------------------------------------------------------------------------
+
+DESCRIPTION
+
+Server for GroupBenefitz providing APIs and services related to the customer signup - including registration, subscription.
+This also involves Fusebill/Staxbill connections, insurance portal provisioning and also ACH-customer payment record creation.
+--------------------------------------------------------------------------------------------------------------------------------
+
+NAME AND OTHERS
+
+admindev
+testadminapi
+adminapi-dev
+adminapi
+
+PORT-3002

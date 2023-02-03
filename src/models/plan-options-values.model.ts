@@ -1,7 +1,18 @@
 import { Entity, model, property } from '@loopback/repository';
 
 @model({
-  settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'plan_options_values' } }
+  settings: {
+    idInjection: false,
+    foreignKeys: {
+      fk_plan_options_plan_options_id: {
+        name: 'fk_plan_options_plan_options_id',
+        entity: 'PlanOptions',
+        entityKey: 'id',
+        foreignKey: 'planOptionsId',
+      }
+    },
+    mysql: {schema: 'group_benefitz', table: 'plan_options_values'}
+  }
 })
 export class PlanOptionsValues extends Entity {
   @property({
@@ -47,6 +58,10 @@ export class PlanOptionsValues extends Entity {
   })
   value: string;
 
+  @property({
+    type: 'number',
+  })
+  plan_options_id?: number;
   // Define well-known properties here
 
   // Indexer property to allow additional data

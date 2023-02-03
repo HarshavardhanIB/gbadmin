@@ -12,6 +12,8 @@ export declare class CustomerPlans extends Entity {
     qst?: number;
     status?: string;
     subscriptionId?: string;
+    customer_id?: number;
+    plan_id: number;
     [prop: string]: any;
     constructor(data?: Partial<CustomerPlans>);
 }

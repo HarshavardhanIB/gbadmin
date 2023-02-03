@@ -56,9 +56,26 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", String)
 ], PlanOptionsValues.prototype, "value", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'number',
+    }),
+    tslib_1.__metadata("design:type", Number)
+], PlanOptionsValues.prototype, "plan_options_id", void 0);
 PlanOptionsValues = tslib_1.__decorate([
     (0, repository_1.model)({
-        settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'plan_options_values' } }
+        settings: {
+            idInjection: false,
+            foreignKeys: {
+                fk_plan_options_plan_options_id: {
+                    name: 'fk_plan_options_plan_options_id',
+                    entity: 'PlanOptions',
+                    entityKey: 'id',
+                    foreignKey: 'planOptionsId',
+                }
+            },
+            mysql: { schema: 'group_benefitz', table: 'plan_options_values' }
+        }
     }),
     tslib_1.__metadata("design:paramtypes", [Object])
 ], PlanOptionsValues);

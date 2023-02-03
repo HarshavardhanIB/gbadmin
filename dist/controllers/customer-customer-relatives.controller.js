@@ -11,16 +11,16 @@ let CustomerCustomerRelativesController = class CustomerCustomerRelativesControl
         this.customerRepository = customerRepository;
     }
     async find(id, filter) {
-        return this.customerRepository.customerRelativeRelation(id).find(filter);
+        return this.customerRepository.customerRelatives(id).find(filter);
     }
     async create(id, customerRelatives) {
-        return this.customerRepository.customerRelativeRelation(id).create(customerRelatives);
+        return this.customerRepository.customerRelatives(id).create(customerRelatives);
     }
     async patch(id, customerRelatives, where) {
-        return this.customerRepository.customerRelativeRelation(id).patch(customerRelatives, where);
+        return this.customerRepository.customerRelatives(id).patch(customerRelatives, where);
     }
     async delete(id, where) {
-        return this.customerRepository.customerRelativeRelation(id).delete(where);
+        return this.customerRepository.customerRelatives(id).delete(where);
     }
 };
 tslib_1.__decorate([

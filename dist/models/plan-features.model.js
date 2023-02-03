@@ -10,6 +10,25 @@ let PlanFeatures = class PlanFeatures extends repository_1.Entity {
 };
 tslib_1.__decorate([
     (0, repository_1.property)({
+        type: 'number',
+        required: true,
+        precision: 10,
+        scale: 0,
+        id: 1,
+        mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N' },
+    }),
+    tslib_1.__metadata("design:type", Number)
+], PlanFeatures.prototype, "id", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'string',
+        length: 255,
+        mysql: { columnName: 'name', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'Y' },
+    }),
+    tslib_1.__metadata("design:type", String)
+], PlanFeatures.prototype, "name", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
         type: 'string',
         length: 255,
         generated: 0,
@@ -26,26 +45,9 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", String)
 ], PlanFeatures.prototype, "description", void 0);
-tslib_1.__decorate([
-    (0, repository_1.property)({
-        type: 'number',
-        generated: true,
-        id: true
-    }),
-    tslib_1.__metadata("design:type", Number)
-], PlanFeatures.prototype, "id", void 0);
-tslib_1.__decorate([
-    (0, repository_1.property)({
-        type: 'string',
-        length: 255,
-        generated: 0,
-        mysql: { columnName: 'name', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
-    }),
-    tslib_1.__metadata("design:type", String)
-], PlanFeatures.prototype, "name", void 0);
 PlanFeatures = tslib_1.__decorate([
     (0, repository_1.model)({
-        settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'plan_features' } }
+        settings: { idInjection: false, mysql: { schema: 'group_benefitz', table: 'plan_features' } }
     }),
     tslib_1.__metadata("design:paramtypes", [Object])
 ], PlanFeatures);

@@ -1,8 +1,3 @@
-// Copyright IBM Corp. and LoopBack contributors 2018,2020. All Rights Reserved.
-// Node module: @loopback/example-todo
-// This file is licensed under the MIT License.
-// License text available at https://opensource.org/licenses/MIT
-
 import { ApplicationConfig } from '@loopback/core';
 import { GroupBenfitsAdminPortalApplication } from './application';
 
@@ -12,7 +7,7 @@ import { GroupBenfitsAdminPortalApplication } from './application';
 async function exportOpenApiSpec(): Promise<void> {
   const config: ApplicationConfig = {
     rest: {
-      port: +(process.env.PORT ?? 3000),
+      port: +(process.env.PORT ?? 3002),
       host: process.env.HOST ?? 'localhost',
     },
   };

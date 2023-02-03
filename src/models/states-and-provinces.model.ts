@@ -1,10 +1,25 @@
-import { Entity, hasMany, model, property } from '@loopback/repository';
-import { PlansAvailability } from './plans-availability.model';
+import {belongsTo, Entity, hasMany, model, property} from '@loopback/repository';
+import {Country} from './country.model';
+import {InsurancePlans} from './insurance-plans.model';
+import {PlansAvailability} from './plans-availability.model';
 
 @model({
-  settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'states_and_provinces' } }
+  settings: {
+    idInjection: false,
+    mysql: {schema: 'group_benefitz', table: 'states_and_provinces'}
+  }
 })
 export class StatesAndProvinces extends Entity {
+  @property({
+    type: 'number',
+    precision: 10,
+    scale: 0,
+    generated: 1,
+    id: 1,
+    mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
+  })
+  id?: number;
+  
   @property({
     type: 'number',
     required: true,
@@ -31,16 +46,6 @@ export class StatesAndProvinces extends Entity {
     mysql: { columnName: 'fusebill_id', dataType: 'varchar', dataLength: 2, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   fusebillId?: string;
-
-  @property({
-    type: 'number',
-    precision: 10,
-    scale: 0,
-    generated: 1,
-    id: 1,
-    mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
-  })
-  id?: number;
 
   @property({
     type: 'string',
@@ -81,6 +86,13 @@ export class StatesAndProvinces extends Entity {
     mysql: { columnName: 'zipcodes', dataType: 'varchar', dataLength: 20, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   zipcodes?: string;
+  
+   @hasMany(() => InsurancePlans, {through: {model: () => PlansAvailability, keyFrom: 'state_id', keyTo: 'plan_id'}})
+  insurancePlans: InsurancePlans[];
+
+  @belongsTo(() => Country, {name: 'country'})
+  country_id: number;
+  
   @hasMany(() => PlansAvailability, { keyTo: 'state_id' })
   planAvailability: PlansAvailability[];
   // Define well-known properties here

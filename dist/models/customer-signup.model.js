@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CustomerSignup = void 0;
 const tslib_1 = require("tslib");
 const repository_1 = require("@loopback/repository");
+const signup_forms_model_1 = require("./signup-forms.model");
 let CustomerSignup = class CustomerSignup extends repository_1.Entity {
     constructor(data) {
         super(data);
@@ -90,7 +91,7 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'boolean',
-        required: true,
+        //    required: true,
         precision: 1,
         generated: 0,
         mysql: { columnName: 'opt_in_pills', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
@@ -100,7 +101,7 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'boolean',
-        required: true,
+        //  required: true,
         precision: 1,
         generated: 0,
         mysql: { columnName: 'provincial_health_care', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
@@ -110,7 +111,7 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'boolean',
-        required: true,
+        //   required: true,
         precision: 1,
         generated: 0,
         mysql: { columnName: 'read_advisor_disclosure', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
@@ -120,7 +121,7 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'string',
-        required: true,
+        //  required: true,
         length: 65535,
         generated: 0,
         mysql: { columnName: 'signature', dataType: 'text', dataLength: 65535, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
@@ -139,7 +140,7 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'boolean',
-        required: true,
+        //required: true,
         precision: 1,
         generated: 0,
         mysql: { columnName: 'terms_and_conditions', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
@@ -172,24 +173,24 @@ tslib_1.__decorate([
         type: 'number',
     }),
     tslib_1.__metadata("design:type", Number)
-], CustomerSignup.prototype, "form_id", void 0);
-tslib_1.__decorate([
-    (0, repository_1.property)({
-        type: 'number',
-    }),
-    tslib_1.__metadata("design:type", Number)
 ], CustomerSignup.prototype, "customer_id", void 0);
+tslib_1.__decorate([
+    (0, repository_1.belongsTo)(() => signup_forms_model_1.SignupForms, { name: 'form' }),
+    tslib_1.__metadata("design:type", Number)
+], CustomerSignup.prototype, "form_id", void 0);
 CustomerSignup = tslib_1.__decorate([
     (0, repository_1.model)({
         settings: {
-            idInjection: false, foreignKeys: {
+            idInjection: false,
+            foreignKeys: {
                 fk_customer_signup_customers_customer_id: {
                     name: 'fk_customer_signup_customers_customer_id',
                     entity: 'Customers',
                     entityKey: 'id',
                     foreignKey: 'customerId',
                 }
-            }, mysql: { schema: 'gbadmin', table: 'customer_signup' }
+            },
+            mysql: { schema: 'group_benefitz', table: 'customer_signup' }
         }
     }),
     tslib_1.__metadata("design:paramtypes", [Object])

@@ -1,7 +1,8 @@
-import { Entity, model, property } from '@loopback/repository';
+import {Entity, model, property, hasMany} from '@loopback/repository';
+import {PlanOptionsValues} from './plan-options-values.model';
 
 @model({
-  settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'plan_options' } }
+  settings: {idInjection: false, mysql: {schema: 'group_benefitz', table: 'plan_options'}}
 })
 export class PlanOptions extends Entity {
   @property({
@@ -37,6 +38,8 @@ export class PlanOptions extends Entity {
   })
   type: string;
 
+  @hasMany(() => PlanOptionsValues, {keyTo: 'plan_options_id'})
+  planOptionsValues: PlanOptionsValues[];
   // Define well-known properties here
 
   // Indexer property to allow additional data

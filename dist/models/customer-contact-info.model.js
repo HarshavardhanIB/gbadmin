@@ -51,7 +51,8 @@ tslib_1.__decorate([
 CustomerContactInfo = tslib_1.__decorate([
     (0, repository_1.model)({
         settings: {
-            idInjection: false, foreignKeys: {
+            idInjection: false,
+            foreignKeys: {
                 idx_customer_contact_id: {
                     name: 'idx_customer_contact_id',
                     entity: 'Customers',
@@ -64,6 +65,7 @@ CustomerContactInfo = tslib_1.__decorate([
                     entityKey: 'id',
                     foreignKey: 'contactId',
                 },
+                mysql: { schema: 'group_benefitz', table: 'customer_contact_info' }
             }, mysql: { schema: 'gbadmin', table: 'customer_contact_info' }
         }
     }),

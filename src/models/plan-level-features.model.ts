@@ -1,9 +1,34 @@
-import { Entity, model, property } from '@loopback/repository';
+import {belongsTo, Entity, model, property} from '@loopback/repository';
+import {PlanFeatures} from './plan-features.model';
 
 @model({
-  settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'plan_level_features' } }
+  settings: {
+    idInjection: false,
+    foreignKeys: {
+      idx_plans_availability_plan_id: {
+        name: 'fk_plan_level_features_plan_id',
+        entity: 'PlanFeauters',
+        entityKey: 'id',
+        foreignKey: 'planFeatureId',
+      },
+      idx_plans_availability_state_id: {
+        name: 'fk_plan_level_features_plan_level_plan_level_id',
+        entity: 'PlanLevel',
+        entityKey: 'id',
+        foreignKey: 'planLevelId',
+      },
+    },
+    mysql: {schema: 'group_benefitz', table: 'plan_level_features'}
+  }
 })
 export class PlanLevelFeatures extends Entity {
+   @property({
+    type: 'number',
+    generated: true,
+    id: true
+  })
+  id?: number;
+  
   @property({
     type: 'string',
     length: 65535,
@@ -12,12 +37,7 @@ export class PlanLevelFeatures extends Entity {
   })
   description?: string;
 
-  @property({
-    type: 'number',
-    generated: true,
-    id: true
-  })
-  id?: number;
+
 
   @property({
     type: 'number',
@@ -36,6 +56,8 @@ export class PlanLevelFeatures extends Entity {
     mysql: { columnName: 'plan_level_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0 },
   })
   planLevelId?: number;
+ @belongsTo(() => PlanFeatures, {name: 'feature'})
+  plan_feature_id: number;
 
   // Define well-known properties here
 

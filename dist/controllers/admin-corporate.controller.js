@@ -9,15 +9,16 @@ const bcryptjs_1 = require("bcryptjs");
 const jwt = tslib_1.__importStar(require("jsonwebtoken"));
 const messages = tslib_1.__importStar(require("../constants/messages.constants"));
 const constants = tslib_1.__importStar(require("../services/constants"));
+const CONST = tslib_1.__importStar(require("../constants"));
 const authentication_jwt_1 = require("@loopback/authentication-jwt");
 const repositories_1 = require("../repositories");
 const authentication_1 = require("@loopback/authentication");
 const authorization_1 = require("@loopback/authorization");
-const auth_midd_1 = require("../middleware/auth.midd");
 const common_functions_1 = require("../common-functions");
 const moment_1 = tslib_1.__importDefault(require("moment"));
 const models_1 = require("../models");
 const auth_controller_1 = require("./auth.controller");
+const auth_middleware_1 = require("../middlewares/auth.middleware");
 // import {inject} from '@loopback/core';
 const CredentialsSchema = {
     type: 'object',
@@ -76,7 +77,7 @@ let AdminCorporateController = class AdminCorporateController {
         else {
             res = {
                 "statusCode": 201,
-                "message": "email already exits"
+                "message": "Email already exits"
             };
         }
         return res;
@@ -159,8 +160,8 @@ let AdminCorporateController = class AdminCorporateController {
 tslib_1.__decorate([
     (0, authentication_1.authenticate)('jwt'),
     (0, authorization_1.authorize)({
-        allowedRoles: ['COMPANY_ADMINISTRATOR'],
-        voters: [auth_midd_1.basicAuthorization],
+        allowedRoles: [CONST.USER_ROLE.CORPORATE_ADMINISTRATOR],
+        voters: [auth_middleware_1.basicAuthorization],
     }),
     (0, rest_1.post)('/auth/signup', {
         responses: {

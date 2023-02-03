@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Country = void 0;
 const tslib_1 = require("tslib");
 const repository_1 = require("@loopback/repository");
+const states_and_provinces_model_1 = require("./states-and-provinces.model");
 let Country = class Country extends repository_1.Entity {
     constructor(data) {
         super(data);
@@ -91,8 +92,14 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", String)
 ], Country.prototype, "shortName", void 0);
+tslib_1.__decorate([
+    (0, repository_1.hasMany)(() => states_and_provinces_model_1.StatesAndProvinces, { keyTo: 'country_id' }),
+    tslib_1.__metadata("design:type", Array)
+], Country.prototype, "statesAndProvinces", void 0);
 Country = tslib_1.__decorate([
-    (0, repository_1.model)({ settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'country' } } }),
+    (0, repository_1.model)({
+        settings: { idInjection: false, mysql: { schema: 'group_benefitz', table: 'country' } }
+    }),
     tslib_1.__metadata("design:paramtypes", [Object])
 ], Country);
 exports.Country = Country;

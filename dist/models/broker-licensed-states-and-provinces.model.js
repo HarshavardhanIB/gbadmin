@@ -91,7 +91,7 @@ BrokerLicensedStatesAndProvinces = tslib_1.__decorate([
     (0, repository_1.model)({
         settings: {
             idInjection: false,
-            mysql: { schema: 'gbadmin', table: 'broker_licensed_states_and_provinces' }
+            mysql: { schema: 'group_benefitz', table: 'broker_licensed_states_and_provinces' }
         }
     }),
     tslib_1.__metadata("design:paramtypes", [Object])

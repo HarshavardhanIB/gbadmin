@@ -12,8 +12,8 @@ let EquitablePlanLevelMappingRepository = class EquitablePlanLevelMappingReposit
     }
 };
 EquitablePlanLevelMappingRepository = tslib_1.__decorate([
-    tslib_1.__param(0, (0, core_1.inject)('datasources.gbadmin')),
-    tslib_1.__metadata("design:paramtypes", [datasources_1.GbadminDataSource])
+    tslib_1.__param(0, (0, core_1.inject)('datasources.groupBenefitz')),
+    tslib_1.__metadata("design:paramtypes", [datasources_1.GroupBenefitzDataSource])
 ], EquitablePlanLevelMappingRepository);
 exports.EquitablePlanLevelMappingRepository = EquitablePlanLevelMappingRepository;
 //# sourceMappingURL=equitable-plan-level-mapping.repository.js.map

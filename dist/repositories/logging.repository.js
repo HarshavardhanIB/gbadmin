@@ -12,8 +12,8 @@ let LoggingRepository = class LoggingRepository extends repository_1.DefaultCrud
     }
 };
 LoggingRepository = tslib_1.__decorate([
-    tslib_1.__param(0, (0, core_1.inject)('datasources.gbadmin')),
-    tslib_1.__metadata("design:paramtypes", [datasources_1.GbadminDataSource])
+    tslib_1.__param(0, (0, core_1.inject)('datasources.groupBenefitz')),
+    tslib_1.__metadata("design:paramtypes", [datasources_1.GroupBenefitzDataSource])
 ], LoggingRepository);
 exports.LoggingRepository = LoggingRepository;
 //# sourceMappingURL=logging.repository.js.map

@@ -1,8 +1,10 @@
-import { Entity, model, property } from '@loopback/repository';
+import {belongsTo, Entity, model, property} from '@loopback/repository';
+import {InsurancePlans} from './insurance-plans.model';
 
 @model({
   settings: {
-    idInjection: false, foreignKeys: {
+    idInjection: false, 
+    foreignKeys: {
 
       fk_customer_plans_customers_customer_id: {
 
@@ -14,7 +16,13 @@ import { Entity, model, property } from '@loopback/repository';
 
         foreignKey: 'customerId',
 
-      }
+      },
+      fk_customer_plans_insurance_plans_plan_id: {
+        name: 'fk_customer_plans_insurance_plans_plan_id',
+        entity: 'InsurancePlans',
+        entityKey: 'id',
+        foreignKey: 'planId',
+      },
 
     }, mysql: { schema: 'gbadmin', table: 'customer_plans' }
   }
@@ -115,6 +123,13 @@ export class CustomerPlans extends Entity {
   })
   subscriptionId?: string;
 
+  @property({
+    type: 'number',
+  })
+  customer_id?: number;
+
+  @belongsTo(() => InsurancePlans, {name: 'plan'})
+  plan_id: number;
   // Define well-known properties here
 
   // Indexer property to allow additional data

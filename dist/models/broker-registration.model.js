@@ -1,38 +1,42 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.BrokerRegistration = void 0;
-const tslib_1 = require("tslib");
-const repository_1 = require("@loopback/repository");
-let BrokerRegistration = class BrokerRegistration extends repository_1.Entity {
-    constructor(data) {
-        super(data);
-    }
-};
-tslib_1.__decorate([
-    (0, repository_1.property)({
-        type: 'number',
-        precision: 10,
-        scale: 0,
-        generated: 0,
-        mysql: { columnName: 'broker_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0 },
-    }),
-    tslib_1.__metadata("design:type", Number)
-], BrokerRegistration.prototype, "brokerId", void 0);
-tslib_1.__decorate([
-    (0, repository_1.property)({
-        type: 'number',
-        precision: 10,
-        scale: 0,
-        generated: 0,
-        mysql: { columnName: 'insurance_company_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0 },
-    }),
-    tslib_1.__metadata("design:type", Number)
-], BrokerRegistration.prototype, "insuranceCompanyId", void 0);
-BrokerRegistration = tslib_1.__decorate([
-    (0, repository_1.model)({
-        settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'broker_registration' } }
-    }),
-    tslib_1.__metadata("design:paramtypes", [Object])
-], BrokerRegistration);
-exports.BrokerRegistration = BrokerRegistration;
+// import {Entity, model, property} from '@loopback/repository';
+// @model({
+//   settings: {
+//     idInjection: false,
+//     mysql: {schema: 'group_benefitz', table: 'broker_registration'}
+//   }
+// })
+// export class BrokerRegistration extends Entity {
+//   @property({
+//     type: 'number',
+//     precision: 10,
+//     scale: 0,
+//     mysql: {columnName: 'broker_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y'},
+//   })
+//   brokerId?: number;
+//   @property({
+//     type: 'number',
+//     id: true,
+//     generated: true,
+//   })
+//   id?: number;
+//   @property({
+//     type: 'number',
+//     precision: 10,
+//     scale: 0,
+//     mysql: {columnName: 'insurance_company_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y'},
+//   })
+//   insuranceCompanyId?: number;
+//   // Define well-known properties here
+//   // Indexer property to allow additional data
+//   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+//   [prop: string]: any;
+//   constructor(data?: Partial<BrokerRegistration>) {
+//     super(data);
+//   }
+// }
+// export interface BrokerRegistrationRelations {
+//   // describe navigational properties here
+// }
+// export type BrokerRegistrationWithRelations = BrokerRegistration & BrokerRegistrationRelations;
 //# sourceMappingURL=broker-registration.model.js.map

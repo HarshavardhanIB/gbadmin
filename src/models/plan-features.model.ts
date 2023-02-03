@@ -1,9 +1,26 @@
 import { Entity, model, property } from '@loopback/repository';
 
 @model({
-  settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'plan_features' } }
+  settings: {idInjection: false, mysql: {schema: 'group_benefitz', table: 'plan_features'}}
 })
 export class PlanFeatures extends Entity {
+  @property({
+    type: 'number',
+    required: true,
+    precision: 10,
+    scale: 0,
+    id: 1,
+    mysql: {columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N'},
+  })
+  id: number;
+
+  @property({
+    type: 'string',
+    length: 255,
+    mysql: {columnName: 'name', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'Y'},
+  })
+  name?: string;
+
   @property({
     type: 'string',
     length: 255,
@@ -20,20 +37,20 @@ export class PlanFeatures extends Entity {
   })
   description?: string;
 
-  @property({
-    type: 'number',
-    generated: true,
-    id: true
-  })
-  id?: number;
+//  @property({
+//    type: 'number',
+ //   generated: true,
+ //   id: true
+ // })
+ // id?: number;
 
-  @property({
-    type: 'string',
-    length: 255,
-    generated: 0,
-    mysql: { columnName: 'name', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
-  })
-  name?: string;
+//  @property({
+ //   type: 'string',
+ //   length: 255,
+ //   generated: 0,
+ //   mysql: { columnName: 'name', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
+ // })
+ // name?: string;
 
   // Define well-known properties here
 

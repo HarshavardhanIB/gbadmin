@@ -1,4 +1,5 @@
 "use strict";
+var Broker_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Broker = void 0;
 const tslib_1 = require("tslib");
@@ -8,11 +9,22 @@ const broker_licensed_states_and_provinces_model_1 = require("./broker-licensed-
 const contact_information_model_1 = require("./contact-information.model");
 const signup_forms_model_1 = require("./signup-forms.model");
 const users_model_1 = require("./users.model");
-let Broker = class Broker extends repository_1.Entity {
+let Broker = Broker_1 = class Broker extends repository_1.Entity {
     constructor(data) {
         super(data);
     }
 };
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'number',
+        precision: 10,
+        scale: 0,
+        generated: 1,
+        id: 1,
+        mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
+    }),
+    tslib_1.__metadata("design:type", Number)
+], Broker.prototype, "id", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'string',
@@ -54,7 +66,7 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'boolean',
-        required: true,
+        //  required: true,
         precision: 1,
         generated: 0,
         mysql: { columnName: 'discoverable', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
@@ -70,17 +82,6 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", String)
 ], Broker.prototype, "fusebillCorporateCustomerId", void 0);
-tslib_1.__decorate([
-    (0, repository_1.property)({
-        type: 'number',
-        precision: 10,
-        scale: 0,
-        generated: 1,
-        id: 1,
-        mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
-    }),
-    tslib_1.__metadata("design:type", Number)
-], Broker.prototype, "id", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'string',
@@ -147,7 +148,7 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'string',
-        required: true,
+        // required: true,
         length: 35,
         generated: 0,
         mysql: { columnName: 'sales_tracking_type', dataType: 'varchar', dataLength: 35, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
@@ -157,7 +158,7 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
-        required: true,
+        //required: true,
         precision: 3,
         scale: 0,
         generated: 0,
@@ -167,8 +168,16 @@ tslib_1.__decorate([
 ], Broker.prototype, "settingsAllowGroupBenefitsWallet", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
+        type: 'string',
+        length: 25,
+        mysql: { columnName: 'settings_group_benefitz_wallet_type', dataType: 'varchar', dataLength: 25, dataPrecision: null, dataScale: null, nullable: 'N' },
+    }),
+    tslib_1.__metadata("design:type", String)
+], Broker.prototype, "settingsGroupBenefitzWalletType", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
         type: 'number',
-        required: true,
+        //required: true,
         precision: 3,
         scale: 0,
         generated: 0,
@@ -179,7 +188,7 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
-        required: true,
+        //required: true,
         precision: 3,
         scale: 0,
         generated: 0,
@@ -208,7 +217,7 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
-        required: true,
+        // required: true,
         precision: 3,
         scale: 0,
         generated: 0,
@@ -237,7 +246,7 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'boolean',
-        required: true,
+        // required: true,
         precision: 1,
         generated: 0,
         mysql: { columnName: 'use_credit_card_payment_method', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
@@ -247,7 +256,7 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'boolean',
-        required: true,
+        //  required: true,
         precision: 1,
         generated: 0,
         mysql: { columnName: 'use_invoice_payment_method', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
@@ -257,7 +266,7 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'boolean',
-        required: true,
+        //   required: true,
         precision: 1,
         generated: 0,
         mysql: { columnName: 'use_pad_payment_method', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
@@ -285,17 +294,31 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:type", Number)
 ], Broker.prototype, "waitTime", void 0);
 tslib_1.__decorate([
-    (0, repository_1.belongsTo)(() => users_model_1.Users, { name: 'user' }),
+    (0, repository_1.property)({
+        type: 'number',
+        precision: 3,
+        scale: 0,
+        mysql: { columnName: 'settings_enable_length_of_service_tiers', dataType: 'tinyint', dataLength: null, dataPrecision: 3, dataScale: 0, nullable: 'Y' },
+    }),
     tslib_1.__metadata("design:type", Number)
-], Broker.prototype, "user_id", void 0);
+], Broker.prototype, "settingsEnableLengthOfServiceTiers", void 0);
 tslib_1.__decorate([
-    (0, repository_1.belongsTo)(() => contact_information_model_1.ContactInformation, { name: 'contactInfo' }),
+    (0, repository_1.property)({
+        type: 'number',
+        precision: 3,
+        scale: 0,
+        mysql: { columnName: 'settings_enable_annual_income_tiers', dataType: 'tinyint', dataLength: null, dataPrecision: 3, dataScale: 0, nullable: 'Y' },
+    }),
     tslib_1.__metadata("design:type", Number)
-], Broker.prototype, "contact_id", void 0);
+], Broker.prototype, "settingsEnableAnnualIncomeTiers", void 0);
 tslib_1.__decorate([
     (0, repository_1.hasOne)(() => broker_eo_insurance_model_1.BrokerEoInsurance, { keyTo: 'broker_id' }),
     tslib_1.__metadata("design:type", broker_eo_insurance_model_1.BrokerEoInsurance)
 ], Broker.prototype, "brokerEoInsurance", void 0);
+tslib_1.__decorate([
+    (0, repository_1.belongsTo)(() => contact_information_model_1.ContactInformation, { name: 'contactInfo' }),
+    tslib_1.__metadata("design:type", Number)
+], Broker.prototype, "contact_id", void 0);
 tslib_1.__decorate([
     (0, repository_1.hasMany)(() => broker_licensed_states_and_provinces_model_1.BrokerLicensedStatesAndProvinces, { keyTo: 'broker_id' }),
     tslib_1.__metadata("design:type", Array)
@@ -304,7 +327,19 @@ tslib_1.__decorate([
     (0, repository_1.hasMany)(() => signup_forms_model_1.SignupForms, { keyTo: 'broker_id' }),
     tslib_1.__metadata("design:type", Array)
 ], Broker.prototype, "signupForms", void 0);
-Broker = tslib_1.__decorate([
+tslib_1.__decorate([
+    (0, repository_1.hasMany)(() => Broker_1, { keyTo: 'parent_id' }),
+    tslib_1.__metadata("design:type", Array)
+], Broker.prototype, "subBrokers", void 0);
+tslib_1.__decorate([
+    (0, repository_1.belongsTo)(() => Broker_1, { name: 'parent' }),
+    tslib_1.__metadata("design:type", Number)
+], Broker.prototype, "parent_id", void 0);
+tslib_1.__decorate([
+    (0, repository_1.belongsTo)(() => users_model_1.Users, { name: 'user' }),
+    tslib_1.__metadata("design:type", Number)
+], Broker.prototype, "user_id", void 0);
+Broker = Broker_1 = tslib_1.__decorate([
     (0, repository_1.model)({
         settings: {
             idInjection: false, foreignKeys: {
@@ -314,7 +349,7 @@ Broker = tslib_1.__decorate([
                     entityKey: 'id',
                     foreignKey: 'userId',
                 },
-            }, mysql: { schema: 'gbadmin', table: 'broker' }
+            }, mysql: { schema: 'group_benefitz', table: 'broker' }
         }
     }),
     tslib_1.__metadata("design:paramtypes", [Object])

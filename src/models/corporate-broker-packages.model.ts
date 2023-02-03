@@ -1,75 +1,70 @@
-import {Entity, model, property} from '@loopback/repository';
+// import {Entity, model, property} from '@loopback/repository';
 
-@model({
-  settings: {
-    idInjection: false,
-    mysql: {schema: 'gbadmin', table: 'corporate_broker_packages'}
-  }
-})
-export class CorporateBrokerPackages extends Entity {
-  @property({
-    type: 'number',
-    required: true,
-    precision: 3,
-    scale: 0,
-    generated: 0,
-    mysql: {columnName: 'allow_top_up', dataType: 'tinyint', dataLength: null, dataPrecision: 3, dataScale: 0, nullable: 'N', generated: 0},
-  })
-  allowTopUp: number;
+// @model({
+//   settings: {
+//     idInjection: false,
+//     mysql: {schema: 'group_benefitz', table: 'corporate_broker_packages'}
+//   }
+// })
+// export class CorporateBrokerPackages extends Entity {
 
-  @property({
-    type: 'number',
-    required: true,
-    precision: 10,
-    scale: 0,
-    generated: 0,
-    mysql: {columnName: 'broker_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0},
-  })
-  brokerId: number;
 
-  @property({
-    type: 'number',
-    required: true,
-    precision: 3,
-    scale: 0,
-    generated: 0,
-    mysql: {columnName: 'display_voluntary_benefits', dataType: 'tinyint', dataLength: null, dataPrecision: 3, dataScale: 0, nullable: 'N', generated: 0},
-  })
-  displayVoluntaryBenefits: number;
+//   @property({
+//     type: 'number',
+//     id: true,
+//     generated: true,
+//   })
+//   id?: number;
+//   @property({
+//     type: 'number',
+//     required: true,
+//     precision: 3,
+//     scale: 0,
+//     mysql: {columnName: 'allow_top_up', dataType: 'tinyint', dataLength: null, dataPrecision: 3, dataScale: 0, nullable: 'N'},
+//   })
+//   allowTopUp: number;
 
-  @property({
-    type: 'number',
-    required: true,
-    precision: 10,
-    scale: 0,
-    generated: 0,
-    mysql: {columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0},
-  })
-  id: number;
+//   @property({
+//     type: 'number',
+//     required: true,
+//     precision: 10,
+//     scale: 0,
+//     mysql: {columnName: 'broker_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N'},
+//   })
+//   brokerId: number;
 
-  @property({
-    type: 'number',
-    required: true,
-    precision: 10,
-    scale: 0,
-    generated: 0,
-    mysql: {columnName: 'package_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0},
-  })
-  packageId: number;
+//   @property({
+//     type: 'number',
+//     required: true,
+//     precision: 3,
+//     scale: 0,
+//     mysql: {columnName: 'display_voluntary_benefits', dataType: 'tinyint', dataLength: null, dataPrecision: 3, dataScale: 0, nullable: 'N'},
+//   })
+//   displayVoluntaryBenefits: number;
 
-  // Define well-known properties here
 
-  // Indexer property to allow additional data
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [prop: string]: any;
+//   @property({
+//     type: 'number',
+//     required: true,
+//     precision: 10,
+//     scale: 0,
+//     mysql: {columnName: 'package_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N'},
+//   })
+//   packageId: number;
 
-  constructor(data?: Partial<CorporateBrokerPackages>) {
-    super(data);
-  }
-}
+//   // Define well-known properties here
 
-export interface CorporateBrokerPackagesRelations {
-  // describe navigational properties here
-}
+//   // Indexer property to allow additional data
+//   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+//   [prop: string]: any;
 
-export type CorporateBrokerPackagesWithRelations = CorporateBrokerPackages & CorporateBrokerPackagesRelations;
+//   constructor(data?: Partial<CorporateBrokerPackages>) {
+//     super(data);
+//   }
+// }
+
+// export interface CorporateBrokerPackagesRelations {
+//   // describe navigational properties here
+// }
+
+// export type CorporateBrokerPackagesWithRelations = CorporateBrokerPackages & CorporateBrokerPackagesRelations;

@@ -3,20 +3,18 @@ import { Customer } from './customer.model';
 
 @model({
   settings: {
-    idInjection: false, foreignKeys: {
-      fk_customer_relatives_customers_customer_id: {
-
-        name: 'idx_customer_relative_id',
-
-        entity: 'Customers',
-
+    idInjection: false,
+    foreignKeys: {
+      fk_customer_id_customer_relative_customer_id: {
+        name: 'fk_customer_id_customer_relative_customer_id',
+        entity: 'Customer',
         entityKey: 'id',
 
         foreignKey: 'customerId',
 
       }
-
-    }, mysql: { schema: 'gbadmin', table: 'customer_relatives' }
+    },
+    mysql: {schema: 'group_benefitz', table: 'customer_relatives'}
   }
 })
 export class CustomerRelatives extends Entity {

@@ -5,6 +5,7 @@ export declare class PlanOptionsValues extends Entity {
     planOptionsId: number;
     reportingEmail?: string;
     value: string;
+    plan_options_id?: number;
     [prop: string]: any;
     constructor(data?: Partial<PlanOptionsValues>);
 }

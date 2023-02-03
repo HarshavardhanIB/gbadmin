@@ -1,6 +1,6 @@
 import { inject, Getter } from '@loopback/core';
 import { DefaultCrudRepository, repository, BelongsToAccessor } from '@loopback/repository';
-import { GbadminDataSource } from '../datasources';
+import { GroupBenefitzDataSource } from '../datasources';
 import { CustomerRelatives, CustomerRelativesRelations, Customer } from '../models';
 import { CustomerRepository } from './customer.repository';
 
@@ -12,7 +12,7 @@ export class CustomerRelativesRepository extends DefaultCrudRepository<
   public readonly customer: BelongsToAccessor<Customer, typeof CustomerRelatives.prototype.id>;
 
   constructor(
-    @inject('datasources.gbadmin') dataSource: GbadminDataSource, @repository.getter('CustomerRepository') protected customerRepositoryGetter: Getter<CustomerRepository>,
+       @inject('datasources.groupBenefitz') dataSource: GroupBenefitzDataSource, @repository.getter('CustomerRepository') protected customerRepositoryGetter: Getter<CustomerRepository>,
   ) {
     super(CustomerRelatives, dataSource);
     this.customer = this.createBelongsToAccessorFor('customer', customerRepositoryGetter,);

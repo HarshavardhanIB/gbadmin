@@ -2,12 +2,12 @@
 <html lang="en">
 
 <head>
-  <title>Admin portal</title>
+  <title>GroupBenefitz Admin portal API Services</title>
 
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="shortcut icon" type="image/x-icon" href="https://loopback.io/favicon.ico">
+  <link rel="shortcut icon" type="image/x-icon" href="./resources/images/favicon-16x16.png">
 
   <style>
     h3 {
@@ -35,6 +35,11 @@
       bottom: 25px;
       left: 50%;
       transform: translateX(-50%);
+
+      display: inline-flex;
+      flex-wrap: nowrap;
+      justify-content: space-evenly;
+      align-items: center;
     }
 
     .info {
@@ -46,7 +51,7 @@
 
     .info h1 {
       text-align: center;
-      margin-bottom: 0
+      margin-bottom: 0;
     }
 
     .info p {
@@ -55,20 +60,41 @@
       margin-top: 1em;
     }
 
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: rgb(29, 30, 32);
+        color: white;
+      }
+
+      a,
+      a:visited {
+        color: #4990e2;
+      }
+
+      a:hover,
+      a:focus,
+      a:active {
+        color: #2b78ff;
+      }
+    }
+
   </style>
 </head>
 
 <body>
   <div class="info">
-    <h1>Admin Portal API</h1>
-
-    <h3>OpenAPI spec: <a href="/api/ap/openapi.json">/openapi.json</a></h3>
-    <h3>API Explorer: <a href="/api/ap/explorer">/explorer</a></h3>
+    <h1>GroupBenefitz Admin Portal API</h1>
+    <p>Version 0.0.4.6</p>
   </div>
 
   <footer class="power">
-    <!-- <a href="https://loopback.io" target="_blank"> -->
-    <!-- <img src="https://loopback.io/images/branding/powered-by-loopback/blue/powered-by-loopback-sm.png" /> -->
+    <a href="https://groupbenefitz.ca" target="_blank">
+      <img width=50 src="./resources/images/gb_logo.png" />
+    </a>
+
+    <a href="https://aitestpro.com" target="_blank">
+
+      <img width=150 src="./resources/images/aitp-logo.png" />
     </a>
   </footer>
 </body>

@@ -3,7 +3,7 @@ import { Entity, model, property } from '@loopback/repository';
 @model({
   settings: {
     idInjection: false,
-    mysql: { schema: 'gbadmin', table: 'corporate_paid_tiered_plan_levels' }
+    mysql: {schema: 'group_benefitz', table: 'corporate_paid_tiered_plan_levels'}
   }
 })
 export class CorporatePaidTieredPlanLevels extends Entity {

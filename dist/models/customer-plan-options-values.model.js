@@ -57,7 +57,21 @@ CustomerPlanOptionsValues = tslib_1.__decorate([
     (0, repository_1.model)({
         settings: {
             idInjection: false,
-            mysql: { schema: 'gbadmin', table: 'customer_plan_options_values' }
+            foreignKeys: {
+                fk_plan_options_customer_id: {
+                    name: 'fk_plan_options_customer_id',
+                    entity: 'Customers',
+                    entityKey: 'id',
+                    foreignKey: 'customerId',
+                },
+                fk_customer_plan_options_plan_options_id: {
+                    name: 'fk_customer_plan_options_plan_options_id',
+                    entity: 'PlanOptions',
+                    entityKey: 'id',
+                    foreignKey: 'planOptionsId',
+                },
+            },
+            mysql: { schema: 'group_benefitz', table: 'customer_plan_options_values' }
         }
     }),
     tslib_1.__metadata("design:paramtypes", [Object])

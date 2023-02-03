@@ -1,4 +1,6 @@
+/// <reference types="node" />
 import { Entity } from '@loopback/repository';
+import { PlanOptions } from './plan-options.model';
 import { PlansAvailability } from './plans-availability.model';
 export declare class InsurancePlans extends Entity {
     code?: string;
@@ -19,10 +21,11 @@ export declare class InsurancePlans extends Entity {
     packageId?: number;
     planCoverage?: string;
     planLevel?: number;
-    published?: boolean;
+    published?: Buffer;
     package_id?: number;
-    plan_level?: number;
     stateTaxDetails: PlansAvailability[];
+    planOptions: PlanOptions[];
+    plan_level: number;
     [prop: string]: any;
     constructor(data?: Partial<InsurancePlans>);
 }

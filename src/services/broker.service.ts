@@ -1,7 +1,7 @@
 import { injectable, /* inject, */ BindingScope } from '@loopback/core';
 import { repository } from '@loopback/repository';
 import { BrokerLicensedStatesAndProvinces } from '../models';
-import { BrokerEoInsuranceRepository, BrokerLicensedStatesAndProvincesRepository, BrokerRepository, SignupFormsPlanLevelMappingRepository, BrokerSignupFormsPlansRepository, ContactInformationRepository, CustomerRepository, CustomerSignupRepository, InsurancePlansRepository, PlanLevelRepository, SignupFormsRepository, StatesAndProvincesRepository, UsersRepository } from '../repositories';
+import { BrokerEoInsuranceRepository, BrokerLicensedStatesAndProvincesRepository, BrokerRepository, SignupFormsPlanLevelMappingRepository,  ContactInformationRepository, CustomerRepository, CustomerSignupRepository, InsurancePlansRepository, PlanLevelRepository, SignupFormsRepository, StatesAndProvincesRepository, UsersRepository } from '../repositories';
 
 @injectable({ scope: BindingScope.TRANSIENT })
 export class BrokerService {
@@ -10,8 +10,8 @@ export class BrokerService {
     public BrokerRepository: BrokerRepository,
     @repository(BrokerLicensedStatesAndProvincesRepository)
     public BrokerLicensedStatesAndProvincesRepository: BrokerLicensedStatesAndProvincesRepository,
-    @repository(BrokerSignupFormsPlansRepository)
-    public BrokerSignupFormsPlansRepository: BrokerSignupFormsPlansRepository,
+    // @repository(BrokerSignupFormsPlansRepository)
+    // public BrokerSignupFormsPlansRepository: BrokerSignupFormsPlansRepository,
     @repository(SignupFormsPlanLevelMappingRepository)
     public SignupFormsPlanLevelMappingRepository: SignupFormsPlanLevelMappingRepository,
     @repository(UsersRepository)

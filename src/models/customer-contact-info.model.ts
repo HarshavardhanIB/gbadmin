@@ -2,7 +2,8 @@ import { Entity, model, property } from '@loopback/repository';
 
 @model({
   settings: {
-    idInjection: false, foreignKeys: {
+    idInjection: false, 
+    foreignKeys: {
 
       idx_customer_contact_id: {
 
@@ -26,8 +27,8 @@ import { Entity, model, property } from '@loopback/repository';
 
         foreignKey: 'contactId',
 
-      },
-
+    },
+    mysql: {schema: 'group_benefitz', table: 'customer_contact_info'}
     }, mysql: { schema: 'gbadmin', table: 'customer_contact_info' }
   }
 })

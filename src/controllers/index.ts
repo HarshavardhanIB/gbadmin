@@ -1,8 +1,3 @@
-// Copyright IBM Corp. and LoopBack contributors 2018,2020. All Rights Reserved.
-// Node module: @loopback/example-todo
-// This file is licensed under the MIT License.
-// License text available at https://opensource.org/licenses/MIT
-
 export * from './auth.controller';
 export * from './customer.controller';
 export * from './customer-relatives-customer.controller';
@@ -30,4 +25,4 @@ export * from './states-and-provinces-plans-availability.controller';
 export * from './plans-availability-insurance-plans.controller';
 export * from './insurance-plans-plans-availability.controller';
 export * from './plan-level-insurance-plans.controller';
-export * from './signup-forms-broker-signup-forms-plans.controller';
+// export * from './signup-forms-broker-signup-forms-plans.controller';

@@ -12,6 +12,14 @@ let SignupFormsPlanLevelMapping = class SignupFormsPlanLevelMapping extends repo
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
+        generated: true,
+        id: true
+    }),
+    tslib_1.__metadata("design:type", Number)
+], SignupFormsPlanLevelMapping.prototype, "id", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'number',
         required: true,
         precision: 10,
         scale: 0,
@@ -20,14 +28,6 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", Number)
 ], SignupFormsPlanLevelMapping.prototype, "formId", void 0);
-tslib_1.__decorate([
-    (0, repository_1.property)({
-        type: 'number',
-        generated: true,
-        id: true
-    }),
-    tslib_1.__metadata("design:type", Number)
-], SignupFormsPlanLevelMapping.prototype, "id", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
@@ -53,7 +53,7 @@ SignupFormsPlanLevelMapping = tslib_1.__decorate([
     (0, repository_1.model)({
         settings: {
             idInjection: false,
-            mysql: { schema: 'gbadmin', table: 'signup_forms_plan_level_mapping' }
+            mysql: { schema: 'group_benefitz', table: 'signup_forms_plan_level_mapping' }
         }
     }),
     tslib_1.__metadata("design:paramtypes", [Object])

@@ -1,13 +1,13 @@
 /// <reference types="express" />
 import { Request, Response } from "@loopback/rest";
-import { BrokerRepository, BrokerLicensedStatesAndProvincesRepository, InsurancePlansRepository, SignupFormsRepository, BrokerSignupFormsPlansRepository, StatesAndProvincesRepository, SignupFormsPlanLevelMappingRepository, UsersRepository, ContactInformationRepository, CustomerSignupRepository, CustomerRepository, PlanLevelRepository, BrokerEoInsuranceRepository, InsurancePackagesRepository, PlansAvailabilityRepository } from '../repositories';
+import { BrokerRepository, BrokerLicensedStatesAndProvincesRepository, InsurancePlansRepository, SignupFormsRepository, StatesAndProvincesRepository, SignupFormsPlanLevelMappingRepository, UsersRepository, ContactInformationRepository, CustomerSignupRepository, CustomerRepository, PlanLevelRepository, BrokerEoInsuranceRepository, InsurancePackagesRepository, PlansAvailabilityRepository } from '../repositories';
 import { FileUploadHandler } from "../types";
 import { BrokerEoInsurance, ContactInformation } from "../models";
 import { BrokerService, HttpService, ResizeimgService } from "../services";
+import { BrokerAdminsRepository } from "../repositories/broker-admins.repository";
 export declare class BrokerController {
     BrokerRepository: BrokerRepository;
     BrokerLicensedStatesAndProvincesRepository: BrokerLicensedStatesAndProvincesRepository;
-    BrokerSignupFormsPlansRepository: BrokerSignupFormsPlansRepository;
     SignupFormsPlanLevelMappingRepository: SignupFormsPlanLevelMappingRepository;
     UsersRepository: UsersRepository;
     ContactInformationRepository: ContactInformationRepository;
@@ -25,28 +25,21 @@ export declare class BrokerController {
     bs: BrokerService;
     insurancePackages: InsurancePackagesRepository;
     plansAvalibility: PlansAvailabilityRepository;
-    constructor(BrokerRepository: BrokerRepository, BrokerLicensedStatesAndProvincesRepository: BrokerLicensedStatesAndProvincesRepository, BrokerSignupFormsPlansRepository: BrokerSignupFormsPlansRepository, SignupFormsPlanLevelMappingRepository: SignupFormsPlanLevelMappingRepository, UsersRepository: UsersRepository, ContactInformationRepository: ContactInformationRepository, SignupFormsRepository: SignupFormsRepository, StatesAndProvincesRepository: StatesAndProvincesRepository, CustomerSignupRepository: CustomerSignupRepository, CustomerRepository: CustomerRepository, InsurancePlansRepository: InsurancePlansRepository, PlanLevelRepository: PlanLevelRepository, BrokerEoInsuranceRepository: BrokerEoInsuranceRepository, response: Response, handler: FileUploadHandler, http: HttpService, img: ResizeimgService, bs: BrokerService, insurancePackages: InsurancePackagesRepository, plansAvalibility: PlansAvailabilityRepository);
+    BrokerAdminsRepository: BrokerAdminsRepository;
+    constructor(BrokerRepository: BrokerRepository, BrokerLicensedStatesAndProvincesRepository: BrokerLicensedStatesAndProvincesRepository, SignupFormsPlanLevelMappingRepository: SignupFormsPlanLevelMappingRepository, UsersRepository: UsersRepository, ContactInformationRepository: ContactInformationRepository, SignupFormsRepository: SignupFormsRepository, StatesAndProvincesRepository: StatesAndProvincesRepository, CustomerSignupRepository: CustomerSignupRepository, CustomerRepository: CustomerRepository, InsurancePlansRepository: InsurancePlansRepository, PlanLevelRepository: PlanLevelRepository, BrokerEoInsuranceRepository: BrokerEoInsuranceRepository, response: Response, handler: FileUploadHandler, http: HttpService, img: ResizeimgService, bs: BrokerService, insurancePackages: InsurancePackagesRepository, plansAvalibility: PlansAvailabilityRepository, BrokerAdminsRepository: BrokerAdminsRepository);
     brokerCount(): Promise<Response>;
     getBroker(): Promise<any>;
     brokerDetailsBasedonId(id: number): Promise<any>;
     custmerCount(id: number): Promise<any>;
     static newBroker(request: Request, method: string, others: any): Promise<void>;
     brokerLogoUpload(broker_id: number, resize: boolean, request: Request, response: Response): Promise<any>;
-    broker_registration(request: Request, response: Response): Promise<Response>;
-    broker_create_form(brokerId: number, apiRequest: any): Promise<Response>;
     checkAndGenerateNewFormLink(formLink: string, userid: number): Promise<string>;
     deleteForm(formId: number): Promise<any>;
     deleteBrokerForm(Brokerid: number): Promise<any>;
     formConfig(formLink?: string, lang?: string): Promise<Response>;
-    modifyForm(formid: number, requestBody: any): Promise<Response>;
     updateContact(id: number, ContactInformation: Omit<ContactInformation, 'id'>): Promise<any>;
-    updateLiceceState(brokerId: number, requestBody: {
-        states: Array<number>;
-    }): Promise<any>;
+    updateLiceceState(brokerId: number, requestBody: any): Promise<any>;
     updateEO(brokerId: number, BrokerEoInsurance: Omit<BrokerEoInsurance, 'id'>): Promise<any>;
-    updateLiceceNum(brokerId: number, requestBody: {
-        licenceNum: string;
-    }): Promise<any>;
     deleteBroker(brokerId: number): Promise<Response<any, Record<string, any>>>;
     emailChange(brokerId: number, requestBody: {
         newMailid: string;
@@ -56,8 +49,7 @@ export declare class BrokerController {
     planId(apiRequest: any): Promise<any>;
     planlevels(apiRequest: any): Promise<any>;
     broker_create_form_new(brokerId: number, apiRequest: any): Promise<Response>;
-    broker_create_form_new3(brokerIdOrName: string, trackingCode: number, apiRequest: any): Promise<Response>;
-    broker_create_form_new_dummy(brokerIdOrName: string, trackingCode: number, apiRequest: any): Promise<Response>;
+    broker_create_form_new_with_salesTrackingCode(brokerIdOrName: any, idOrName: boolean, trackingCode: number, apiRequest: any): Promise<Response>;
     formDetails(formId: number): Promise<Response>;
     addOrRemoveForm(formid: number, requestBody: any): Promise<Response>;
     brokerDetails(id: number): Promise<any>;
@@ -67,4 +59,5 @@ export declare class BrokerController {
     customerdetailsBasedonbrokerIdandCustomerId(brokerid: number, customerId: number): Promise<any>;
     customerDetailsBasedOnBrokerIdandFormId(brokerid: number, customerId: number, formId: number): Promise<any>;
     search(apiRequest: any): Promise<any>;
+    broker_registration(request: Request, response: Response): Promise<Response>;
 }

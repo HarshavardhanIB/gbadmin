@@ -12,8 +12,8 @@ let ContactInformationRepository = class ContactInformationRepository extends re
     }
 };
 ContactInformationRepository = tslib_1.__decorate([
-    tslib_1.__param(0, (0, core_1.inject)('datasources.gbadmin')),
-    tslib_1.__metadata("design:paramtypes", [datasources_1.GbadminDataSource])
+    tslib_1.__param(0, (0, core_1.inject)('datasources.groupBenefitz')),
+    tslib_1.__metadata("design:paramtypes", [datasources_1.GroupBenefitzDataSource])
 ], ContactInformationRepository);
 exports.ContactInformationRepository = ContactInformationRepository;
 //# sourceMappingURL=contact-information.repository.js.map

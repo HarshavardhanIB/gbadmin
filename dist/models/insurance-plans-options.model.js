@@ -42,7 +42,21 @@ InsurancePlansOptions = tslib_1.__decorate([
     (0, repository_1.model)({
         settings: {
             idInjection: false,
-            mysql: { schema: 'gbadmin', table: 'insurance_plans_options' }
+            foreignKeys: {
+                fk_in_surance_plan_options_insurance_plans_plan_id: {
+                    name: 'fk_in_surance_plan_options_insurance_plans_plan_id',
+                    entity: 'InsurancePlans',
+                    entityKey: 'id',
+                    foreignKey: 'planId',
+                },
+                fk_insurance_plan_options_plan_options_id: {
+                    name: 'fk_insurance_plan_options_plan_options_id',
+                    entity: 'PlanOptions',
+                    entityKey: 'id',
+                    foreignKey: 'planOptionsId',
+                },
+            },
+            mysql: { schema: 'group_benefitz', table: 'insurance_plans_options' }
         }
     }),
     tslib_1.__metadata("design:paramtypes", [Object])

@@ -1,0 +1,33 @@
+import { GroupBenefitzDataSource } from '../datasources/group-benefitz.datasource';
+import { CustomerRepository, PlanOptionsValuesRepository, PlansOptionsReportingRepository } from '../repositories';
+import { CandooHealthProvisioningService } from './candoo-health-provisioning.service';
+import { EmailService } from './email.service';
+import { ExcelService } from './excel.service';
+import { MailHelperService } from './mail-helper.service';
+export declare class ReportsService {
+    protected dataSource: GroupBenefitzDataSource;
+    customerRepository: CustomerRepository;
+    planOptionsValuesRepository: PlanOptionsValuesRepository;
+    plansOptionsReportingRepository: PlansOptionsReportingRepository;
+    private excelService;
+    private mail;
+    private mailHelper;
+    private candoo;
+    constructor(/* Add @inject to inject parameters */ dataSource: GroupBenefitzDataSource, customerRepository: CustomerRepository, planOptionsValuesRepository: PlanOptionsValuesRepository, plansOptionsReportingRepository: PlansOptionsReportingRepository, excelService: ExcelService, mail: EmailService, mailHelper: MailHelperService, candoo: CandooHealthProvisioningService);
+    enrollment(): Promise<void>;
+    updates(): Promise<void>;
+    cancellation(): Promise<void>;
+    pocketPills(customers: any, maxChildren: number, monthYear: string): Promise<void>;
+    executiveBenefits(customers: any): Promise<void>;
+    getMaxChildNo(monthYear: string): Promise<any>;
+    allReports(): Promise<void>;
+    allReportsMY(date: string, reportMY: string, startOfMonth: string, endOfMonth: string): Promise<void>;
+    specialExecReports(execReportingMails: any, planName: string, monthYear: string): Promise<void>;
+    prepareVirtualCareProviderData(customers: any): Promise<string>;
+    execReports(customers: any, planLevelId: any, planName: string, monthYear: string): Promise<void>;
+    prepareBestDoctorsData(customers: any, planName: string, monthYear: string): Promise<string>;
+    prepareGutCheckData(customers: any): Promise<string>;
+    prepareRxFoodData(customers: any): Promise<string>;
+    getCoverage(spouse: any, children: any): Promise<string>;
+    getDependantCode(relationshipType: string): Promise<string>;
+}

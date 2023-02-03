@@ -3,7 +3,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PlanLevel = void 0;
 const tslib_1 = require("tslib");
 const repository_1 = require("@loopback/repository");
+const equitable_plan_level_mapping_model_1 = require("./equitable-plan-level-mapping.model");
+const greenshield_plan_level_mapping_model_1 = require("./greenshield-plan-level-mapping.model");
 const insurance_plans_model_1 = require("./insurance-plans.model");
+const plan_features_model_1 = require("./plan-features.model");
+const plan_level_features_model_1 = require("./plan-level-features.model");
 let PlanLevel = class PlanLevel extends repository_1.Entity {
     constructor(data) {
         super(data);
@@ -137,12 +141,28 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:type", String)
 ], PlanLevel.prototype, "tooltipTitle", void 0);
 tslib_1.__decorate([
+    (0, repository_1.hasMany)(() => greenshield_plan_level_mapping_model_1.GreenshieldPlanLevelMapping, { keyTo: 'plan_level_id' }),
+    tslib_1.__metadata("design:type", Array)
+], PlanLevel.prototype, "greenshieldPackages", void 0);
+tslib_1.__decorate([
+    (0, repository_1.hasMany)(() => plan_level_features_model_1.PlanLevelFeatures, { keyTo: 'plan_level_id' }),
+    tslib_1.__metadata("design:type", Array)
+], PlanLevel.prototype, "planLevelFeatures", void 0);
+tslib_1.__decorate([
+    (0, repository_1.hasMany)(() => plan_features_model_1.PlanFeatures, { through: { model: () => plan_level_features_model_1.PlanLevelFeatures, keyFrom: 'planLevelId', keyTo: 'planFeatureId' } }),
+    tslib_1.__metadata("design:type", Array)
+], PlanLevel.prototype, "planFeatures", void 0);
+tslib_1.__decorate([
+    (0, repository_1.hasMany)(() => equitable_plan_level_mapping_model_1.EquitablePlanLevelMapping, { keyTo: 'plan_level_id' }),
+    tslib_1.__metadata("design:type", Array)
+], PlanLevel.prototype, "equitablePackages", void 0);
+tslib_1.__decorate([
     (0, repository_1.hasMany)(() => insurance_plans_model_1.InsurancePlans, { keyTo: 'plan_level' }),
     tslib_1.__metadata("design:type", Array)
 ], PlanLevel.prototype, "plans", void 0);
 PlanLevel = tslib_1.__decorate([
     (0, repository_1.model)({
-        settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'plan_level' } }
+        settings: { idInjection: false, mysql: { schema: 'group_benefitz', table: 'plan_level' } }
     }),
     tslib_1.__metadata("design:paramtypes", [Object])
 ], PlanLevel);

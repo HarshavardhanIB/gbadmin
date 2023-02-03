@@ -1,7 +1,10 @@
 import { Entity, model, property } from '@loopback/repository';
 
 @model({
-  settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'contact_information' } }
+  settings: {
+    idInjection: false,
+    mysql: {schema: 'group_benefitz', table: 'contact_information'}
+  }
 })
 export class ContactInformation extends Entity {
   @property({

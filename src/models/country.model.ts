@@ -1,6 +1,9 @@
-import { Entity, model, property } from '@loopback/repository';
+import {Entity, hasMany, model, property} from '@loopback/repository';
+import {StatesAndProvinces} from './states-and-provinces.model';
 
-@model({ settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'country' } } })
+@model({
+  settings: {idInjection: false, mysql: {schema: 'group_benefitz', table: 'country'}}
+})
 export class Country extends Entity {
   @property({
     type: 'string',
@@ -76,6 +79,8 @@ export class Country extends Entity {
   })
   shortName?: string;
 
+  @hasMany(() => StatesAndProvinces, {keyTo: 'country_id'})
+  statesAndProvinces: StatesAndProvinces[];
   // Define well-known properties here
 
   // Indexer property to allow additional data

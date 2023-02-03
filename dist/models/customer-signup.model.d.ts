@@ -8,16 +8,16 @@ export declare class CustomerSignup extends Entity {
     id?: number;
     jobTitle?: string;
     maritalStatus: string;
-    optInPills: boolean;
-    provincialHealthCare: boolean;
-    readAdvisorDisclosure: boolean;
-    signature: string;
+    optInPills?: boolean;
+    provincialHealthCare?: boolean;
+    readAdvisorDisclosure?: boolean;
+    signature?: string;
     signupDate: string;
-    termsAndConditions: boolean;
+    termsAndConditions?: boolean;
     weeklyHours: number;
     working_20hours: boolean;
-    form_id?: number;
     customer_id?: number;
+    form_id: number;
     [prop: string]: any;
     constructor(data?: Partial<CustomerSignup>);
 }

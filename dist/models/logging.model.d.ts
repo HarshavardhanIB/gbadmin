@@ -1,4 +1,12 @@
 import { Entity } from '@loopback/repository';
+export declare enum Operation {
+    INSERT_ONE = "INSERT_ONE",
+    INSERT_MANY = "INSERT_MANY",
+    UPDATE_ONE = "UPDATE_ONE",
+    UPDATE_MANY = "UPDATE_MANY",
+    DELETE_ONE = "DELETE_ONE",
+    DELETE_MANY = "DELETE_MANY"
+}
 export declare class Logging extends Entity {
     changedById?: number;
     changedByUsername?: string;

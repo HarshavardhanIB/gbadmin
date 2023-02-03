@@ -1,8 +1,13 @@
 import { Entity } from '@loopback/repository';
 export declare class CorporateTiers extends Entity {
-    brokerId: number;
     id?: number;
+    brokerId: number;
     name: string;
+    published?: number;
+    tierType?: string;
+    lowerLimit?: number;
+    upperLimit?: number;
+    spendingLimit?: number;
     [prop: string]: any;
     constructor(data?: Partial<CorporateTiers>);
 }

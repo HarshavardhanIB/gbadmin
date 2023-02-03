@@ -1,6 +1,6 @@
 import { inject } from '@loopback/core';
 import { DefaultCrudRepository } from '@loopback/repository';
-import { GbadminDataSource } from '../datasources';
+import { GroupBenefitzDataSource } from '../datasources';
 import { Admin, AdminRelations } from '../models';
 
 export class AdminRepository extends DefaultCrudRepository<
@@ -9,7 +9,7 @@ export class AdminRepository extends DefaultCrudRepository<
   AdminRelations
 > {
   constructor(
-    @inject('datasources.gbadmin') dataSource: GbadminDataSource,
+    @inject('datasources.groupBenefitz') dataSource: GroupBenefitzDataSource,
   ) {
     super(Admin, dataSource);
   }

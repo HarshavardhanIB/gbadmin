@@ -1,8 +1,31 @@
-import { Entity, hasMany, model, property } from '@loopback/repository';
-import { PlansAvailability } from './plans-availability.model';
+import {belongsTo, Entity, hasMany, model, property} from '@loopback/repository';
+// import {InsuranceProducts} from './insurance-products.model';
+import {InsurancePlansOptions} from './insurance-plans-options.model';
+import {PlanLevel} from './plan-level.model';
+import {PlanOptions} from './plan-options.model';
+import {PlansAvailability} from './plans-availability.model';
 
 @model({
-  settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'insurance_plans' } }
+  settings: {
+    idInjection: false,
+    foreignKeys: {
+      idx_plan_package_id: {
+        name: 'idx_plan_package_id',
+        entity: 'InsurancePackages',
+        entityKey: 'id',
+        foreignKey: 'packageId',
+      },
+      idx_insurance_plans_plan_level: {
+        name: 'idx_insurance_plans_plan_level',
+        entity: 'PlanLevels',
+        entityKey: 'id',
+        foreignKey: 'planLevel',
+      },
+
+    },
+    mysql: {schema: 'group_benefitz', table: 'insurance_plans'},
+    strict: false
+  }
 })
 export class InsurancePlans extends Entity {
   @property({
@@ -157,25 +180,37 @@ export class InsurancePlans extends Entity {
   })
   planLevel?: number;
 
-  @property({
-    type: 'boolean',
+//  @property({
+//    type: 'boolean',
+//    precision: 2,
+//    generated: 0,
+//    mysql: { columnName: 'published', dataType: 'bit', dataLength: null, dataPrecision: 2, dataScale: null, nullable: 'Y', generated: 0 },
+//  })
+//  published?: boolean;
+  
+    @property({
+    type: 'Buffer',
+    length: 3,
     precision: 2,
-    generated: 0,
-    mysql: { columnName: 'published', dataType: 'bit', dataLength: null, dataPrecision: 2, dataScale: null, nullable: 'Y', generated: 0 },
+    mysql: {columnName: 'published', dataType: 'bit', dataLength: null, dataPrecision: 2, dataScale: null, nullable: 'Y'},
   })
-  published?: boolean;
+  published?: Buffer; //bit-2
   @property({
     type: 'number',
   })
   package_id?: number;
 
-  @property({
-    type: 'number',
-  })
-  plan_level?: number;
+ // @property({
+ //   type: 'number',
+ // })
+ // plan_level?: number;
 
   @hasMany(() => PlansAvailability, { keyTo: 'plan_id' })
   stateTaxDetails: PlansAvailability[];
+  @hasMany(() => PlanOptions, {through: {model: () => InsurancePlansOptions, keyFrom: 'planId'}})
+  planOptions: PlanOptions[];
+  @belongsTo(() => PlanLevel, {name: 'planLevels'})
+  plan_level: number;
   // Define well-known properties here
 
   // Indexer property to allow additional data

@@ -1,8 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Logging = void 0;
+exports.Logging = exports.Operation = void 0;
 const tslib_1 = require("tslib");
 const repository_1 = require("@loopback/repository");
+var Operation;
+(function (Operation) {
+    Operation["INSERT_ONE"] = "INSERT_ONE";
+    Operation["INSERT_MANY"] = "INSERT_MANY";
+    Operation["UPDATE_ONE"] = "UPDATE_ONE";
+    Operation["UPDATE_MANY"] = "UPDATE_MANY";
+    Operation["DELETE_ONE"] = "DELETE_ONE";
+    Operation["DELETE_MANY"] = "DELETE_MANY";
+})(Operation = exports.Operation || (exports.Operation = {}));
 let Logging = class Logging extends repository_1.Entity {
     constructor(data) {
         super(data);
@@ -91,7 +100,9 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:type", String)
 ], Logging.prototype, "tableName", void 0);
 Logging = tslib_1.__decorate([
-    (0, repository_1.model)({ settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'logging' } } }),
+    (0, repository_1.model)({
+        settings: { idInjection: false, mysql: { schema: 'group_benefitz', table: 'logging' } }
+    }),
     tslib_1.__metadata("design:paramtypes", [Object])
 ], Logging);
 exports.Logging = Logging;

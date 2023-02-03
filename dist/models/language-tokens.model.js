@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.LanguageTokens = void 0;
 const tslib_1 = require("tslib");
 const repository_1 = require("@loopback/repository");
+const translation_languages_model_1 = require("./translation-languages.model");
 let LanguageTokens = class LanguageTokens extends repository_1.Entity {
     constructor(data) {
         super(data);
@@ -74,9 +75,24 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", String)
 ], LanguageTokens.prototype, "value", void 0);
+tslib_1.__decorate([
+    (0, repository_1.belongsTo)(() => translation_languages_model_1.TranslationLanguages, { name: 'translationLanguages' }),
+    tslib_1.__metadata("design:type", Number)
+], LanguageTokens.prototype, "translation_language_id", void 0);
 LanguageTokens = tslib_1.__decorate([
     (0, repository_1.model)({
-        settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'language_tokens' } }
+        settings: {
+            idInjection: false,
+            foreignKeys: {
+                language_tokens_ibfk_1: {
+                    name: 'language_tokens_ibfk_1',
+                    entity: 'translationLanguages',
+                    entityKey: 'id',
+                    foreignKey: 'translationLanguageId',
+                }
+            },
+            mysql: { schema: 'group_benefitz', table: 'language_tokens' }
+        }
     }),
     tslib_1.__metadata("design:paramtypes", [Object])
 ], LanguageTokens);

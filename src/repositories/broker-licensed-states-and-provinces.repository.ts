@@ -1,6 +1,6 @@
 import {inject, Getter} from '@loopback/core';
 import {DefaultCrudRepository, repository, BelongsToAccessor} from '@loopback/repository';
-import {GbadminDataSource} from '../datasources';
+import {GroupBenefitzDataSource} from '../datasources';
 import {BrokerLicensedStatesAndProvinces, BrokerLicensedStatesAndProvincesRelations, StatesAndProvinces} from '../models';
 import {StatesAndProvincesRepository} from './states-and-provinces.repository';
 
@@ -13,7 +13,8 @@ export class BrokerLicensedStatesAndProvincesRepository extends DefaultCrudRepos
   public readonly stateFullDetails: BelongsToAccessor<StatesAndProvinces, typeof BrokerLicensedStatesAndProvinces.prototype.id>;
 
   constructor(
-    @inject('datasources.gbadmin') dataSource: GbadminDataSource, @repository.getter('StatesAndProvincesRepository') protected statesAndProvincesRepositoryGetter: Getter<StatesAndProvincesRepository>,
+    @inject('datasources.groupBenefitz') dataSource: GroupBenefitzDataSource,
+    @repository.getter('StatesAndProvincesRepository') protected statesAndProvincesRepositoryGetter: Getter<StatesAndProvincesRepository>,
   ) {
     super(BrokerLicensedStatesAndProvinces, dataSource);
     this.stateFullDetails = this.createBelongsToAccessorFor('stateFullDetails', statesAndProvincesRepositoryGetter,);

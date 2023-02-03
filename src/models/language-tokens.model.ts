@@ -1,7 +1,19 @@
-import { Entity, model, property } from '@loopback/repository';
+import {belongsTo, Entity, model, property} from '@loopback/repository';
+import {TranslationLanguages} from './translation-languages.model';
 
 @model({
-  settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'language_tokens' } }
+  settings: {
+    idInjection: false,
+    foreignKeys: {
+      language_tokens_ibfk_1: {
+        name: 'language_tokens_ibfk_1',
+        entity: 'translationLanguages',
+        entityKey: 'id',
+        foreignKey: 'translationLanguageId',
+      }
+    },
+    mysql: {schema: 'group_benefitz', table: 'language_tokens'}
+  }
 })
 export class LanguageTokens extends Entity {
   @property({
@@ -63,6 +75,8 @@ export class LanguageTokens extends Entity {
   })
   value?: string;
 
+  @belongsTo(() => TranslationLanguages, {name: 'translationLanguages'})
+  translation_language_id: number;
   // Define well-known properties here
 
   // Indexer property to allow additional data

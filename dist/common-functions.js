@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createSignature = exports.validateSignatures = exports.getRandomIdBetween = exports.genCrypt = exports.encryptPassword = exports.generateRandomPassword = exports.generateFormLink = exports.randomString = exports.onlyUnique = exports.objectLength = exports.countDuplicate = exports.getActivationCode = void 0;
+exports.getFileAttributes = exports.createSignature = exports.validateSignatures = exports.getRandomIdBetween = exports.genCrypt = exports.encryptPassword = exports.generateRandomPassword = exports.generateFormLink = exports.randomString = exports.intersection = exports.onlyUnique = exports.objectLength = exports.countDuplicate = exports.getActivationCode = void 0;
 const tslib_1 = require("tslib");
 const bcryptjs_1 = require("bcryptjs");
 const crypto_1 = tslib_1.__importDefault(require("crypto"));
+const path_1 = tslib_1.__importDefault(require("path"));
 const sharedSecret = "ibAitp";
 async function getActivationCode() {
     return genCrypt();
@@ -34,6 +35,17 @@ function onlyUnique(value, index, self) {
     return self.indexOf(value) === index;
 }
 exports.onlyUnique = onlyUnique;
+async function intersection(a, b) {
+    var t;
+    if (b.length > a.length)
+        t = b, b = a, a = t; // indexOf to loop over shorter
+    return a.filter(function (e) {
+        return b.indexOf(e) > -1;
+    }).filter(function (e, i, c) {
+        return c.indexOf(e) === i;
+    });
+}
+exports.intersection = intersection;
 async function randomString(length, chars) {
     var result = '';
     for (var i = length; i > 0; --i)
@@ -79,4 +91,20 @@ function createSignature(query) {
     return computedSignature;
 }
 exports.createSignature = createSignature;
+function getFileAttributes(file) {
+    /*
+  Returns:
+  {
+    root: 'C:/',
+    dir: 'C://Code/my-website',
+    base: 'index.html',
+    ext: '.html',
+    name: 'index'
+  }
+  */
+    if (!file || file == '')
+        file = 'D://sid/gb/gb-enrollment-form/allinputdata.json';
+    return path_1.default.parse(file);
+}
+exports.getFileAttributes = getFileAttributes;
 //# sourceMappingURL=common-functions.js.map

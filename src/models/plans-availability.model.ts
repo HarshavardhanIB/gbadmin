@@ -3,9 +3,33 @@ import { InsurancePlans } from './insurance-plans.model';
 import { StatesAndProvinces } from './states-and-provinces.model';
 
 @model({
-  settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'plans_availability' } }
+  settings: {
+    idInjection: false,
+    foreignKeys: {
+      idx_plans_availability_plan_id: {
+        name: 'idx_plans_availability_plan_id',
+        entity: 'InsurancePlans',
+        entityKey: 'id',
+        foreignKey: 'planId',
+      },
+      idx_plans_availability_state_id: {
+        name: 'idx_plans_availability_state_id',
+        entity: 'StatesAndProvinces',
+        entityKey: 'id',
+        foreignKey: 'stateId',
+      },
+    },
+    mysql: {schema: 'group_benefitz', table: 'plans_availability'}
+  }
 })
 export class PlansAvailability extends Entity {
+  @property({
+    type: 'number',
+    generated: true,
+    id: true
+  })
+  id?: number;
+  
   @property({
     type: 'number',
     precision: 12,
@@ -22,12 +46,7 @@ export class PlansAvailability extends Entity {
   })
   hst?: number;
 
-  @property({
-    type: 'number',
-    generated: true,
-    id: true
-  })
-  id?: number;
+
 
   @property({
     type: 'number',
@@ -89,6 +108,7 @@ export class PlansAvailability extends Entity {
     mysql: { columnName: 'tax_name', dataType: 'varchar', dataLength: 15, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   taxName?: string;
+  
   @belongsTo(() => StatesAndProvinces, { name: 'state' })
   state_id: number;
 

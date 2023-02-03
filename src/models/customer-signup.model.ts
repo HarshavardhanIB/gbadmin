@@ -1,8 +1,10 @@
-import { Entity, model, property } from '@loopback/repository';
+import {belongsTo, Entity, model, property} from '@loopback/repository';
+import {SignupForms} from './signup-forms.model';
 
 @model({
   settings: {
-    idInjection: false, foreignKeys: {
+    idInjection: false, 
+    foreignKeys: {
 
       fk_customer_signup_customers_customer_id: {
 
@@ -16,7 +18,8 @@ import { Entity, model, property } from '@loopback/repository';
 
       }
 
-    }, mysql: { schema: 'gbadmin', table: 'customer_signup' }
+    }, 
+    mysql: {schema: 'group_benefitz', table: 'customer_signup'}
   }
 })
 export class CustomerSignup extends Entity {
@@ -93,39 +96,39 @@ export class CustomerSignup extends Entity {
 
   @property({
     type: 'boolean',
-    required: true,
+//    required: true,
     precision: 1,
     generated: 0,
     mysql: { columnName: 'opt_in_pills', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
   })
-  optInPills: boolean;
+  optInPills?: boolean;
 
   @property({
     type: 'boolean',
-    required: true,
+  //  required: true,
     precision: 1,
     generated: 0,
     mysql: { columnName: 'provincial_health_care', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
   })
-  provincialHealthCare: boolean;
+  provincialHealthCare?: boolean;
 
   @property({
     type: 'boolean',
-    required: true,
+ //   required: true,
     precision: 1,
     generated: 0,
     mysql: { columnName: 'read_advisor_disclosure', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
   })
-  readAdvisorDisclosure: boolean;
+  readAdvisorDisclosure?: boolean;
 
   @property({
     type: 'string',
-    required: true,
+  //  required: true,
     length: 65535,
     generated: 0,
     mysql: { columnName: 'signature', dataType: 'text', dataLength: 65535, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
   })
-  signature: string;
+  signature?: string;
 
   @property({
     type: 'date',
@@ -137,12 +140,12 @@ export class CustomerSignup extends Entity {
 
   @property({
     type: 'boolean',
-    required: true,
+    //required: true,
     precision: 1,
     generated: 0,
     mysql: { columnName: 'terms_and_conditions', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
   })
-  termsAndConditions: boolean;
+  termsAndConditions?: boolean;
 
   @property({
     type: 'number',
@@ -162,15 +165,17 @@ export class CustomerSignup extends Entity {
     mysql: { columnName: 'working_20hours', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
   })
   working_20hours: boolean;
-  @property({
-    type: 'number',
-  })
-  form_id?: number;
+//  @property({
+ //   type: 'number',
+ // })
+ // form_id?: number;
 
   @property({
     type: 'number',
   })
   customer_id?: number;
+  @belongsTo(() => SignupForms, {name: 'form'})
+  form_id: number;
   // Define well-known properties here
 
   // Indexer property to allow additional data

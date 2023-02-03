@@ -1,0 +1,45 @@
+import {inject, lifeCycleObserver, LifeCycleObserver} from '@loopback/core';
+import {juggler} from '@loopback/repository';
+
+const config = {
+  name: 'groupBenefitz',
+  connector: 'mysql',
+  url: process.env.DB_URL || 'mysql://root:admin@localhost:3307/group_benefitz',
+  host: process.env.DB_HOST || 'localhost',
+  port: process.env.DB_PORT || '3307',
+  user: process.env.DB_USERNAME || 'root',
+  password: process.env.DB_PASSWORD || 'admin',
+  database: process.env.DB_NAME || 'group_benefitz',
+  //dateStrings: ['DATE'], // added this as suggested by @bajtos
+  dateStrings: true,
+  disableMigration: true,
+};
+
+// const devconfig = {
+//   name: 'groupBenefitz',
+//   connector: 'mysql',
+//   url: 'mysql://groupbenefitz:bVHwwA5QJv@testrdsforall.c6hujshgwzfd.us-east-1.rds.amazonaws.com/group_benefitz',
+//   host: 'testrdsforall.c6hujshgwzfd.us-east-1.rds.amazonaws.com',
+//   port: 3306,
+//   user: 'groupbenefitz',
+//   password: 'bVHwwA5QJv',
+//   database: 'group_benefitz'
+// };
+
+// Observe application's life cycle to disconnect the datasource when
+// application is stopped. This allows the application to be shut down
+// gracefully. The `stop()` method is inherited from `juggler.DataSource`.
+// Learn more at https://loopback.io/doc/en/lb4/Life-cycle.html
+@lifeCycleObserver('datasource')
+export class GroupBenefitzDataSource extends juggler.DataSource
+  implements LifeCycleObserver {
+  static dataSourceName = 'groupBenefitz';
+  static readonly defaultConfig = config;
+
+  constructor(
+    @inject('datasources.config.groupBenefitz', {optional: true})
+    dsConfig: object = config,
+  ) {
+    super(dsConfig);
+  }
+}

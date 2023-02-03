@@ -63,7 +63,7 @@ CorporatePaidTieredPlanLevels = tslib_1.__decorate([
     (0, repository_1.model)({
         settings: {
             idInjection: false,
-            mysql: { schema: 'gbadmin', table: 'corporate_paid_tiered_plan_levels' }
+            mysql: { schema: 'group_benefitz', table: 'corporate_paid_tiered_plan_levels' }
         }
     }),
     tslib_1.__metadata("design:paramtypes", [Object])

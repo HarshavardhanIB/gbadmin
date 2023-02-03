@@ -3,6 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.InsurancePlans = void 0;
 const tslib_1 = require("tslib");
 const repository_1 = require("@loopback/repository");
+// import {InsuranceProducts} from './insurance-products.model';
+const insurance_plans_options_model_1 = require("./insurance-plans-options.model");
+const plan_level_model_1 = require("./plan-level.model");
+const plan_options_model_1 = require("./plan-options.model");
 const plans_availability_model_1 = require("./plans-availability.model");
 let InsurancePlans = class InsurancePlans extends repository_1.Entity {
     constructor(data) {
@@ -181,12 +185,12 @@ tslib_1.__decorate([
 ], InsurancePlans.prototype, "planLevel", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
-        type: 'boolean',
+        type: 'Buffer',
+        length: 3,
         precision: 2,
-        generated: 0,
-        mysql: { columnName: 'published', dataType: 'bit', dataLength: null, dataPrecision: 2, dataScale: null, nullable: 'Y', generated: 0 },
+        mysql: { columnName: 'published', dataType: 'bit', dataLength: null, dataPrecision: 2, dataScale: null, nullable: 'Y' },
     }),
-    tslib_1.__metadata("design:type", Boolean)
+    tslib_1.__metadata("design:type", Buffer)
 ], InsurancePlans.prototype, "published", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
@@ -195,18 +199,38 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:type", Number)
 ], InsurancePlans.prototype, "package_id", void 0);
 tslib_1.__decorate([
-    (0, repository_1.property)({
-        type: 'number',
-    }),
-    tslib_1.__metadata("design:type", Number)
-], InsurancePlans.prototype, "plan_level", void 0);
-tslib_1.__decorate([
     (0, repository_1.hasMany)(() => plans_availability_model_1.PlansAvailability, { keyTo: 'plan_id' }),
     tslib_1.__metadata("design:type", Array)
 ], InsurancePlans.prototype, "stateTaxDetails", void 0);
+tslib_1.__decorate([
+    (0, repository_1.hasMany)(() => plan_options_model_1.PlanOptions, { through: { model: () => insurance_plans_options_model_1.InsurancePlansOptions, keyFrom: 'planId' } }),
+    tslib_1.__metadata("design:type", Array)
+], InsurancePlans.prototype, "planOptions", void 0);
+tslib_1.__decorate([
+    (0, repository_1.belongsTo)(() => plan_level_model_1.PlanLevel, { name: 'planLevels' }),
+    tslib_1.__metadata("design:type", Number)
+], InsurancePlans.prototype, "plan_level", void 0);
 InsurancePlans = tslib_1.__decorate([
     (0, repository_1.model)({
-        settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'insurance_plans' } }
+        settings: {
+            idInjection: false,
+            foreignKeys: {
+                idx_plan_package_id: {
+                    name: 'idx_plan_package_id',
+                    entity: 'InsurancePackages',
+                    entityKey: 'id',
+                    foreignKey: 'packageId',
+                },
+                idx_insurance_plans_plan_level: {
+                    name: 'idx_insurance_plans_plan_level',
+                    entity: 'PlanLevels',
+                    entityKey: 'id',
+                    foreignKey: 'planLevel',
+                },
+            },
+            mysql: { schema: 'group_benefitz', table: 'insurance_plans' },
+            strict: false
+        }
     }),
     tslib_1.__metadata("design:paramtypes", [Object])
 ], InsurancePlans);

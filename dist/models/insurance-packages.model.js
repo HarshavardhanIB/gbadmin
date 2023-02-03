@@ -106,12 +106,19 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:type", Number)
 ], InsurancePackages.prototype, "requiredPackage", void 0);
 tslib_1.__decorate([
+    (0, repository_1.hasMany)(() => insurance_plans_model_1.InsurancePlans, { keyTo: 'packageId' }),
+    tslib_1.__metadata("design:type", Array)
+], InsurancePackages.prototype, "plans", void 0);
+tslib_1.__decorate([
     (0, repository_1.hasMany)(() => plan_level_model_1.PlanLevel, { through: { model: () => insurance_plans_model_1.InsurancePlans, keyFrom: 'package_id', keyTo: 'plan_level' } }),
     tslib_1.__metadata("design:type", Array)
 ], InsurancePackages.prototype, "planGroups", void 0);
 InsurancePackages = tslib_1.__decorate([
     (0, repository_1.model)({
-        settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'insurance_packages' } }
+        settings: {
+            idInjection: false,
+            mysql: { schema: 'group_benefitz', table: 'insurance_packages' }
+        }
     }),
     tslib_1.__metadata("design:paramtypes", [Object])
 ], InsurancePackages);

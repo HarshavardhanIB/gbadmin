@@ -35,7 +35,7 @@ if (require.main === module) {
     // Run the application
     const config = {
         rest: {
-            port: +((_a = process.env.PORT) !== null && _a !== void 0 ? _a : 3000),
+            port: +((_a = process.env.PORT) !== null && _a !== void 0 ? _a : 3002),
             host: process.env.HOST,
             basePath: '/api/ap',
             gracePeriodForClose: 5000,

@@ -1,7 +1,7 @@
-import { inject } from '@loopback/core';
-import { DefaultCrudRepository } from '@loopback/repository';
-import { GbadminDataSource } from '../datasources';
-import { CustomerPlanOptionsValues, CustomerPlanOptionsValuesRelations } from '../models';
+import {inject} from '@loopback/core';
+import {DefaultCrudRepository} from '@loopback/repository';
+import {GroupBenefitzDataSource} from '../datasources';
+import {CustomerPlanOptionsValues, CustomerPlanOptionsValuesRelations} from '../models';
 
 export class CustomerPlanOptionsValuesRepository extends DefaultCrudRepository<
   CustomerPlanOptionsValues,
@@ -9,7 +9,7 @@ export class CustomerPlanOptionsValuesRepository extends DefaultCrudRepository<
   CustomerPlanOptionsValuesRelations
 > {
   constructor(
-    @inject('datasources.gbadmin') dataSource: GbadminDataSource,
+    @inject('datasources.groupBenefitz') dataSource: GroupBenefitzDataSource,
   ) {
     super(CustomerPlanOptionsValues, dataSource);
   }

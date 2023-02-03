@@ -1,18 +1,18 @@
 // Uncomment these imports to begin using these cool features!
 
 import { inject, service } from "@loopback/core";
-import { relation, repository } from "@loopback/repository";
+import { NULL, Null, relation, repository } from "@loopback/repository";
 import { del, get, getModelSchemaRef, param, post, put, Request, requestBody, Response, response, RestBindings } from "@loopback/rest";
 import { publicEncrypt, sign } from "crypto";
 import { includes } from "lodash";
 import { FILE_UPLOAD_SERVICE } from "../keys";
 import { BROKERIMG_RESOURCES_FOLDER, BROKERPATH_STRING } from "../paths";
-import { BrokerRepository, BrokerLicensedStatesAndProvincesRepository, InsurancePlansRepository, SignupFormsRepository, BrokerSignupFormsPlansRepository, StatesAndProvincesRepository, SignupFormsPlanLevelMappingRepository, UsersRepository, ContactInformationRepository, CustomerSignupRepository, CustomerRepository, PlanLevelRepository, BrokerEoInsuranceRepository, InsurancePackagesRepository, PlansAvailabilityRepository } from '../repositories'
+import { BrokerRepository, BrokerLicensedStatesAndProvincesRepository, InsurancePlansRepository, SignupFormsRepository, StatesAndProvincesRepository, SignupFormsPlanLevelMappingRepository, UsersRepository, ContactInformationRepository, CustomerSignupRepository, CustomerRepository, PlanLevelRepository, BrokerEoInsuranceRepository, InsurancePackagesRepository, PlansAvailabilityRepository } from '../repositories'
 import { FileUploadHandler } from "../types";
 import { FilesController } from "./files.controller";
 import * as CONST from '../constants'
 import * as MESSAGE from '../messages'
-import { Broker, BrokerEoInsurance, BrokerLicensedStatesAndProvinces, SignupFormsPlanLevelMapping, BrokerSignupFormsPlans, ContactInformation, SignupForms, Users, PlansAvailability } from "../models";
+import { Broker, BrokerEoInsurance, BrokerLicensedStatesAndProvinces, SignupFormsPlanLevelMapping, ContactInformation, SignupForms, Users, PlansAvailability, BrokerAdmins } from "../models";
 import { encryptPassword, generateFormLink, generateRandomPassword, getActivationCode } from "../common-functions";
 import { query } from "express";
 import { request, STATUS_CODES } from "http";
@@ -24,10 +24,12 @@ import path from "path";
 import { BrokerService, HttpService, intersection, ResizeimgService } from "../services";
 import { FORMERR } from "dns";
 import { authorize } from "@loopback/authorization";
-import { basicAuthorization } from "../middleware/auth.midd";
+import { basicAuthorization } from "../middlewares/auth.middleware";
 import { errorMonitor } from "events";
-import { GbadminDataSource } from "../datasources";
+import { GroupBenefitzDataSource } from "../datasources";
 import moment from "moment";
+import{BROKER} from '../paths'
+import { BrokerAdminsRepository } from "../repositories/broker-admins.repository";
 // @authenticate('jwt')
 // @authorize({
 //   allowedRoles: ['BROKER', 'ADMINISTRATOR'],
@@ -39,8 +41,8 @@ export class BrokerController {
     public BrokerRepository: BrokerRepository,
     @repository(BrokerLicensedStatesAndProvincesRepository)
     public BrokerLicensedStatesAndProvincesRepository: BrokerLicensedStatesAndProvincesRepository,
-    @repository(BrokerSignupFormsPlansRepository)
-    public BrokerSignupFormsPlansRepository: BrokerSignupFormsPlansRepository,
+    // @repository(BrokerSignupFormsPlansRepository)
+    // public BrokerSignupFormsPlansRepository: BrokerSignupFormsPlansRepository,
     @repository(SignupFormsPlanLevelMappingRepository)
     public SignupFormsPlanLevelMappingRepository: SignupFormsPlanLevelMappingRepository,
     @repository(UsersRepository)
@@ -70,9 +72,10 @@ export class BrokerController {
     public insurancePackages: InsurancePackagesRepository,
     @repository(PlansAvailabilityRepository)
     public plansAvalibility: PlansAvailabilityRepository,
-
+    @repository(BrokerAdminsRepository)
+    public BrokerAdminsRepository: BrokerAdminsRepository
   ) { }
-  @get('/broker/count', {
+  @get(BROKER.COUNT, {
     responses: {
       200: {
         content: {
@@ -96,13 +99,13 @@ export class BrokerController {
       advisor = await this.BrokerRepository.count({ brokerType: 'ADVISOR' });
       association = await this.BrokerRepository.count({ brokerType: 'ASSOCIATION' });
       corporate = await this.BrokerRepository.count({ brokerType: 'CORPORATE' });
-      message = "The brokers count";
+      message = MESSAGE.BROKER_MSG.BROKERCOUNT;
       data = {
         totalBrokers: totalBrokers.count, TpaMga: TpaMga.count, brokaRage: brokaRage.count, advisor: advisor.count, association: association.count, corporate: corporate.count
       }
     } catch (error) {
       status = 201;
-      message = "Something went wrong"
+      message = MESSAGE.ERRORS.someThingwentWrong
     }
     this.response.status(status).send({
       status: status,
@@ -112,16 +115,18 @@ export class BrokerController {
     });
     return this.response;
   }
-  @get('/admin/broker')
+  @get(BROKER.BROKERS)
   @response(200, {
     description: 'List of customers',
   })
   async getBroker(): Promise<any> {
+    let brokerList: any = [];
+    var Brokers;
     try {
-      let final: any = [];
       console.log(">>>>>1 st");
-      let data = await this.BrokerRepository.find({
+      Brokers = await this.BrokerRepository.find({
         where: {}, fields: {
+          id: true,
           name: true,
           userId: true,
           parentId: true,
@@ -131,7 +136,8 @@ export class BrokerController {
           description: true,
           salesTrackingCode: true,
           usePadPaymentMethod: true,
-          user_id: true
+          user_id: true,
+          contactId: true
         }, include: [{
           relation: 'user',
           scope: {
@@ -139,44 +145,65 @@ export class BrokerController {
           }
         }]
       });
-
-      // // console.log("data>>>", data);
-      // for (let i = 0; i < data.length; i++) {
-      //   let dataArray: any = data[i];
-      //   let userId = dataArray.userId;
-      //   // console.log("userid", userId);
-      //   let userDetails: any = "";
-      //   if (userId == null || !userId) {
-      //     userDetails = "";
-      //   }
-      //   else {
-      //     userDetails = await this.UsersRepository.findOne({ where: { id: userId }, fields: { username: true } });
-      //     // console.log("ud", userDetails);
-      //   }
-      //   dataArray['emailId'] = userDetails
-      //   final.push(dataArray)
-      // }
-      const responseObject = {
-        status: 200,
-        message: "List of primary details",
-        date: new Date(),
-        data: data
+      for (let i = 0; i < Brokers.length; i++) {
+        let broker = Brokers[i];
+        let EOIStatus, contactStatus, LicecncesStatus: any;
+        let today = moment(new Date(), "YYYY-MM-DD").toDate()
+        let brokerId = broker.id;
+        let contactId = broker.contactId;
+        let brokerEOI: any = await this.BrokerEoInsuranceRepository.findOne({ where: { brokerId: brokerId } });
+        !brokerEOI || brokerEOI != Null ? EOIStatus = "No data found" : new Date(brokerEOI.expiryDate) < today ? EOIStatus = "E&O insurece is expired" : EOIStatus = brokerEOI;
+        let licences: any = await this.BrokerLicensedStatesAndProvincesRepository.find({ where: { brokerId: brokerId } });
+        if (licences.length > 0) {
+          for (let licence of licences) {
+            if (licence.expiryDate != undefined) {
+              new Date(licence.expiryDate) < today ? LicecncesStatus = licence.licenseNumber + " is expired  " : LicecncesStatus = "  Licences are found  "
+            }
+          }
+        }
+        else {
+          LicecncesStatus = "No Licences"
+        }
+        if (contactId) {
+          let contactDetails: any = await this.ContactInformationRepository.findById(contactId);
+          // console.log("Contacct details",contactDetails.length)
+          // console.log(">>>>>>>>",contactDetails)
+          if (contactDetails) {
+            console.log(">>>>", contactDetails.toObject.length);
+            console.log("><<><><>", contactDetails);
+            contactDetails.primaryEmail && contactDetails.secondaryEmail && contactDetails.line1 && contactDetails.city && contactDetails.apt ? contactStatus = "Max details" : contactStatus = "min";
+            console.log(contactDetails.primaryEmail && contactDetails.secondaryEmail && contactDetails.line1 && contactDetails.city && contactDetails.apt);
+            console.log(contactDetails.primaryEmail && contactDetails.secondaryEmail && contactDetails.line1 && contactDetails.city && contactDetails.apt ? contactStatus = "Max details" : contactStatus = "Partial");
+            contactDetails.apt == undefined || contactDetails.line1 == undefined ? contactStatus = 'Partial' : contactStatus = contactStatus;
+          }
+          else {
+            contactStatus = "None"
+          }
+        } else {
+          contactStatus = "None"
+        }
+        broker.LicecncesStatus = LicecncesStatus;
+        broker.EOIStatus = EOIStatus;
+        let status = { "broker": broker, "LicecncesStatus": LicecncesStatus, "EOIStatus": EOIStatus, "contactStatus": contactStatus };
+        brokerList.push(status)
       }
-      // this.response.status(parseInt("200")).send(responseObject);
-      // return this.response;
-      return responseObject;
+
     }
     catch (err) {
       console.log(err);
     }
+    this.response.status(parseInt("200")).send({
+      brokerList
+    });
+    return this.response;
   }
-  @get('/admin/broker/{id}')
-  async brokerDetailsBasedonId(@param.path.number('id') id: number): Promise<any> {
+  @get(BROKER.BROKERID)
+  async brokerDetailsBasedonId(@param.path.number('brokerId') id: number): Promise<any> {
     let final: any = [];
-    let responseObject, status: any;
+    let responseObject, brokerStatus, status: any;
     try {
       console.log("enter");
-      let data = await this.BrokerRepository.findOne({
+      let data: any = await this.BrokerRepository.findOne({
         where: { id: id }, include: [
           {
             relation: 'user', scope: {
@@ -187,23 +214,65 @@ export class BrokerController {
             relation: 'brokerLicensedStatesAndProvinces', scope: {
               include: [{ relation: 'stateFullDetails', scope: { fields: { name: true } } }]
             },
+          }, {
+            relation: 'brokerEoInsurance'
           },
           {
             relation: 'signupForms', scope: {
               include: [{
-                relation: 'signupFormsPlanLevelMappings'
+                relation: 'signupFormPlanLevels'
               }
                 , { relation: 'customers', scope: { fields: { firstName: true, lastName: true, dob: true, gender: true, status: true, userId: true } } }]
             }
           }]
       });
+      if (data) {
+        let EOIStatus, contactStatus, LicecncesStatus: any;
+        let today = moment(new Date(), "YYYY-MM-DD").toDate()
+        let contactId = data.contactId || 0;
+        let brokerEOI: any = await this.BrokerEoInsuranceRepository.findOne({ where: { brokerId: id } });
+        !brokerEOI || brokerEOI != Null ? EOIStatus = "No data found" : new Date(brokerEOI.expiryDate) < today ? EOIStatus = "E&O insurece is expired" : EOIStatus = brokerEOI;
+        let licences: any = await this.BrokerLicensedStatesAndProvincesRepository.find({ where: { brokerId: id } })
+        console.log(licences);
+        if (licences.length > 0) {
+          for (let licence of licences) {
+            if (licence.expiryDate != undefined) {
+              new Date(licence.expiryDate) < today ? LicecncesStatus = licence.licenseNumber + " is expired  " : LicecncesStatus = "  Licences are found  "
+            }
+          }
+        }
+        else {
+          LicecncesStatus = "No Licences"
+        }
+        if (contactId && contactId!=0) {
+          let contactDetails: any = await this.ContactInformationRepository.findById(contactId);
+          // console.log("Contacct details",contactDetails.length)
+          // console.log(">>>>>>>>",contactDetails)
+          if (contactDetails) {
+            console.log(">>>>", contactDetails.toObject.length);
+            console.log("><<><><>", contactDetails);
+            contactDetails.primaryEmail && contactDetails.secondaryEmail && contactDetails.line1 && contactDetails.city && contactDetails.apt ? contactStatus = "Max details" : contactStatus = "min";
+            console.log(contactDetails.primaryEmail && contactDetails.secondaryEmail && contactDetails.line1 && contactDetails.city && contactDetails.apt);
+            console.log(contactDetails.primaryEmail && contactDetails.secondaryEmail && contactDetails.line1 && contactDetails.city && contactDetails.apt ? contactStatus = "Max details" : contactStatus = "Partial");
+            contactDetails.apt == undefined || contactDetails.line1 == undefined ? contactStatus = 'Partial' : contactStatus = contactStatus;
+          }
+          else {
+            contactStatus = "None"
+          }
+        } else {
+          contactStatus = "None"
+        }
+        brokerStatus = { "LicecncesStatus": LicecncesStatus, "EOIStatus": EOIStatus,"contactinfoStatus":contactStatus };
+      }
+
       if (!data) {
         status = 201;
         responseObject = {
           status: 201,
           message: "No details found",
           date: new Date(),
-          data: final
+          data: final,
+
         }
       }
       else {
@@ -230,7 +299,8 @@ export class BrokerController {
           status: 200,
           message: "Broker Details",
           date: new Date(),
-          data: data
+          data: data,
+          brokerStatus: brokerStatus
         }
       }
       this.response.status(status).send(responseObject);
@@ -240,16 +310,18 @@ export class BrokerController {
       console.log(error);
     }
   }
-  @get('/admin/broker/customerlist/{id}')
-  async custmerCount(@param.path.number('id') id: number): Promise<any> {
+  @get(BROKER.CUSTOMERLIST)
+  async custmerCount(@param.path.number('brokerId') id: number): Promise<any> {
     try {
       let customers: any = "";
-      let customerCount: any = "";
+      let countofCustomers = 0;
+      let customerCount: any;
       let final: any = [];
       let signUpForms = await this.SignupFormsRepository.find({ where: { brokerId: id }, fields: { id: true } });
       for (const signUpform of signUpForms) {
         let custmrSignups = await this.CustomerSignupRepository.find({ where: { formId: signUpform.id }, fields: { customerId: true } });
-        customerCount = await this.CustomerSignupRepository.count({ where: { formId: signUpform.id } });
+        customerCount = await this.CustomerSignupRepository.count({ formId: signUpform.id });
+        countofCustomers += customerCount.count;
         for (const custmrSignup of custmrSignups) {
           customers = await this.CustomerRepository.findById(custmrSignup.customerId, { fields: { firstName: true, lastName: true } });
           final.push(customers);
@@ -258,7 +330,7 @@ export class BrokerController {
       let responseObj = {
         "statusCode": 200,
         "message": "List of customers and count",
-        customerCount,
+        "customerCount": countofCustomers,
         "data": final
       }
       return responseObj;
@@ -266,8 +338,6 @@ export class BrokerController {
     catch (error) {
       console.log(error);
     }
-
-
   }
   public static async newBroker(request: Request, method: string, others: any) {
     console.log(request);
@@ -299,7 +369,7 @@ export class BrokerController {
       }
     }
   }
-  @post('/broker/{brokerid}/logo', {
+  @post(BROKER.LOGO, {
 
     responses: {
 
@@ -329,947 +399,99 @@ export class BrokerController {
   async brokerLogoUpload(
 
     @param.path.string('brokerid') broker_id: number,
-    @param.query.string('resize') resize: boolean,
+    @param.query.boolean('resize') resize: boolean,
     @requestBody.file()
     request: Request,
     @inject(RestBindings.Http.RESPONSE) response: Response,
 
   ): Promise<any> {
 
-    let message: string, status: string, data: any = {};
+    let message: string, status: any, data: any = {};
     let p = new Promise<any>((resolve, reject) => {
 
       this.handler(request, response, err => {
-
         if (err) reject(err);
-
         else {
-
           resolve(FilesController.getFilesAndFields(request, 'brokerLogoUpload', { brokerid: broker_id }));
-
           //const upload = FilesController.getFilesAndFields(request, 'brokerLogoUpload', {brokerid: broker_id});
+          status = '201';
+          message = "Something went wrong"
         }
 
-      });
-
-    });
-
-
-    p.then(async value => {
-
-      if (value.files) {
-
-        console.log(value.files.length)
-
-        console.log(value.files[0].originalname)
-
-        let filename = value.files[0].originalname
-
-        let modfilenameArr = filename.split(".")
-
-        let modfilename = modfilenameArr[0] + "0." + modfilenameArr[1]
-        console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>" + resize)
-        if (resize) {
-          let resizeimg = await this.img.resizeImg(filename.replace(/[\])}[{(]/g, '').replace(/ /g, ''));
-          console.log("the resizeimg >>>>>>>>>>>>", resizeimg)
-        }
-        else {
-        }
-        const broker = await this.BrokerRepository.findById(broker_id);
-        console.log(broker);
-        if (broker) {
-
-          await this.BrokerRepository.updateById(broker_id, {
-
-            logo: BROKERPATH_STRING + filename.replace(/[\])}[{(]/g, '').replace(/ /g, ''),
-
-            link: BROKERPATH_STRING + modfilename
-
-          })
-          //method
-          let url = process.env.MAINAPI + `/api/customer/broker/${broker_id}/logo`;
-
-          let pathImg = BROKERIMG_RESOURCES_FOLDER + "/" + filename.replace(/[\])}[{(]/g, '').replace(/ /g, '');
-          const fetchStatus = await this.http.fetchMultipartFormdata(url, pathImg);
-          console.log("fetchStatus >> status", fetchStatus);
-          message = 'Broker logo is set'
-          status = '200'
-        } else {
-          console.log('no broker with given id');
-          message = 'No broker found'
-          status = '202'
-        }
-
-      }
-
-    })
-    p.catch(onrejected => {
-
-      message = 'Broker logo is not set'
-
-      status = '202'
-
-    })
-    this.response.status(parseInt('200')).send({
-
-      status: '200',
-
-      message: 'Broker logo',
-
-      date: new Date(),
-
-      data: data
-
-    });
-    return this.response;
-
-  }
-  @post('/broker/registration', {
-    responses: {
-      200: {
-        content: {
-          'application/json': {
-            schema: {
-              type: 'object',
-            },
-          },
-        },
-        description: 'File',
-      },
-    },
-  })
-  async broker_registration(
-    @requestBody({
-      description: "Registration details of a broker",
-      content: {
-        'multipart/form-data': {
-          // Skip body parsing
-          'x-parser': 'stream',
-          schema: {
-            //required: ['name', 'email'],
-            type: 'object',
-            properties: {
-
-              // contact_type: {
-              //   type: 'string',
-              //   default: 'BROKER',
-              // },
-              name: {
-                type: 'string',
-                default: '',
-              },
-              brokerType: {
-                type: 'string',
-                default: 'BROKERAGE',
-                enum: CONST.BROKER_TYPE_ARRAY,
-              },
-              email: {
-                type: 'string',
-                default: '',
-              },
-              secondary_email: {
-                type: 'string',
-                default: '',
-              },
-              logo: {
-                type: 'string',
-                format: 'binary'
-              },
-
-              useParentsLogo: {
-                type: 'boolean',
-                default: 'false',
-              },
-              parent_id: {
-                type: 'number',
-                default: '0',
-              },
-              parent_name: {
-                type: 'string',
-                default: '',
-              },
-              license: {
-                // required: ['formType'],
-                type: 'object',
-                properties: {
-
-                  provinces_ids: {
-                    type: 'array',
-                    items: {
-                      type: 'number'
-
-                    }
-                  },
-                  provinces_names: {
-                    type: 'array',
-                    items: {
-                      type: 'string'
-                    }
-                  },
-                  expiry_date: { type: 'string', default: new Date().toISOString().slice(0, 10) },
-                  reminder_email: { type: 'number', default: '7', description: 'send a reminder x days before' },
-                  licence_nums: { type: "array", default: "" }
-                }
-              },
-              licenses: {
-                required: [''],
-                type: 'array',
-                items: {
-                  properties: {
-                    provinces_id: { type: 'number', default: '0' },
-                    provinces_name: { type: 'string', default: '' },
-                    expiry_date: { type: 'string', default: new Date().toISOString().slice(0, 10) },
-                    reminder_email: { type: 'number', default: '7', description: 'send a reminder x days before' },
-                    license_num: { type: "array", default: "" },
-                    license_coverage: { type: 'string', default: 'LIFE_ACCIDENT_AND_SICKNESS', enum: CONST.LICENSE_COVERAGE }
-                  }
-                }
-              },
-              sales_tracking_code: {
-                type: 'string',
-                default: '',
-              },
-
-              createSignupForm: {
-                type: 'boolean',
-                default: '',
-              },
-              formDetails: {
-                required: ['formType'],
-                type: 'array',
-                items: {
-                  properties: {
-                    formType: { type: 'string', default: 'REGULAR', enum: CONST.FORM_TYPE_ARRAY, },
-                    name: { type: 'string', default: 'Health Benefits Application Form' },
-                    description: { type: 'string', default: '' },
-                    link: { type: 'string', default: '' },
-                    planLevels: { type: 'array', default: '' },
-                  }
-                }
-
-              },
-              EOInsurense: {
-                type: 'string'
-              },
-              EOCertificate: {
-                type: 'string'
-              },
-              policy: {
-                type: 'string'
-              },
-              EOIexpiryDate: {
-                type: 'string', default: new Date().toISOString().slice(0, 10)
-              },
-              apt: {
-                type: 'string',
-                default: '',
-              },
-              street_address_line1: {
-                type: 'string',
-                default: '',
-              },
-              street_address_line2: {
-                type: 'string',
-                default: '',
-              },
-              city: {
-                type: 'string',
-                default: '',
-              },
-              province: {
-                type: 'string',
-                default: '',
-              },
-              province_id: {
-                type: 'number',
-                default: '0',
-              },
-              state: {
-                type: 'string',
-                default: '',
-              },
-              state_id: {
-                type: 'number',
-                default: '0',
-              },
-              country: {
-                type: 'string',
-                default: '',
-              },
-              country_id: {
-                type: 'number',
-                default: '0',
-              },
-              postal_code: {
-                type: 'string',
-                default: '',
-              },
-              phone_number: {
-                type: 'string',
-                default: '',
-              },
-              secondary_phone: {
-                type: 'string',
-                default: '',
-              },
-
-            }
-
-          },
-        },
-      },
-    })
-    request: Request,
-    @inject(RestBindings.Http.RESPONSE) response: Response,
-  ): Promise<Response> {
-    let message: string, status: string, statusCode: number, data: any = {};
-    let p = new Promise<any>((resolve, reject) => {
-      this.handler(request, response, err => {
-        if (err) reject(err);
-        else {
-          resolve(FilesController.getFilesAndFields(request, 'brokerLogoUpload', {}));
-          // const upload = FilesController.getFilesAndFields(request, 'brokerLogoUpload', { brokerid: broker_id });
-        }
       });
     });
     p.then(async value => {
-      let brokerId;
-      let userId;
-      let contId;
-      let signupFormId;
-      console.log("entry")
-      if (!value.fields) {
-        this.response.status(422).send({
-          status: '422',
-          error: `Missing input fields`,
-          message: MESSAGE.ERRORS.missingDetails,
-          date: new Date(),
-        });
-        return this.response;
-      }
+      console.log("entered");
+      console.log(value);
+      try {
+        if (value.files) {
 
-      if (value.fields) {
+          console.log(value.files.length)
 
-        if (value.fields.error) {
-          this.response.status(422).send({
-            status: '422',
-            error: value.fields.error,
-            message: value.fields.error,
-            date: new Date(),
-          });
-          return this.response;
+          console.log(value.files[0].originalname)
+
+          let filename = value.files[0].originalname
+
+          let modfilenameArr = filename.split(".")
+
+          let modfilename = modfilenameArr[0] + "0." + modfilenameArr[1]
+          console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>" + resize)
+          if (resize) {
+            let resizeimg = await this.img.resizeImg(filename.replace(/[\])}[{(]/g, '').replace(/ /g, ''));
+            console.log("the resizeimg >>>>>>>>>>>>", resizeimg)
+          }
+          else {
+          }
+          const broker = await this.BrokerRepository.findById(broker_id);
+          console.log(broker);
+          if (broker) {
+
+            let brokerAfterUpdate = await this.BrokerRepository.updateById(broker_id, {
+
+              logo: BROKERPATH_STRING + filename.replace(/[\])}[{(]/g, '').replace(/ /g, ''),
+
+              link: BROKERPATH_STRING + modfilename
+
+            })
+            //method
+            let url = process.env.MAINAPI + `/api/customer/broker/${broker_id}/logo`;
+            let pathImg = BROKERIMG_RESOURCES_FOLDER + "/" + filename.replace(/[\])}[{(]/g, '').replace(/ /g, '');
+            const fetchStatus = await this.http.fetchMultipartFormdata(url, pathImg);
+            console.log("fetchStatus >> status", fetchStatus);
+            message = 'Broker logo is set'
+            status = 200
+            data = brokerAfterUpdate;
+            this.response.status(status).send({
+              status, message, data
+            })
+          } else {
+            console.log('no broker with given id');
+            message = 'No broker found'
+            status = '202'
+            this.response.status(status).send({
+              status, message, data
+            })
+          }
         }
-
-        let apiRequest = value.fields;
-        let BroId: any;
-
-
-        try {
-
-          //validations
-          const emailExists = await this.UsersRepository.findOne({ where: { username: apiRequest.email } });
-          if (emailExists) {
-            this.response.status(409).send({
-              error: `User with this email ${apiRequest.email} is already registered`,
-              message: 'Account already exists, please contact the provider',
-              date: new Date(),
-              data: "Check users -- customers/brokers"
-            });
-            return this.response;
-          }
-          const todayDate = new Date().toISOString().slice(0, 10);
-          //User
-          let userData: Users = new Users();
-          userData.username = apiRequest.email;
-          userData.role = CONST.USER_ROLE.BROKER;
-          let password = await generateRandomPassword()
-          userData.password = await encryptPassword(password);
-          // userData.activation = this.registrationService.getActivationCode();
-          userData.activation = await getActivationCode();
-          userData.block = true;
-          userData.registrationDate = todayDate;
-          const user = await this.UsersRepository.create(userData);
-          console.log(`user - ${user.id}`)
-          //Contact Info
-          let contactInfoData: ContactInformation = new ContactInformation();
-          contactInfoData.primaryEmail = apiRequest.email
-          contactInfoData.secondaryEmail = apiRequest.secondary_email
-          contactInfoData.primaryPhone = apiRequest.phone_number
-          contactInfoData.secondaryPhone = apiRequest.secondary_phone
-          contactInfoData.apt = apiRequest.apt;
-          contactInfoData.line1 = apiRequest.street_address_line1
-          contactInfoData.line2 = apiRequest.street_address_line2
-          contactInfoData.city = apiRequest.city
-          contactInfoData.state = apiRequest.province
-          //contactInfoData.country = Buffer.from(apiRequest.country || ''); //varbinary
-          contactInfoData.country = apiRequest.country || ''; //varchar
-          contactInfoData.postalCode = apiRequest.postal_code
-          contactInfoData.contactType = CONST.CONTACT_TYPE.BROKER;
-          contactInfoData.addressType = CONST.ADDRESS_TYPE.HOME_ADDRESS;
-          const contactInfoHOME = await this.ContactInformationRepository.create(contactInfoData);
-          console.log(`contactInfoHOME - ${contactInfoHOME.id}`)
-          //broker
-
-          let brokerData: Broker = new Broker();
-
-
-          //broker parent
-          if (apiRequest.parent_id && apiRequest.parent_id != 0) {
-            brokerData.parentId = apiRequest.parent_id;
-            let parentBroker = await this.BrokerRepository.findById(apiRequest.parent_id)
-            if (parentBroker) {
-              brokerData.parentId = parentBroker.id;
-              brokerData.description = parentBroker.name
-              if (apiRequest.useParentsLogo) {
-                brokerData.logo = parentBroker.logo;
-                brokerData.link = parentBroker.link;
-              }
-            }
-
-          } else if (apiRequest.parent_name && apiRequest.parent_name != '') {
-            let parentBroker = await this.BrokerRepository.findOne({ where: { name: apiRequest.parent_name } })
-            if (parentBroker) {
-              brokerData.parentId = parentBroker.id;
-              brokerData.description = parentBroker.name
-              if (apiRequest.useParentsLogo) {
-                brokerData.logo = parentBroker.logo;
-                brokerData.link = parentBroker.link;
-              }
-            }
-          }
-          brokerData.name = apiRequest.name;
-          brokerData.salesTrackingCode = apiRequest.sales_tracking_code
-          brokerData.useCreditCardPaymentMethod = true;
-          brokerData.usePadPaymentMethod = true;
-          brokerData.published = true;
-          brokerData.userId = user.id;
-          brokerData.contactId = contactInfoHOME.id;
-          brokerData.brokerType = apiRequest.brokerType || CONST.broker.brokerType
-          brokerData.discoverable = true;
-          const broker = await this.BrokerRepository.create(brokerData);
-          //brokerData.logo=?
-
-          brokerId = broker.id;
-          contId = broker.contactId;
-          userId = broker.userId;
-          console.log(`Broker - ${brokerId}`)
-
-          //broker
-          //broker_licensed_states_and_provinces
-          let brokerLicensesArray: BrokerLicensedStatesAndProvinces[] = [];
-          let brokerLicenses: BrokerLicensedStatesAndProvinces = new BrokerLicensedStatesAndProvinces();
-          brokerLicenses.brokerId = brokerId || 0;
-
-
-          let brokerLicensedProvinces = [];
-          // if (apiRequest.license) {
-          //   apiRequest.license = JSON.parse(apiRequest.license)
-          //   brokerLicenses.expiryDate = apiRequest.license.expiry_date
-          //   brokerLicenses.reminderEmail = apiRequest.license.reminder_email
-
-          //   if (apiRequest.license.provinces_ids && apiRequest.license.provinces_ids.length > 0) {
-          //     brokerLicensedProvinces = apiRequest.license.provinces_ids
-          //   } else if (apiRequest.license.provinces_names && apiRequest.license.provinces_names.length > 0) {
-          //     let provinces = await this.StatesAndProvincesRepository.find({
-          //       where: {
-          //         or: [
-          //           { shortName: { inq: apiRequest.license.provinces_names } },
-          //           { name: { inq: apiRequest.license.provinces_names } }
-          //         ]
-          //       }
-          //     })
-
-          //     console.log(provinces);
-
-          //     for (const province of provinces) {
-          //       brokerLicensedProvinces.push(province.id);
-          //     }
-          //   }
-          //   let licenceNums = apiRequest.license.licence_nums;
-          //   // for (const brokerLicensedProvince of brokerLicensedProvinces) {
-          //   if (licenceNums.length == brokerLicensedProvinces.length) {
-          //     for (let i = 0; i < brokerLicensedProvinces.length; i++) {
-          //       // brokerLicenses.stateId = brokerLicensedProvince;
-          //       brokerLicenses.stateId = brokerLicensedProvinces[i];
-          //       brokerLicenses.licenseNumber = licenceNums[i];
-          //       console.log(`before push`)
-          //       console.log(brokerLicenses);
-          //       brokerLicensesArray.push(brokerLicenses)
-          //       await this.BrokerLicensedStatesAndProvincesRepository.create(brokerLicenses);
-          //     }
-          //   }
-          //   console.log(`brokerLicensesArray: ${brokerLicensesArray.length}`)
-          //   // if (brokerLicensesArray.length > 0)
-          //   //   await this.brokerLicensedProvincesRepo.create(brokerLicensesArray);
-          // }
-          if (apiRequest.licenses) {
-            apiRequest.licenses = JSON.parse(apiRequest.licenses);
-            let brokerLicenses: BrokerLicensedStatesAndProvinces = new BrokerLicensedStatesAndProvinces();
-            brokerLicenses.brokerId = brokerId || 0;
-            let licenses = apiRequest.licenses;
-            for (const license of licenses) {
-              brokerLicenses.expiryDate = license.expiry_date
-              brokerLicenses.reminderEmail = license.reminder_email
-              brokerLicenses.licenseNumber = license.license_num
-              brokerLicenses.licenseCoverage = license.license_coverage
-              brokerLicenses.stateId = license.provinces_id;
-              await this.BrokerLicensedStatesAndProvincesRepository.create(brokerLicenses);
-            }
-          }
-          //handle form
-          if (apiRequest.EOCertificate && apiRequest.EOIexpiryDate && apiRequest.EOInsurense && apiRequest.policy) {
-            let EOInsurence: BrokerEoInsurance = new BrokerEoInsurance();
-            EOInsurence.brokerId = broker?.id || 1;
-            EOInsurence.certificateNumber = apiRequest.EOCertificate;
-            EOInsurence.expiryDate = apiRequest.EOIexpiryDate;
-            EOInsurence.insurerName = apiRequest.EOInsurense;
-            EOInsurence.policyNumber = apiRequest.policy;
-            await this.BrokerEoInsuranceRepository.create(EOInsurence);
-          }
-
-          if (apiRequest.createSignupForm) {
-            //console.log("CONST.signupForm")
-            // console.log(CONST.signupForm)
-            //signup_form
-            let signupFormData: SignupForms = new SignupForms();
-            signupFormData.brokerId = broker?.id || 1;
-
-
-
-            console.log(apiRequest.formDetails)
-            console.log(typeof apiRequest.formDetails)
-            apiRequest.formDetails = JSON.parse(apiRequest.formDetails)
-            console.log(apiRequest.formDetails)
-            console.log(typeof apiRequest.formDetails)
-            console.log(apiRequest.formDetails.length)
-            data.form = []
-            console.log("form details in api", apiRequest.formDetails);
-            for (const formDetails of apiRequest.formDetails) {
-              console.log("entery ", formDetails)
-              let link = await generateFormLink(user.id || 0)
-              signupFormData.link = await this.checkAndGenerateNewFormLink(link, user.id || 0)//generate_random_lin and user_id
-
-              let aliasLink = "";
-              console.log(`apiRequest.form.link: ${formDetails.link}`)
-              if (formDetails.link && formDetails.link != "") {
-                aliasLink = ("/" + formDetails.link)
-                console.log(`aliasLink1: ${aliasLink}`)
-              } else {
-                console.log(`broker.name: ${broker.name}`)
-                aliasLink = "/" + broker.name?.toLowerCase().split(" ")[0]
-                if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
-                  aliasLink += "_exec"
-                }
-                console.log(`aliasLink2: ${aliasLink}`)
-              }
-              signupFormData.alias = aliasLink
-              if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
-                signupFormData.name = formDetails.name ?? CONST.signupFormExec.name
-              } else {
-                signupFormData.name = formDetails.name ?? CONST.signupForm.name
-              }
-
-              signupFormData.description = formDetails.description ?? CONST.signupForm.description
-              signupFormData.title = formDetails.title ?? CONST.signupForm.title
-              signupFormData.formType = formDetails.formType ?? CONST.signupForm.formType
-              signupFormData.keywords = formDetails.keywords ?? CONST.signupForm.keywords
-              // signupFormData.disclosureAgreement = formDetails.disclosureAgreement ?? CONST.signupForm.disclosure_agreement
-              // signupFormData.termsOfService = formDetails.termsOfService ?? CONST.signupForm.terms_of_service
-
-
-
-              signupFormData.inelligibilityPeriod = CONST.signupForm.ineligibilityPeriod
-              signupFormData.published = CONST.signupForm.published
-
-              if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
-                signupFormData.requireDentalHealthCoverage = false
-                signupFormData.requireSpouseEmail = true
-                signupFormData.warnRequiredDependantMedicalExam = true
-              } else {
-                signupFormData.requireDentalHealthCoverage = true
-                signupFormData.requireSpouseEmail = false
-                signupFormData.warnRequiredDependantMedicalExam = false
-              }
-
-              signupFormData.useCreditCardPaymentMethod = true
-              signupFormData.usePadPaymentMethod = true
-
-              signupFormData.isDemoForm = formDetails.isDemoform || false
-
-              const signupForm = await this.SignupFormsRepository.create(signupFormData);
-              console.log(signupForm);
-
-              signupFormId = signupForm.id || 0;
-
-              data.form.push(signupForm)
-              console.log(`signupForm.id: ${signupForm.id}`)
-              //broker_signup_forms_plans
-              let signupFormPlansArray: BrokerSignupFormsPlans[] = [];
-              let signupFormPlans: BrokerSignupFormsPlans = new BrokerSignupFormsPlans();
-              signupFormPlans.formId = signupForm.id || 0;
-
-              if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
-                //get executive plan ids ---> package_id=5
-
-                let executivePlans = await this.InsurancePlansRepository.find({ where: { packageId: CONST.EXECUTIVE_PACKAGE_ID } })
-                let executivePlanlevelObj: SignupFormsPlanLevelMapping = new SignupFormsPlanLevelMapping();
-                executivePlanlevelObj.formId = signupForm.id || 0;
-                let executivePlanlevelArray: any = [];
-                for (const executivePlan of executivePlans) {
-                  signupFormPlans.planId = executivePlan.id || 0
-                  // console.log(`before push`)
-                  // console.log(signupFormPlans);
-                  signupFormPlansArray.push(signupFormPlans)
-                  await this.BrokerSignupFormsPlansRepository.create(signupFormPlans);
-                  if (!executivePlanlevelArray.includes(executivePlan.planLevel)) {
-                    executivePlanlevelArray.push(executivePlan.planLevel);
-                  }
-                }
-                for (const executivePlanLevel of executivePlanlevelArray) {
-                  executivePlanlevelObj.planLevelId = executivePlanLevel;
-                  await this.SignupFormsPlanLevelMappingRepository.create(executivePlanlevelObj);
-                }
-                console.log(`signupFormPlansArray: ${signupFormPlansArray.length}`)
-              }
-              if (formDetails.formType == CONST.SIGNUP_FORM.CUSTOM) {
-                let planLevels = formDetails.planLevels;
-                let customPlanlevelObj: SignupFormsPlanLevelMapping = new SignupFormsPlanLevelMapping();
-                customPlanlevelObj.formId = signupForm.id || 0;
-                for (const pl of planLevels) {
-                  customPlanlevelObj.planLevelId = pl;
-                  await this.SignupFormsPlanLevelMappingRepository.create(customPlanlevelObj);
-                }
-                // for (const pl of planLevels) {
-                //   let planLevelsInRepo = await this.PlanLevelRepository.find({
-                //     where: {
-                //       and: [
-                //         { or: [{ id: pl }, { parentId: pl }] },
-                //         { published: '1' }
-                //       ]
-                //     }, fields: {
-                //       id: true
-                //     }
-                //   });
-                //   if (planLevelsInRepo) {
-                //     console.log("plan", planLevelsInRepo);
-                //     for (const planlevelloop of planLevelsInRepo) {
-                //       let countofsignupformplanlevelcondition = await this.SignupFormsPlanLevelMappingRepository.count({ and: [{ formId: signupForm.id }, { planlevelId: planlevelloop.id }] })
-                //       console.log(countofsignupformplanlevelcondition);
-                //       if (countofsignupformplanlevelcondition.count > 0)// console.log("plan levels", planlevel);
-                //       { }
-                //       else {
-                //         customPlanlevelObj.planLevelId = planlevelloop.id || 0;
-                //         let bsfl = await this.SignupFormsPlanLevelMappingRepository.create(customPlanlevelObj);
-                //         console.log("bsfl>>>>>", bsfl);
-                //       }
-                //     }
-                //   }
-                // }
-
-              }
-            }//forms
-
-          }
-
-          //handle logo
-          if (value.files) {
-            console.log(`Logo -${value.files.length}`)
-
-            if (value.files.length > 0) {
-              console.log(value.files[0].originalname)
-
-              console.log(`file.originalname`);
-              let originalname = value.files[0].originalname;
-              console.log(originalname)
-              originalname = originalname.replace(/[\])}[{(]/g, '').replace(/ /g, '')
-              console.log(originalname)
-              let filename = originalname
-              let modfilenameArr = filename.split(".")
-              let modfilename = modfilenameArr[0] + "0." + modfilenameArr[1]
-
-              // const broker = await this.BrokerRepository.findById(brokerId);
-              if (broker) {
-                await this.BrokerRepository.updateById(brokerId, {
-                  logo: BROKERPATH_STRING + filename,
-                  link: BROKERPATH_STRING + modfilename
-                })
-                message = 'Broker logo is set'
-                status = '200'
-              } else {
-                console.log('no broker with given id');
-                message = 'No broker found'
-                status = '202'
-              }
-            } else {
-              console.log(`No logo needed`)
-            }
-
-          }
-
-          data.broker = broker;
-
-          message = 'Broker registration successful';
-          status = '200';
-          statusCode = 200;
-
-        } catch (error) {
-          console.error(error);
-          message = 'Broker registration failed'
-          status = '202';
-          statusCode = 202
-          await this.BrokerLicensedStatesAndProvincesRepository.deleteAll({ brokerId: brokerId })
-          await this.BrokerSignupFormsPlansRepository.deleteAll({ brokerId: brokerId });
-          await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formId: signupFormId });
-          await this.BrokerEoInsuranceRepository.deleteAll({ brokerId: brokerId });
-          await this.ContactInformationRepository.deleteById(contId);
-          await this.BrokerLicensedStatesAndProvincesRepository.deleteAll({ brokerId: brokerId });
-          await this.UsersRepository.deleteById(userId);
-          await this.SignupFormsRepository.deleteAll({ brokerId: brokerId });
-          await this.BrokerRepository.deleteById(brokerId);
-        }
-
+      } catch (error) {
+        console.log(error)
+        status = '201';
+        message = "error " + error.message;
+        this.response.status(status).send({
+          status, message, data
+        })
       }
-
-      this.response.status(parseInt(status)).send({
-        status: status,
-        message: message,
-        date: new Date(),
-        data: data
-      });
-
+      return this.response;
     })
     p.catch(onrejected => {
       message = 'Broker logo is not set'
       status = '202'
-      this.response.status(parseInt(status)).send({
-        status: status,
-        message: message,
-        date: new Date(),
-        data: data
-      });
+      this.response.status(200).send({
+        status, message
+      })
+      return this.response;
     })
     return this.response;
-  }
-  @post('/broker/{brokerId}/createForm', {
-    responses: {
-      '200': {
-        description: 'Broker form creation',
-        content: {
-          'application/json': {
-            schema: {
-              type: 'object',
-              properties: {
-                message: {
-                  type: 'string',
-                },
-                status: {
-                  type: 'string',
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  })
-  async broker_create_form(
-    @param.path.string('brokerId') brokerId: number,
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: {
-            type: 'object',
-            properties: {
-
-              broker_name: {
-                type: 'string',
-                default: '',
-              },
-              formDetails: {
-                required: ['formType'],
-                type: 'array',
-                items: {
-                  properties: {
-                    formType: { type: 'string', default: 'REGULAR', enum: CONST.FORM_TYPE_ARRAY, },
-                    name: { type: 'string', default: 'Health Benefits Application Form' },
-                    // description: {type: 'string', default: ''},
-                    link: { type: 'string', default: '' },
-                    planLevels: { type: 'array', default: '[]' }
-                  }
-                }
-
-              },
-            }
-          }
-        },
-      }
-    }) apiRequest: any,
-  ): Promise<Response> {
-    let message, status, statusCode, data: any = {};
-
-    console.log(apiRequest);
-
-    try {
-
-      //handle form
-
-      const broker = await this.BrokerRepository.findById(brokerId);
-
-      //console.log("CONST.signupForm")
-      // console.log(CONST.signupForm)
-      //signup_form
-      let signupFormData: SignupForms = new SignupForms();
-      signupFormData.brokerId = broker.id || 1;
-      console.log(apiRequest.formDetails)
-      console.log(typeof apiRequest.formDetails)
-      if (typeof apiRequest.formDetails == "string") {
-        apiRequest.formDetails = JSON.parse(apiRequest.formDetails)
-        console.log(apiRequest.formDetails)
-        console.log(typeof apiRequest.formDetails)
-      }
-      console.log(apiRequest.formDetails.length)
-
-      data.form = []
-      for (const formDetails of apiRequest.formDetails) {
-
-        let link = await generateFormLink(broker.userId || 0)
-        signupFormData.link = await this.checkAndGenerateNewFormLink(link, broker.userId || 0)//generate_random_lin and user_id
-
-        let aliasLink = "";
-        console.log(`apiRequest.form.link: ${formDetails.link}`)
-        if (formDetails.link && formDetails.link != "") {
-          aliasLink = ("/" + formDetails.link)
-          console.log(`aliasLink1: ${aliasLink}`)
-        } else {
-          console.log(`broker.name: ${broker.name}`)
-          aliasLink = "/" + broker.name?.toLowerCase().split(" ")[0]
-          if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
-            aliasLink += "_exec"
-          }
-          console.log(`aliasLink2: ${aliasLink}`)
-        }
-        signupFormData.alias = aliasLink
-        if (formDetails.name) {
-          if (formDetails.name.toLowerCase().trim() == "default") {
-            if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
-              signupFormData.name = formDetails.name ?? CONST.signupFormExec.name
-            } else {
-              signupFormData.name = formDetails.name ?? CONST.signupForm.name
-            }
-          } else {
-            signupFormData.name = formDetails.name
-          }
-        } else {
-          if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
-            signupFormData.name = formDetails.name ?? CONST.signupFormExec.name
-          } else {
-            signupFormData.name = formDetails.name ?? CONST.signupForm.name
-          }
-        }
-
-        signupFormData.description = formDetails.description ?? CONST.signupForm.description
-        signupFormData.title = formDetails.title ?? CONST.signupForm.title
-        signupFormData.formType = formDetails.formType ?? CONST.signupForm.formType
-
-        signupFormData.keywords = formDetails.keywords ?? CONST.signupForm.keywords
-        // signupFormData.disclosureAgreement = formDetails.disclosureAgreement ?? CONST.signupForm.disclosure_agreement
-        // signupFormData.termsOfService = formDetails.termsOfService ?? CONST.signupForm.terms_of_service
-
-
-        signupFormData.inelligibilityPeriod = CONST.signupForm.ineligibilityPeriod
-        signupFormData.published = CONST.signupForm.published
-
-        if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
-          signupFormData.requireDentalHealthCoverage = false
-          signupFormData.requireSpouseEmail = true
-          signupFormData.warnRequiredDependantMedicalExam = true
-        } else {
-          signupFormData.requireDentalHealthCoverage = true
-          signupFormData.requireSpouseEmail = false
-          signupFormData.warnRequiredDependantMedicalExam = false
-        }
-
-        signupFormData.useCreditCardPaymentMethod = true
-        signupFormData.usePadPaymentMethod = true
-
-        signupFormData.isDemoForm = formDetails.isDemoform || false
-
-        const signupForm = await this.SignupFormsRepository.create(signupFormData);
-
-        data.form.push(signupForm)
-        console.log(`signupForm.id: ${signupForm.id}`)
-        //broker_signup_forms_plans
-        let signupFormPlansArray: BrokerSignupFormsPlans[] = [];
-        let signupFormPlans: BrokerSignupFormsPlans = new BrokerSignupFormsPlans();
-        signupFormPlans.formId = signupForm.id || 0;
-        if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
-          //get executive plan ids ---> package_id=5
-          let executivePlans = await this.InsurancePlansRepository.find({ where: { packageId: CONST.EXECUTIVE_PACKAGE_ID } })
-          let executivePlanlevelObj: SignupFormsPlanLevelMapping = new SignupFormsPlanLevelMapping();
-          executivePlanlevelObj.formId = signupForm.id || 0;
-          let executivePlanlevelArray: any = [];
-          for (const executivePlan of executivePlans) {
-            signupFormPlans.planId = executivePlan.id || 0
-            // console.log(`before push`)
-            // console.log(signupFormPlans);
-            signupFormPlansArray.push(signupFormPlans)
-            await this.BrokerSignupFormsPlansRepository.create(signupFormPlans);
-            if (!executivePlanlevelArray.includes(executivePlan.planLevel)) {
-              executivePlanlevelArray.push(executivePlan.planLevel);
-            }
-          }
-          for (const executivePlanLevel of executivePlanlevelArray) {
-            executivePlanlevelObj.planLevelId = executivePlanLevel;
-            await this.SignupFormsPlanLevelMappingRepository.create(executivePlanlevelObj);
-          }
-          console.log(`signupFormPlansArray: ${signupFormPlansArray.length}`)
-        }
-        if (formDetails.formType == CONST.SIGNUP_FORM.CUSTOM) {
-          let planLevels = formDetails.planLevels;
-          let executivePlanlevelObj: SignupFormsPlanLevelMapping = new SignupFormsPlanLevelMapping();
-          executivePlanlevelObj.formId = signupForm.id || 0;
-          for (const pl of planLevels) {
-            let plkanLevels = await this.PlanLevelRepository.find({
-              where: {
-                and: [
-                  { or: [{ id: pl }, { parentId: pl }] },
-                  { published: '1' }
-                ]
-              }, fields: {
-                id: true
-              }
-            });
-            if (plkanLevels) {
-              for (const planlevel of plkanLevels) {
-                executivePlanlevelObj.planLevelId = planlevel.id || 0;
-                await this.SignupFormsPlanLevelMappingRepository.create(executivePlanlevelObj);
-              }
-            }
-          }
-
-        }
-      }//forms
-
-      message = `Signup Form for ${broker.name} is created successfully`;
-      status = '200';
-      statusCode = 200;
-
-    } catch (error) {
-      console.error(error);
-      message = `Signup Form for ${brokerId} creation failed`
-      status = '202';
-      statusCode = 202
-    }
-
-    this.response.status(statusCode).send({
-      status: status,
-      message: message,
-      data: data,
-      date: new Date(),
-    });
-    return this.response;
-
-    //return {message, status, data}
   }
   async checkAndGenerateNewFormLink(formLink: string, userid: number) {
 
@@ -1292,7 +514,7 @@ export class BrokerController {
     }
 
   }
-  @del('/broker/form/{formId}', {
+  @del(BROKER.FORM, {
     responses: {
       200: {
         content: {
@@ -1330,7 +552,7 @@ export class BrokerController {
     });
     return this.response;
   }
-  @del('/broker/brokerForm/{brokerid}')
+  @del(BROKER.BROKER_FORM)
   async deleteBrokerForm(@param.path.number('brokerid') Brokerid: number): Promise<any> {
     let status, message, data: any = {};
     try {
@@ -1339,7 +561,7 @@ export class BrokerController {
         console.log(brokerForms);
         if (brokerForms) {
           for (const form of brokerForms) {
-            await this.BrokerSignupFormsPlansRepository.deleteAll({ formId: form.id });
+            // await this.BrokerSignupFormsPlansRepository.deleteAll({ formId: form.id });
             await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formId: form.id });
 
           }
@@ -1820,173 +1042,8 @@ export class BrokerController {
 
 
   }
-  @post('/broker/form/{formid}/modify')
-  @response(200, {
-    content: {
-      'application/json': {
-        schema: {
-          type: 'object'
-        }
-      }
-    }
-  })
-  async modifyForm(@param.path.number('formid') formid: number, @requestBody(
-    {
-      description: 'Modify the existing form for with plan levels',
-      content: {
-        'application/json': {
-          schema: {
-            type: 'object',
-            properties: {
-              newType: {
-                type: 'string',
-                default: ''
-              },
-              oldType: {
-                type: 'string',
-                default: ''
-              },
-              planlevel: {
-                type: 'array',
-                default: '[]'
-              }
-
-            }
-          }
-        }
-      }
-    }
-  ) requestBody: any
-    //  {
-    //   newType: string,
-    //   planlevel?: Array<number>,
-    //   oldType: string,
-    // }
-  ): Promise<Response> {
-    let planlevel: any = requestBody.planlevel;
-    let newType = requestBody.newType;
-    let oldType = requestBody.oldType;
-    let message, statusCode, status, data: any = {};
-    try {
-
-      // let formData = await this.SignupFormsRepository.findOne({ where: { id: formid } })
-      // if (!formData) {
-      //   status = 201;
-      //   message = "Enter valid form id";
-      // }
-      // else {
-      if (oldType == newType) {
-        status = 201;
-        message = "the form is already is same "
-      }
-      else {
-        let signUpform: SignupForms = new SignupForms();
-        signUpform.id = formid;
-        // signUpform.brokerId = formData.brokerId;
-        if (newType == CONST.SIGNUP_FORM.REGULAR) {
-          // let signUpform: SignupForms = new SignupForms();
-          // signUpform.id = formid;
-          // signUpform.brokerId = formData.brokerId;
-          signUpform.formType = CONST.SIGNUP_FORM.REGULAR;
-          signUpform.name = CONST.signupForm.name;
-          // signUpform.published = formData.published;
-          // signUpform.description = formData.description;
-          // signUpform.keywords = formData.keywords;
-          // signUpform.link = formData.link;
-          // signUpform.alias = formData.alias;
-          signUpform.requireDentalHealthCoverage = true;
-          signUpform.requireSpouseEmail = false;
-          signUpform.warnRequiredDependantMedicalExam = false;
-          // signUpform.useCreditCardPaymentMethod = formData.useCreditCardPaymentMethod;
-          // signUpform.usePadPaymentMethod = formData.usePadPaymentMethod;
-          // signUpform.isDemoForm = formData.isDemoForm;
-          await this.SignupFormsRepository.updateById(formid, signUpform);
-          await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formId: formid });
-        }
-        else if (newType == CONST.SIGNUP_FORM.EXECUTIVE) {
-          // let signUpform: SignupForms = new SignupForms();
-          // signUpform.brokerId = formData.brokerId;
-          signUpform.formType = CONST.SIGNUP_FORM.EXECUTIVE;
-          signUpform.name = CONST.signupForm.name;
-          // signUpform.published = formData.published;
-          // signUpform.description = formData.description;
-          // signUpform.keywords = formData.keywords;
-          // signUpform.link = formData.link;
-          // signUpform.alias = formData.alias;
-          signUpform.requireDentalHealthCoverage = false;
-          signUpform.requireSpouseEmail = true;
-          signUpform.warnRequiredDependantMedicalExam = true;
-          // signUpform.useCreditCardPaymentMethod = formData.useCreditCardPaymentMethod;
-          // signUpform.usePadPaymentMethod = formData.usePadPaymentMethod;
-          // signUpform.isDemoForm = formData.isDemoForm;
-          let newform = await this.SignupFormsRepository.updateById(formid, signUpform);
-          await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formId: formid });
-          let brokerSignUpformlevel: SignupFormsPlanLevelMapping = new SignupFormsPlanLevelMapping();
-          brokerSignUpformlevel.formId = formid || 0;
-          let planlevels = CONST.EXECUTIVE_CARE_COMPLETE_PLAN_LEVELS.concat(CONST.EXECUTIVE_HEALTH_PLAN_LEVELS)
-          for (const planLevel of planlevels) {
-            brokerSignUpformlevel.planlevelId = planLevel;
-            await this.SignupFormsPlanLevelMappingRepository.create(brokerSignUpformlevel);
-          }
-        }
-        else {
-          // let signUpform: SignupForms = new SignupForms();
-          // signUpform.brokerId = formData.brokerId;
-          signUpform.formType = CONST.SIGNUP_FORM.CUSTOM;
-          // signUpform.published = formData.published;
-          // signUpform.description = formData.description;
-          // signUpform.keywords = formData.keywords;
-          // signUpform.link = formData.link;
-          // signUpform.alias = formData.alias;
-          signUpform.requireDentalHealthCoverage = true;
-          signUpform.requireSpouseEmail = false;
-          signUpform.warnRequiredDependantMedicalExam = false;
-          // signUpform.useCreditCardPaymentMethod = formData.useCreditCardPaymentMethod;
-          // signUpform.usePadPaymentMethod = formData.usePadPaymentMethod;
-          // signUpform.isDemoForm = formData.isDemoForm;
-          let newform = await this.SignupFormsRepository.updateById(formid, signUpform);
-          await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formId: formid });
-          if (planlevel.length >= 0) {
-            for (const pl of planlevel) {
-              let plkanLevels = await this.PlanLevelRepository.find({
-                where: {
-                  and: [
-                    { or: [{ id: pl }, { parentId: pl }] },
-                    { published: '1' }
-                  ]
-                }, fields: {
-                  id: true
-                }
-              });
-              if (!plkanLevels) {
-                status = 202;
-                message = "No plans found"
-              }
-              else {
-                let brokerSignUpformlevel: SignupFormsPlanLevelMapping = new SignupFormsPlanLevelMapping();
-                brokerSignUpformlevel.formId = formid || 0;
-                for (const planlevel of plkanLevels) {
-                  brokerSignUpformlevel.planLevelId = planlevel.id || 0;
-                  await this.SignupFormsPlanLevelMappingRepository.create(brokerSignUpformlevel);
-                }
-              }
-            }
-          }
-        }
-        status = 200;
-        message = "Form modified successfully"
-      }
-      // }
-    } catch (error) {
-      status = 404;
-      message = "error while modify the form"
-    }
-    this.response.status(status).send({
-      status, message, date: new Date(), data,
-    });
-    return this.response;
-  }
-  @put('/broker/{brokerId}/updateContactInfo')
+  
+  @put(BROKER.UPDATE_CONTACTINFO)
   @response(200, {
     content: {
       'application/json': {
@@ -2023,7 +1080,7 @@ export class BrokerController {
     });
     return this.response;
   }
-  @put('/broker/updateLicenceState/{brokerId}')
+  @put(BROKER.UPDATE_LICENSE)
   @response(200, {
     content: {
       'application/json': {
@@ -2037,22 +1094,30 @@ export class BrokerController {
     content: {
       'application/json': {
         schema: {
-          type: 'object'
+          type: 'array',
+          default: [{
+            provinces_id: '', provinces_name: '', expiry_date: new Date().toISOString().slice(0, 10),
+            reminder_email: 7,
+            license_num: '',
+            license_coverage: 'LIFE_ACCIDENT_AND_SICKNESS',
+          }],
         }
       }
     }
-  }) requestBody: {
-    states: Array<number>,
-  }): Promise<any> {
+  }) requestBody: any): Promise<any> {
+    console.log(requestBody);
     let status, message, date: any = {};
-    let states: any = requestBody.states;
-    if (requestBody.states.length > 0) {
-      await this.BrokerLicensedStatesAndProvincesRepository.deleteById(brokerId);
+    let licences: any = requestBody;
+    if (licences.length > 0) {
+      await this.BrokerLicensedStatesAndProvincesRepository.deleteAll({ brokerId: brokerId });
       let BrokerLicensedStatesAndProvince: BrokerLicensedStatesAndProvinces = new BrokerLicensedStatesAndProvinces();
       BrokerLicensedStatesAndProvince.brokerId = brokerId;
-
-      for (const state of states) {
-        BrokerLicensedStatesAndProvince.stateId = state;
+      for (const license of licences) {
+        BrokerLicensedStatesAndProvince.expiryDate = license.expiry_date
+        BrokerLicensedStatesAndProvince.reminderEmail = license.reminder_email
+        BrokerLicensedStatesAndProvince.licenseNumber = license.license_num
+        BrokerLicensedStatesAndProvince.licenseCoverage = license.license_coverage
+        BrokerLicensedStatesAndProvince.stateId = license.provinces_id;
         await this.BrokerLicensedStatesAndProvincesRepository.create(BrokerLicensedStatesAndProvince)
       }
       status = 200;
@@ -2068,7 +1133,7 @@ export class BrokerController {
     return this.response;
 
   }
-  @put('/broker/updateLicenceEO/{brokerId}')
+  @put(BROKER.UPDATE_EOI)
   @response(200, {
     description: 'update broker E&O insurence',
     content: {
@@ -2090,68 +1155,25 @@ export class BrokerController {
   }) BrokerEoInsurance: Omit<BrokerEoInsurance, 'id'>): Promise<any> {
     let status, message, data: any = {}
     console.log(BrokerEoInsurance);
-    if (!brokerId) {
-      status = 201;
-      message = "Send proper input"
-    }
-    else {
+    let brokerEOI = await this.BrokerEoInsuranceRepository.find({ where: { brokerId: brokerId } });
+    console.log(brokerEOI);
+    if (brokerEOI.length > 0) {
       await this.BrokerEoInsuranceRepository.updateAll(BrokerEoInsurance, { where: { brokerId: brokerId } })
       status = 200;
       message = "E&O insurence Updated succesfully"
     }
-    this.response.status(status).send({
-      status, message, date: new Date()
-    });
-    return this.response;
-  }
-  @put('/broker/{brokerId}/updateLicence')
-  @response(200, {
-    content: {
-      'application/json': {
-        schema: {
-          type: 'object'
-        }
-      }
-    }
-  })
-  async updateLiceceNum(@param.path.number('brokerId') brokerId: number, @requestBody({
-    content: {
-      'application/json': {
-        schema: {
-          type: 'object'
-        }
-      }
-    }
-
-  }) requestBody: {
-    licenceNum: string
-  }): Promise<any> {
-    let licenceNum: any = requestBody.licenceNum;
-    let status, message, data: any = {};
-    if (licenceNum.length > 0) {
-      let brokerLicecs = await this.BrokerLicensedStatesAndProvincesRepository.find({ where: { brokerId: brokerId } });
-      if (brokerLicecs) {
-        let brokerLicecne: BrokerLicensedStatesAndProvinces = new BrokerLicensedStatesAndProvinces();
-        await this.BrokerLicensedStatesAndProvincesRepository.updateAll({ licenseNumber: licenceNum }, { where: { brokerId: brokerId } })
-        status = 200;
-        message = "Licence number updated succesfully";
-      }
-      else {
-        status = 201;
-        message = "No broker licences found"
-      }
-
-    }
     else {
-      status = 201;
-      message = "Send licence number"
+      BrokerEoInsurance.brokerId = brokerId;
+      await this.BrokerEoInsuranceRepository.create(BrokerEoInsurance);
+      message = "E&O insurences creeated successfully";
+      status = 200;
     }
     this.response.status(status).send({
       status, message, date: new Date()
     });
     return this.response;
   }
-  @del('/broker/{brokerId}')
+   @del(BROKER.BROKERID)
   @response(200, {
     content: {
       'application/json': {
@@ -2186,7 +1208,7 @@ export class BrokerController {
     });
     return this.response;
   }
-  @post('/broker/change_emailId/{brokerId}')
+  @post(BROKER.CHANGE_EMAIL)
   async emailChange(@param.path.number('brokerId') brokerId: number, @requestBody({
     content: {
       'application/json': {
@@ -2227,7 +1249,7 @@ export class BrokerController {
     })
     return this.response;
   }
-  @put('/broker/', {
+  @put(BROKER.BROKER, {
     responses: {
       200: {
         content: {
@@ -2467,7 +1489,7 @@ export class BrokerController {
     })
     return this.response;
   }
-  @get('/broker/FormConfig', {
+  @get(BROKER.FORM_CONFIG, {
     responses: {
       200: {
         content: {
@@ -2547,11 +1569,15 @@ export class BrokerController {
     console.log(apiRequest)
     let status, message, data: any = {};
     try {
-      const brokerSignupFormPlans = await this.BrokerSignupFormsPlansRepository.find({
-        where: {
-          formId: apiRequest.formId
-        }
-      });
+      // const brokerSignupFormPlans = await this.BrokerSignupFormsPlansRepository.find({
+      //   where: {
+      //     formId: apiRequest.formId
+      //   }
+      // });
+
+
+
+
       // const signupForm_PlanLevels = await this.SignupFormsPlanLevelMappingRepository.find({
       //   where: {
       //     formId: apiRequest.formId
@@ -2567,18 +1593,18 @@ export class BrokerController {
       // })
       //brokerPlanOptions -- planOptions -- planoptionvalues
       console.log(`brokerPlans or brokerSignupFormPlans`);
-      console.log(brokerSignupFormPlans);
+      //console.log(brokerSignupFormPlans);
       //signupForm_PlanLevels
       console.log(`brokerPlanLevels or brokerSignupFormPlansLevels`);
       // console.log(signupForm_PlanLevels)
       //let brokerPlanOptions: any = {}
       let brokerplanIds: any = []
-      for (let brokerPlan of brokerSignupFormPlans) {
-        if (brokerPlan.planId) {
-          brokerplanIds.push(brokerPlan.planId)
-          // brokerPlanOptions[brokerPlan.planId] = brokerPlan.planOptions
-        }
-      }
+      // for (let brokerPlan of brokerSignupFormPlans) {
+      //   if (brokerPlan.planId) {
+      //     brokerplanIds.push(brokerPlan.planId)
+      //     // brokerPlanOptions[brokerPlan.planId] = brokerPlan.planOptions
+      //   }
+      // }
       // console.log(brokerPlanOptions) //not needed
 
       let brokerplanLevels: any = []
@@ -2845,7 +1871,7 @@ export class BrokerController {
     }
 
   }
-  @post('/broker/plans/pl', {
+  @post(BROKER.PLAN_LEVELS, {
     responses: {
       200: {
         content: {
@@ -3189,7 +2215,7 @@ export class BrokerController {
     return data;
 
   }
-  @post('/broker/{brokerId}/createForm2', {
+  @post(BROKER.CREATE_FORM, {
     responses: {
       '200': {
         description: 'Broker form creation',
@@ -3340,9 +2366,9 @@ export class BrokerController {
         data.form.push(signupForm)
         console.log(`signupForm.id: ${signupForm.id}`)
         //broker_signup_forms_plans
-        let signupFormPlansArray: BrokerSignupFormsPlans[] = [];
-        let signupFormPlans: BrokerSignupFormsPlans = new BrokerSignupFormsPlans();
-        signupFormPlans.formId = signupForm.id || 0;
+        // let signupFormPlansArray: BrokerSignupFormsPlans[] = [];
+        // let signupFormPlans: BrokerSignupFormsPlans = new BrokerSignupFormsPlans();
+        //  signupFormPlans.formId = signupForm.id || 0;
         if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
           //get executive plan ids ---> package_id=5
           let executivePlans = await this.InsurancePlansRepository.find({ where: { packageId: CONST.EXECUTIVE_PACKAGE_ID } })
@@ -3350,11 +2376,11 @@ export class BrokerController {
           executivePlanlevelObj.formId = signupForm.id || 0;
           let executivePlanlevelArray: any = [];
           for (const executivePlan of executivePlans) {
-            signupFormPlans.planId = executivePlan.id || 0
+            //   signupFormPlans.planId = executivePlan.id || 0
             // console.log(`before push`)
             // console.log(signupFormPlans);
-            signupFormPlansArray.push(signupFormPlans)
-            await this.BrokerSignupFormsPlansRepository.create(signupFormPlans);
+            // signupFormPlansArray.push(signupFormPlans)
+            // await this.BrokerSignupFormsPlansRepository.create(signupFormPlans);
             if (!executivePlanlevelArray.includes(executivePlan.planLevel)) {
               executivePlanlevelArray.push(executivePlan.planLevel);
             }
@@ -3363,7 +2389,7 @@ export class BrokerController {
             executivePlanlevelObj.planLevelId = executivePlanLevel;
             await this.SignupFormsPlanLevelMappingRepository.create(executivePlanlevelObj);
           }
-          console.log(`signupFormPlansArray: ${signupFormPlansArray.length}`)
+          //   console.log(`signupFormPlansArray: ${signupFormPlansArray.length}`)
         }
         if (formDetails.formType == CONST.SIGNUP_FORM.CUSTOM) {
           let planLevels: any = [];
@@ -3444,7 +2470,7 @@ export class BrokerController {
 
     //return {message, status, data}
   }
-  @post('/broker/{brokerIdOrName}/createForm3/{trackingCode}', {
+  @post(BROKER.CREATE_FORM_WITH_SALESTRACKING_CODE, {
     responses: {
       '200': {
         description: 'Broker form creation',
@@ -3467,9 +2493,10 @@ export class BrokerController {
     },
   })
   //added based on name get the values
-  async broker_create_form_new3(
-    @param.path.string('brokerIdOrName') brokerIdOrName: string, @param.path.string('trackingCode') trackingCode: number,
+  async broker_create_form_new_with_salesTrackingCode(
+    @param.path.string('brokerIdOrName') brokerIdOrName: any, @param.path.boolean('idOrName') idOrName: boolean, @param.path.string('trackingCode') trackingCode: number,
     @requestBody({
+      description: 'Create a form in params idOrName is true send brokerId',
       content: {
         'application/json': {
           schema: {
@@ -3502,10 +2529,16 @@ export class BrokerController {
     }) apiRequest: any,
   ): Promise<Response> {
     let message, status, statusCode, data: any = {};
-
+    let broker: any;
     console.log(apiRequest);
     let signUpformId: any;
-    let broker: any = await this.BrokerRepository.findOne({ where: { and: [{ salesTrackingCode: trackingCode }, { or: [{ id: brokerIdOrName }, { name: { like: `%${brokerIdOrName}%` } }] }] } });
+    if (idOrName) {
+      broker = await this.BrokerRepository.findById(brokerIdOrName);
+    }
+    else {
+      broker = await this.BrokerRepository.findOne({ where: { and: [{ salesTrackingCode: trackingCode }, { or: [{ id: brokerIdOrName }, { name: { like: `%${brokerIdOrName}%` } }] }] } });
+    }
+    // broker= await this.BrokerRepository.findOne({ where: { and: [{ salesTrackingCode: trackingCode }, { or: [{ id: brokerIdOrName }, { name: { like: `%${brokerIdOrName}%` } }] }] } });
     try {
       // console.log({ where: { and: [{ salesTrackingCode: trackingCode }, { or: [{ id: brokerIdOrName }, { name: { like: `%${brokerIdOrName}%` } }] }] } })
       console.log(broker);
@@ -3594,9 +2627,9 @@ export class BrokerController {
           data.form.push(signupForm)
           console.log(`signupForm.id: ${signupForm.id}`)
           //broker_signup_forms_plans
-          let signupFormPlansArray: BrokerSignupFormsPlans[] = [];
-          let signupFormPlans: BrokerSignupFormsPlans = new BrokerSignupFormsPlans();
-          signupFormPlans.formId = signupForm.id || 0;
+          //let signupFormPlansArray: BrokerSignupFormsPlans[] = [];
+          // let signupFormPlans: BrokerSignupFormsPlans = new BrokerSignupFormsPlans();
+          //signupFormPlans.formId = signupForm.id || 0;
           if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
             //get executive plan ids ---> package_id=5
             let executivePlans = await this.InsurancePlansRepository.find({ where: { packageId: CONST.EXECUTIVE_PACKAGE_ID } })
@@ -3604,11 +2637,11 @@ export class BrokerController {
             executivePlanlevelObj.formId = signupForm.id || 0;
             let executivePlanlevelArray: any = [];
             for (const executivePlan of executivePlans) {
-              signupFormPlans.planId = executivePlan.id || 0
+              // signupFormPlans.planId = executivePlan.id || 0
               // console.log(`before push`)
               // console.log(signupFormPlans);
-              signupFormPlansArray.push(signupFormPlans)
-              await this.BrokerSignupFormsPlansRepository.create(signupFormPlans);
+              // signupFormPlansArray.push(signupFormPlans)
+              // await this.BrokerSignupFormsPlansRepository.create(signupFormPlans);
               if (!executivePlanlevelArray.includes(executivePlan.planLevel)) {
                 executivePlanlevelArray.push(executivePlan.planLevel);
               }
@@ -3617,7 +2650,7 @@ export class BrokerController {
               executivePlanlevelObj.planLevelId = executivePlanLevel;
               await this.SignupFormsPlanLevelMappingRepository.create(executivePlanlevelObj);
             }
-            console.log(`signupFormPlansArray: ${signupFormPlansArray.length}`)
+            // console.log(`signupFormPlansArray: ${signupFormPlansArray.length}`)
           }
           if (formDetails.formType == CONST.SIGNUP_FORM.CUSTOM) {
             let planLevels: any = [];
@@ -3653,8 +2686,8 @@ export class BrokerController {
               planLevels = formDetails.planLevels;
             }
             let executivePlanlevelObj: SignupFormsPlanLevelMapping = new SignupFormsPlanLevelMapping();
-            let brokerSignupformsPlansObj: BrokerSignupFormsPlans = new BrokerSignupFormsPlans();
-            brokerSignupformsPlansObj.formId = signupForm.id || 0;
+            //let brokerSignupformsPlansObj: BrokerSignupFormsPlans = new BrokerSignupFormsPlans();
+            // brokerSignupformsPlansObj.formId = signupForm.id || 0;
             executivePlanlevelObj.formId = signupForm.id || 0;
             for (const pl of planLevels) {
               let plkanLevels = await this.PlanLevelRepository.find({
@@ -3674,296 +2707,11 @@ export class BrokerController {
                   let plans = await this.InsurancePlansRepository.find({ where: { planLevel: planlevel.id }, fields: { id: true } });
 
                   for (const plan of plans) {
-                    brokerSignupformsPlansObj.planId = plan.id || 0;
-                    console.log(brokerSignupformsPlansObj);
-                    await this.BrokerSignupFormsPlansRepository.create(brokerSignupformsPlansObj);
-
-                  }
-                }
-              }
-            }
-
-          }
-        }//forms
-
-        message = `Signup Form for ${broker.name} is created successfully`;
-        status = '200';
-        statusCode = 200;
-      }
-      else {
-        message = `Signup Form for ${brokerIdOrName} creation failed no broker details found`
-        status = '202';
-        statusCode = 202
-      }
-    } catch (error) {
-      try {
-        await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formId: signUpformId });
-        await this.BrokerSignupFormsPlansRepository.deleteAll({ formId: signUpformId });
-        await this.SignupFormsRepository.deleteById(signUpformId);
-      }
-      catch (error) {
-        console.log(error);
-      }
-      console.error(error);
-      message = `Signup Form for ${brokerIdOrName} creation failed`
-      status = '202';
-      statusCode = 202
-    }
-
-    this.response.status(statusCode).send({
-      status: status,
-      message: message,
-      data: data,
-      date: new Date(),
-    });
-    return this.response;
-
-    //return {message, status, data}
-  }
-  @post('/broker/{brokerIdOrName}/createForm_dummy/{trackingCode}', {
-    responses: {
-      '200': {
-        description: 'Broker form creation',
-        content: {
-          'application/json': {
-            schema: {
-              type: 'object',
-              properties: {
-                message: {
-                  type: 'string',
-                },
-                status: {
-                  type: 'string',
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  })
-  //added based on name get the values
-  async broker_create_form_new_dummy(
-    @param.path.string('brokerIdOrName') brokerIdOrName: string, @param.path.string('trackingCode') trackingCode: number,
-    @requestBody({
-      description: "This is dummy form to get the broker and plan level details for testing",
-      content: {
-
-        'application/json': {
-          schema: {
-            type: 'object',
-            properties: {
-
-              broker_name: {
-                type: 'string',
-                default: '',
-              },
-              formDetails: {
-                required: ['formType'],
-                type: 'array',
-                items: {
-                  properties: {
-                    formType: { type: 'string', default: 'REGULAR', enum: CONST.FORM_TYPE_ARRAY, },
-                    name: { type: 'string', default: 'Health Benefits Application Form' },
-                    // description: {type: 'string', default: ''},
-                    link: { type: 'string', default: '' },
-                    planLevelsisName: { type: 'boolean', default: 'false' },
-                    planLevels: { type: 'array', default: '[]' }
-                  }
-                }
-
-              },
-            }
-          }
-        },
-      }
-    }) apiRequest: any,
-  ): Promise<Response> {
-    let message, status, statusCode, data: any = {};
-    let dummyDataRes: any = [];
-    console.log(apiRequest);
-    let signUpformId: any;
-    let dummybroker: any = await this.BrokerRepository.findOne({ where: { and: [{ salesTrackingCode: trackingCode }, { or: [{ id: brokerIdOrName }, { name: { like: `%${brokerIdOrName}%` } }] }] } });
-    console.log("broker details");
-    console.log(dummybroker);
-    try {
-      // console.log({ where: { and: [{ salesTrackingCode: trackingCode }, { or: [{ id: brokerIdOrName }, { name: { like: `%${brokerIdOrName}%` } }] }] } })
-      let broker = { "id": 1, 'userId': 1, 'name': 'dummy' };
-      if (broker && broker != null) {
-        //console.log("CONST.signupForm")
-        // console.log(CONST.signupForm)
-        //signup_form
-        let signupFormData: SignupForms = new SignupForms();
-        signupFormData.brokerId = broker.id || 1;
-        console.log(apiRequest.formDetails)
-        console.log(typeof apiRequest.formDetails)
-        if (typeof apiRequest.formDetails == "string") {
-          apiRequest.formDetails = JSON.parse(apiRequest.formDetails)
-          console.log(apiRequest.formDetails)
-          console.log(typeof apiRequest.formDetails)
-        }
-        console.log(apiRequest.formDetails.length)
-
-        data.form = []
-        let formIndex = 0;
-        for (const formDetails of apiRequest.formDetails) {
-
-          let link = await generateFormLink(broker.userId || 0)
-          signupFormData.link = await this.checkAndGenerateNewFormLink(link, broker.userId || 0)//generate_random_lin and user_id
-
-          let aliasLink = "";
-          console.log(`apiRequest.form.link: ${formDetails.link}`)
-          if (formDetails.link && formDetails.link != "") {
-            aliasLink = ("/" + formDetails.link)
-            console.log(`aliasLink1: ${aliasLink}`)
-          } else {
-            console.log(`broker.name: ${broker.name}`)
-            aliasLink = "/" + broker.name?.toLowerCase().split(" ")[0]
-            if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
-              aliasLink += "_exec"
-            }
-            console.log(`aliasLink2: ${aliasLink}`)
-          }
-          signupFormData.alias = aliasLink
-          if (formDetails.name) {
-            if (formDetails.name.toLowerCase().trim() == "default") {
-              if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
-                signupFormData.name = formDetails.name ?? CONST.signupFormExec.name
-              } else {
-                signupFormData.name = formDetails.name ?? CONST.signupForm.name
-              }
-            } else {
-              signupFormData.name = formDetails.name
-            }
-          } else {
-            if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
-              signupFormData.name = formDetails.name ?? CONST.signupFormExec.name
-            } else {
-              signupFormData.name = formDetails.name ?? CONST.signupForm.name
-            }
-          }
-
-          signupFormData.description = formDetails.description ?? CONST.signupForm.description
-          signupFormData.title = formDetails.title ?? CONST.signupForm.title
-          signupFormData.formType = formDetails.formType ?? CONST.signupForm.formType
-
-          signupFormData.keywords = formDetails.keywords ?? CONST.signupForm.keywords
-          // signupFormData.disclosureAgreement = formDetails.disclosureAgreement ?? CONST.signupForm.disclosure_agreement
-          // signupFormData.termsOfService = formDetails.termsOfService ?? CONST.signupForm.terms_of_service
-
-
-          signupFormData.inelligibilityPeriod = CONST.signupForm.ineligibilityPeriod
-          signupFormData.published = CONST.signupForm.published
-
-          if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
-            signupFormData.requireDentalHealthCoverage = false
-            signupFormData.requireSpouseEmail = true
-            signupFormData.warnRequiredDependantMedicalExam = true
-          } else {
-            signupFormData.requireDentalHealthCoverage = true
-            signupFormData.requireSpouseEmail = false
-            signupFormData.warnRequiredDependantMedicalExam = false
-          }
-
-          signupFormData.useCreditCardPaymentMethod = true
-          signupFormData.usePadPaymentMethod = true
-
-          signupFormData.isDemoForm = formDetails.isDemoform || false
-
-          // const signupForm = await this.SignupFormsRepository.create(signupFormData);
-          const signupForm = { 'id': ++formIndex };
-          signUpformId = signupForm.id;
-          data.form.push(signupForm)
-          console.log(`signupForm.id: ${signupForm.id}`)
-          //broker_signup_forms_plans
-          let signupFormPlansArray: BrokerSignupFormsPlans[] = [];
-          let signupFormPlans: BrokerSignupFormsPlans = new BrokerSignupFormsPlans();
-          signupFormPlans.formId = signupForm.id || 0;
-          if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
-            //get executive plan ids ---> package_id=5
-            let executivePlans = await this.InsurancePlansRepository.find({ where: { packageId: CONST.EXECUTIVE_PACKAGE_ID } })
-            let executivePlanlevelObj: SignupFormsPlanLevelMapping = new SignupFormsPlanLevelMapping();
-            executivePlanlevelObj.formId = signupForm.id || 0;
-            let executivePlanlevelArray: any = [];
-            for (const executivePlan of executivePlans) {
-              signupFormPlans.planId = executivePlan.id || 0
-              // console.log(`before push`)
-              // console.log(signupFormPlans);
-              signupFormPlansArray.push(signupFormPlans)
-              await this.BrokerSignupFormsPlansRepository.create(signupFormPlans);
-              if (!executivePlanlevelArray.includes(executivePlan.planLevel)) {
-                executivePlanlevelArray.push(executivePlan.planLevel);
-              }
-            }
-            for (const executivePlanLevel of executivePlanlevelArray) {
-              executivePlanlevelObj.planLevelId = executivePlanLevel;
-              await this.SignupFormsPlanLevelMappingRepository.create(executivePlanlevelObj);
-            }
-            console.log(`signupFormPlansArray: ${signupFormPlansArray.length}`)
-          }
-          if (formDetails.formType == CONST.SIGNUP_FORM.CUSTOM) {
-            let planLevels: any = [];
-            // var planLevels = formDetails.planLevels;
-            if (formDetails.planLevelsisName) {
-              let plsInRequest = formDetails.planLevels;
-              for (let pl of plsInRequest) {
-                if (pl == "PocketPills") {
-                  pl = "Opt-In";
-                }
-                if (pl == "High-Cost Drugs (HCD)") {
-                  pl = 'High-Cost Drugs';
-                }
-                let palLevel: any = await this.PlanLevelRepository.findOne({
-                  where: {
-                    and: [
-                      { name: { like: `%${pl}%` } },
-                      { published: '1' }
-                    ]
-                  },
-                  // fields: { id: true }
-                })
-                if (palLevel) {
-                  await planLevels.push(await palLevel.id)
-                }
-                // console.log(palLevel);
-                // console.log("plan levels after id");
-                // console.log(planLevels);
-              }
-
-            }
-            else {
-              planLevels = formDetails.planLevels;
-            }
-            let PlanlevelObj: SignupFormsPlanLevelMapping = new SignupFormsPlanLevelMapping();
-            let brokerSignupformsPlansObj: BrokerSignupFormsPlans = new BrokerSignupFormsPlans();
-            brokerSignupformsPlansObj.formId = signupForm.id || 0;
-
-            PlanlevelObj.formId = signupForm.id || 0;
-            for (const pl of planLevels) {
-              let plkanLevels = await this.PlanLevelRepository.find({
-                where: {
-                  and: [
-                    { or: [{ id: pl }, { parentId: pl }] },
-                    { published: '1' }
-                  ]
-                }, fields: {
-                  id: true
-                }
-              });
-              if (plkanLevels) {
-                for (const planlevel of plkanLevels) {
-                  PlanlevelObj.planLevelId = planlevel.id || 0;
-                  // await this.SignupFormsPlanLevelMappingRepository.create(executivePlanlevelObj);
-                  console.log(PlanlevelObj);
-                  let plans = await this.InsurancePlansRepository.find({ where: { planLevel: planlevel.id }, fields: { id: true } });
-
-                  for (const plan of plans) {
-                    brokerSignupformsPlansObj.planId = plan.id || 0;
-                    console.log(brokerSignupformsPlansObj);
+                    // brokerSignupformsPlansObj.planId = plan.id || 0;
+                    // console.log(brokerSignupformsPlansObj);
                     // await this.BrokerSignupFormsPlansRepository.create(brokerSignupformsPlansObj);
 
                   }
-
                 }
               }
             }
@@ -3983,7 +2731,7 @@ export class BrokerController {
     } catch (error) {
       try {
         await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formId: signUpformId });
-        await this.BrokerSignupFormsPlansRepository.deleteAll({ formId: signUpformId });
+        //await this.BrokerSignupFormsPlansRepository.deleteAll({ formId: signUpformId });
         await this.SignupFormsRepository.deleteById(signUpformId);
       }
       catch (error) {
@@ -4005,7 +2753,7 @@ export class BrokerController {
 
     //return {message, status, data}
   }
-  @get('/broker/{formId}/formDetails', {
+  @get(BROKER.FORM_DETAILS, {
     responses: {
       '200': {
         description: 'Broker form creation',
@@ -4030,7 +2778,7 @@ export class BrokerController {
   async formDetails(@param.path.number('formId') formId: number): Promise<Response> {
     let message, signupFormPlans, status;
     let data: any = [];
-    let formDetails: any = await this.SignupFormsRepository.findById(formId, { include: [{ relation: 'signupFormsPlanLevelMappings' }, { relation: 'brokerSignupFormsPlans' }] });
+    let formDetails: any = await this.SignupFormsRepository.findById(formId, { include: [{ relation: 'signupFormPlanLevels' }] });
     console.log(formDetails);
     try {
       if (formDetails) {
@@ -4053,7 +2801,7 @@ export class BrokerController {
     })
     return this.response;
   }
-  @post('/broker/form/{formid}/modify')
+  @post(BROKER.MODIFY_FORM)
   @response(200, {
     content: {
       'application/json': {
@@ -4184,7 +2932,7 @@ export class BrokerController {
           // signUpform.isDemoForm = formData.isDemoForm;
           let newform = await this.SignupFormsRepository.updateById(formid, signUpform);
           await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formId: formid });
-          await this.BrokerSignupFormsPlansRepository.deleteAll({ formId: formid });
+          //   await this.BrokerSignupFormsPlansRepository.deleteAll({ formId: formid });
           if (requestBody.nameOrId) {
             let plsInRequest = requestBody.planlevel;
             for (let pl of plsInRequest) {
@@ -4232,8 +2980,8 @@ export class BrokerController {
               }
               else {
                 let brokerSignUpformlevel: SignupFormsPlanLevelMapping = new SignupFormsPlanLevelMapping();
-                let brokerSignupformsPlansObj: BrokerSignupFormsPlans = new BrokerSignupFormsPlans();
-                brokerSignupformsPlansObj.formId = formid || 0;
+                //let brokerSignupformsPlansObj: BrokerSignupFormsPlans = new BrokerSignupFormsPlans();
+                // brokerSignupformsPlansObj.formId = formid || 0;
                 brokerSignUpformlevel.formId = formid || 0;
                 for (const planlevel of plkanLevels) {
                   brokerSignUpformlevel.planLevelId = planlevel.id || 0;
@@ -4241,9 +2989,9 @@ export class BrokerController {
                   let plans = await this.InsurancePlansRepository.find({ where: { planLevel: planlevel.id }, fields: { id: true } });
 
                   for (const plan of plans) {
-                    brokerSignupformsPlansObj.planId = plan.id || 0;
-                    console.log(brokerSignupformsPlansObj);
-                    await this.BrokerSignupFormsPlansRepository.create(brokerSignupformsPlansObj);
+                    //brokerSignupformsPlansObj.planId = plan.id || 0;
+                    // console.log(brokerSignupformsPlansObj);
+                    //  await this.BrokerSignupFormsPlansRepository.create(brokerSignupformsPlansObj);
                   }
                 }
               }
@@ -4263,8 +3011,8 @@ export class BrokerController {
     });
     return this.response;
   }
-  @get('/broker/{id}/details')
-  async brokerDetails(@param.path.number('id') id: number): Promise<any> {
+  @get(BROKER.BROKER_DETAILS)
+  async brokerDetails(@param.path.number('brokerId') id: number): Promise<any> {
     let final: any = [];
     let responseObject, status: any;
     try {
@@ -4284,7 +3032,7 @@ export class BrokerController {
           {
             relation: 'signupForms', scope: {
               include: [{
-                relation: 'signupFormsPlanLevelMappings'
+                relation: 'signupFormPlanLevels'
               }
                 , { relation: 'customers', scope: { fields: { firstName: true, lastName: true, dob: true, gender: true, status: true, userId: true } } }]
             }
@@ -4321,7 +3069,7 @@ export class BrokerController {
     }
     return this.response;
   }
-  @get('/broker/{brokerid}/forms')
+  @get(BROKER.BROKER_FORMS)
   async brokerFormDetails(@param.path.number('brokerid') brokerid: number): Promise<any> {
     let status, message, data: any;
     try {
@@ -4351,7 +3099,7 @@ export class BrokerController {
     })
     return this.response;
   }
-  @get('/broker/{brokerid}/form/{formId}/details')
+  @get(BROKER.BROKER_FORM_DETAILS)
   async brokerFormbasedonIdDetails(@param.path.number('brokerid') brokerid: number, @param.path.number('formId') formId: number): Promise<any> {
     let status, message, data: any;
     try {
@@ -4374,7 +3122,7 @@ export class BrokerController {
     })
     return this.response;
   }
-  @get('/broker/{brokerid}/customers')
+  @get(BROKER.BROKER_CUSTOMERS)
   async customersBasedonbrokerId(@param.path.number('brokerid') brokerid: number): Promise<any> {
     let status, message, data: any, error;
     try {
@@ -4399,7 +3147,7 @@ export class BrokerController {
     })
     return this.response;
   }
-  @get('/broker/{brokerid}/customer/{customerId}/details')
+  @get(BROKER.BROKER_CUSTOMER_DETAILS)
   async customerdetailsBasedonbrokerIdandCustomerId(@param.path.number('brokerid') brokerid: number, @param.path.number('customerId') customerId: number): Promise<any> {
     let status, message, data: any, error;
     try {
@@ -4428,7 +3176,7 @@ export class BrokerController {
     return this.response;
 
   }
-  @get('/broker/{brokerid}/form/{formId}/customer/{customerId}/details')
+  @get(BROKER.BROKER_FORM_CUSTOMER_DETAILS)
   async customerDetailsBasedOnBrokerIdandFormId(
     @param.path.number('brokerid') brokerid: number,
     @param.path.number('customerId') customerId: number,
@@ -4456,7 +3204,7 @@ export class BrokerController {
     return this.response;
 
   }
-  @post('/broker/search', {
+  @post(BROKER.SEARCH, {
     responses: {
       200: {
         content: {
@@ -4555,5 +3303,656 @@ export class BrokerController {
     })
     return this.response;
   }
+  @post(BROKER.REGISTRATION, {
+    responses: {
+      200: {
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+            },
+          },
+        },
+        description: 'File',
+      },
+    },
+  })
+  async broker_registration(
+    @requestBody({
+      description: "Registration details of a broker",
+      content: {
+        'multipart/form-data': {
+          // Skip body parsing
+          'x-parser': 'stream',
+          schema: {
+            //required: ['name', 'email'],
+            type: 'object',
+            properties: {
 
+              // contact_type: {
+              //   type: 'string',
+              //   default: 'BROKER',
+              // },
+              name: {
+                type: 'string',
+                default: '',
+              },
+              brokerType: {
+                type: 'string',
+                default: 'BROKERAGE',
+                enum: CONST.BROKER_TYPE_ARRAY,
+              },
+              email: {
+                type: 'string',
+                default: '',
+              },
+              secondary_email: {
+                type: 'string',
+                default: '',
+              },
+              logo: {
+                type: 'string',
+                format: 'binary'
+              },
+
+              useParentsLogo: {
+                type: 'boolean',
+                default: 'false',
+              },
+              parent_id: {
+                type: 'number',
+                default: '0',
+              },
+              parent_name: {
+                type: 'string',
+                default: '',
+              },
+              license: {
+                // required: ['formType'],
+                type: 'object',
+                properties: {
+
+                  provinces_ids: {
+                    type: 'array',
+                    items: {
+                      type: 'number'
+
+                    }
+                  },
+                  provinces_names: {
+                    type: 'array',
+                    items: {
+                      type: 'string'
+                    }
+                  },
+                  expiry_date: { type: 'string', default: new Date().toISOString().slice(0, 10) },
+                  reminder_email: { type: 'number', default: '7', description: 'send a reminder x days before' },
+                  licence_nums: { type: "array", default: "" }
+                }
+              },
+              licenses: {
+                required: [''],
+                type: 'array',
+                items: {
+                  properties: {
+                    provinces_id: { type: 'number', default: '0' },
+                    provinces_name: { type: 'string', default: '' },
+                    expiry_date: { type: 'string', default: new Date().toISOString().slice(0, 10) },
+                    reminder_email: { type: 'number', default: '7', description: 'send a reminder x days before' },
+                    license_num: { type: "array", default: "" },
+                    license_coverage: { type: 'string', default: 'LIFE_ACCIDENT_AND_SICKNESS', enum: CONST.LICENSE_COVERAGE }
+                  }
+                }
+              },
+              sales_tracking_code: {
+                type: 'string',
+                default: '',
+              },
+
+              createSignupForm: {
+                type: 'boolean',
+                default: '',
+              },
+              formDetails: {
+                required: ['formType'],
+                type: 'array',
+                items: {
+                  properties: {
+                    formType: { type: 'string', default: 'REGULAR', enum: CONST.FORM_TYPE_ARRAY, },
+                    name: { type: 'string', default: 'Health Benefits Application Form' },
+                    description: { type: 'string', default: '' },
+                    link: { type: 'string', default: '' },
+                    planLevels: { type: 'array', default: '' },
+                  }
+                }
+
+              },
+              EOinsurence: {
+                type: 'object',
+                default: { EOInsurense: '', EOCertificate: '', policy: '', EOIexpiryDate: new Date().toISOString().slice(0, 10) },
+                items: {
+                  properties: {
+                    EOInsurense: {
+                      type: 'string', default: ''
+                    },
+                    EOCertificate: {
+                      type: 'string', default: ''
+                    },
+                    policy: {
+                      type: 'string', default: ''
+                    },
+                    EOIexpiryDate: {
+                      type: 'string', default: new Date().toISOString().slice(0, 10)
+                    }
+                  }
+                }
+              },
+              apt: {
+                type: 'string',
+                default: '',
+              },
+              street_address_line1: {
+                type: 'string',
+                default: '',
+              },
+              street_address_line2: {
+                type: 'string',
+                default: '',
+              },
+              city: {
+                type: 'string',
+                default: '',
+              },
+              province: {
+                type: 'string',
+                default: '',
+              },
+              province_id: {
+                type: 'number',
+                default: '0',
+              },
+              state: {
+                type: 'string',
+                default: '',
+              },
+              state_id: {
+                type: 'number',
+                default: '0',
+              },
+              country: {
+                type: 'string',
+                default: '',
+              },
+              country_id: {
+                type: 'number',
+                default: '0',
+              },
+              postal_code: {
+                type: 'string',
+                default: '',
+              },
+              phone_number: {
+                type: 'string',
+                default: '',
+              },
+              secondary_phone: {
+                type: 'string',
+                default: '',
+              },
+
+            }
+
+          },
+        },
+      },
+    })
+    request: Request,
+    @inject(RestBindings.Http.RESPONSE) response: Response,
+  ): Promise<Response> {
+    let message: string, status: string, statusCode: number, data: any = {};
+    let p = new Promise<any>((resolve, reject) => {
+      this.handler(request, response, err => {
+        if (err) reject(err);
+        else {
+          resolve(FilesController.getFilesAndFields(request, 'brokerLogoUpload', {}));
+          // const upload = FilesController.getFilesAndFields(request, 'brokerLogoUpload', { brokerid: broker_id });
+        }
+      });
+    });
+    p.then(async value => {
+      let brokerId;
+      let userId;
+      let contId;
+      let signupFormId;
+      let adminBroker;
+      console.log("entry")
+      if (!value.fields) {
+        this.response.status(422).send({
+          status: '422',
+          error: `Missing input fields`,
+          message: MESSAGE.ERRORS.missingDetails,
+          date: new Date(),
+        });
+        return this.response;
+      }
+
+      if (value.fields) {
+
+        if (value.fields.error) {
+          this.response.status(422).send({
+            status: '422',
+            error: value.fields.error,
+            message: value.fields.error,
+            date: new Date(),
+          });
+          return this.response;
+        }
+
+        let apiRequest = value.fields;
+        let BroId: any;
+
+
+        try {
+
+          //validations
+          let user: any;
+          user = await this.UsersRepository.findOne({ where: { username: apiRequest.email } });
+          if (user) {
+            // this.response.status(409).send({
+            //   error: `User with this email ${apiRequest.email} is already registered`,
+            //   message: 'Account already exists, please contact the provider',
+            //   date: new Date(),
+            //   data: "Check users -- customers/brokers"
+            // });
+            // return this.response;
+          }
+          else {
+            const todayDate = new Date().toISOString().slice(0, 10);
+            let userData: Users = new Users();
+            userData.username = apiRequest.email;
+            userData.role = CONST.USER_ROLE.BROKER;
+            let password = await generateRandomPassword()
+            userData.password = await encryptPassword(password);
+            // userData.activation = this.registrationService.getActivationCode();
+            userData.activation = await getActivationCode();
+            userData.block = true;
+            userData.registrationDate = todayDate;
+            user = await this.UsersRepository.create(userData);
+            console.log(`user - ${user.id}`)
+          }
+
+          //Contact Info
+          let contactInfoData: ContactInformation = new ContactInformation();
+          contactInfoData.primaryEmail = apiRequest.email
+          contactInfoData.secondaryEmail = apiRequest.secondary_email
+          contactInfoData.primaryPhone = apiRequest.phone_number
+          contactInfoData.secondaryPhone = apiRequest.secondary_phone
+          contactInfoData.apt = apiRequest.apt;
+          contactInfoData.line1 = apiRequest.street_address_line1
+          contactInfoData.line2 = apiRequest.street_address_line2
+          contactInfoData.city = apiRequest.city
+          contactInfoData.state = apiRequest.province
+          //contactInfoData.country = Buffer.from(apiRequest.country || ''); //varbinary
+          contactInfoData.country = apiRequest.country || ''; //varchar
+          contactInfoData.postalCode = apiRequest.postal_code
+          contactInfoData.contactType = CONST.CONTACT_TYPE.BROKER;
+          contactInfoData.addressType = CONST.ADDRESS_TYPE.HOME_ADDRESS;
+          const contactInfoHOME = await this.ContactInformationRepository.create(contactInfoData);
+          console.log(`contactInfoHOME - ${contactInfoHOME.id}`)
+          //broker
+          let brokerData: Broker = new Broker();
+
+
+          //broker parent
+          if (apiRequest.parent_id && apiRequest.parent_id != 0) {
+            brokerData.parentId = apiRequest.parent_id;
+            let parentBroker = await this.BrokerRepository.findById(apiRequest.parent_id)
+            if (parentBroker) {
+              brokerData.parentId = parentBroker.id;
+              brokerData.description = parentBroker.name
+              if (apiRequest.useParentsLogo) {
+                brokerData.logo = parentBroker.logo;
+                brokerData.link = parentBroker.link;
+              }
+            }
+
+          } else if (apiRequest.parent_name && apiRequest.parent_name != '') {
+            let parentBroker = await this.BrokerRepository.findOne({ where: { name: apiRequest.parent_name } })
+            if (parentBroker) {
+              brokerData.parentId = parentBroker.id;
+              brokerData.description = parentBroker.name
+              if (apiRequest.useParentsLogo) {
+                brokerData.logo = parentBroker.logo;
+                brokerData.link = parentBroker.link;
+              }
+            }
+          }
+
+          brokerData.name = apiRequest.name;
+          brokerData.salesTrackingCode = apiRequest.sales_tracking_code
+          brokerData.useCreditCardPaymentMethod = true;
+          brokerData.usePadPaymentMethod = true;
+          brokerData.published = true;
+          brokerData.userId = user.id;
+          brokerData.contactId = contactInfoHOME.id;
+          brokerData.brokerType = apiRequest.brokerType || CONST.broker.brokerType
+          brokerData.discoverable = true;
+          brokerData.salesTrackingType = apiRequest.salesTrackingType || ' ';
+          brokerData.settingsAllowGroupBenefitsWallet = apiRequest.settingsAllowGroupBenefitsWallet || 0;
+          brokerData.settingsAllowInvoicePaymentMethod = apiRequest.settingsAllowInvoicePaymentMethod || 0;
+          brokerData.settingsEnableTieredHealthBenefits = apiRequest.settingsEnableTieredHealthBenefits || 0;
+          brokerData.settingsRolloverEmployeeLimitNextYear = apiRequest.settingsRolloverEmployeeLimitNextYear || 0;
+          brokerData.useInvoicePaymentMethod = apiRequest.useInvoicePaymentMethod || false;
+          const broker: any = await this.BrokerRepository.create(brokerData);
+          //brokerData.logo=?
+          let brokerAdmin: BrokerAdmins = new BrokerAdmins();
+          brokerAdmin.brokerId = broker.id;
+          brokerAdmin.userId = user.id || 0;
+          adminBroker = await this.BrokerAdminsRepository.create(brokerAdmin);
+          brokerId = broker.id;
+          contId = broker.contactId;
+          userId = broker.userId;
+          console.log(`Broker - ${brokerId}`)
+
+          //broker
+          //broker_licensed_states_and_provinces
+          let brokerLicensesArray: BrokerLicensedStatesAndProvinces[] = [];
+          let brokerLicenses: BrokerLicensedStatesAndProvinces = new BrokerLicensedStatesAndProvinces();
+          brokerLicenses.brokerId = brokerId || 0;
+
+
+          let brokerLicensedProvinces = [];
+          // if (apiRequest.license) {
+          //   apiRequest.license = JSON.parse(apiRequest.license)
+          //   brokerLicenses.expiryDate = apiRequest.license.expiry_date
+          //   brokerLicenses.reminderEmail = apiRequest.license.reminder_email
+
+          //   if (apiRequest.license.provinces_ids && apiRequest.license.provinces_ids.length > 0) {
+          //     brokerLicensedProvinces = apiRequest.license.provinces_ids
+          //   } else if (apiRequest.license.provinces_names && apiRequest.license.provinces_names.length > 0) {
+          //     let provinces = await this.StatesAndProvincesRepository.find({
+          //       where: {
+          //         or: [
+          //           { shortName: { inq: apiRequest.license.provinces_names } },
+          //           { name: { inq: apiRequest.license.provinces_names } }
+          //         ]
+          //       }
+          //     })
+
+          //     console.log(provinces);
+
+          //     for (const province of provinces) {
+          //       brokerLicensedProvinces.push(province.id);
+          //     }
+          //   }
+          //   let licenceNums = apiRequest.license.licence_nums;
+          //   // for (const brokerLicensedProvince of brokerLicensedProvinces) {
+          //   if (licenceNums.length == brokerLicensedProvinces.length) {
+          //     for (let i = 0; i < brokerLicensedProvinces.length; i++) {
+          //       // brokerLicenses.stateId = brokerLicensedProvince;
+          //       brokerLicenses.stateId = brokerLicensedProvinces[i];
+          //       brokerLicenses.licenseNumber = licenceNums[i];
+          //       console.log(`before push`)
+          //       console.log(brokerLicenses);
+          //       brokerLicensesArray.push(brokerLicenses)
+          //       await this.BrokerLicensedStatesAndProvincesRepository.create(brokerLicenses);
+          //     }
+          //   }
+          //   console.log(`brokerLicensesArray: ${brokerLicensesArray.length}`)
+          //   // if (brokerLicensesArray.length > 0)
+          //   //   await this.brokerLicensedProvincesRepo.create(brokerLicensesArray);
+          // }
+          if (apiRequest.licenses) {
+            apiRequest.licenses = JSON.parse(apiRequest.licenses);
+            let brokerLicenses: BrokerLicensedStatesAndProvinces = new BrokerLicensedStatesAndProvinces();
+            brokerLicenses.brokerId = brokerId || 0;
+            let licenses = apiRequest.licenses;
+            for (const license of licenses) {
+              brokerLicenses.expiryDate = license.expiry_date
+              brokerLicenses.reminderEmail = license.reminder_email
+              brokerLicenses.licenseNumber = license.license_num
+              brokerLicenses.licenseCoverage = license.license_coverage
+              brokerLicenses.stateId = license.provinces_id;
+              await this.BrokerLicensedStatesAndProvincesRepository.create(brokerLicenses);
+            }
+          }
+          //handle form
+          // if (apiRequest.EOCertificate && apiRequest.EOIexpiryDate && apiRequest.EOInsurense && apiRequest.policy) {
+
+          if (apiRequest.EOinsurence) {
+            let EoinsurenceObj: any = JSON.parse(apiRequest.EOinsurence);
+            console.log(EoinsurenceObj.length);
+            console.log(EoinsurenceObj.policy)
+            console.log("eo insurence >>>>", EoinsurenceObj)
+            console.log(typeof (EoinsurenceObj))
+            console.log(typeof (apiRequest.EOinsurence))
+            let EOInsurence: BrokerEoInsurance = new BrokerEoInsurance();
+            EOInsurence.brokerId = broker?.id || 1;
+            EOInsurence.certificateNumber = EoinsurenceObj.EOCertificate;
+            EOInsurence.expiryDate = EoinsurenceObj.EOIexpiryDate;
+            EOInsurence.insurerName = EoinsurenceObj.EOInsurense;
+            EOInsurence.policyNumber = EoinsurenceObj.policy;
+
+            await this.BrokerEoInsuranceRepository.create(EOInsurence);
+          }
+          if (apiRequest.createSignupForm) {
+            //console.log("CONST.signupForm")
+            // console.log(CONST.signupForm)
+            //signup_form
+            let signupFormData: SignupForms = new SignupForms();
+            signupFormData.brokerId = broker?.id || 1;
+            console.log(apiRequest.formDetails)
+            console.log(typeof apiRequest.formDetails)
+            apiRequest.formDetails = JSON.parse(apiRequest.formDetails)
+            console.log(apiRequest.formDetails)
+            console.log(typeof apiRequest.formDetails)
+            console.log(apiRequest.formDetails.length)
+            data.form = []
+            console.log("form details in api", apiRequest.formDetails);
+            for (const formDetails of apiRequest.formDetails) {
+              console.log("entery ", formDetails)
+              let link = await generateFormLink(user.id || 0)
+              signupFormData.link = await this.checkAndGenerateNewFormLink(link, user.id || 0)//generate_random_lin and user_id
+
+              let aliasLink = "";
+              console.log(`apiRequest.form.link: ${formDetails.link}`)
+              if (formDetails.link && formDetails.link != "") {
+                aliasLink = ("/" + formDetails.link)
+                console.log(`aliasLink1: ${aliasLink}`)
+              } else {
+                console.log(`broker.name: ${broker.name}`)
+                aliasLink = "/" + broker.name?.toLowerCase().split(" ")[0]
+                if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
+                  aliasLink += "_exec"
+                }
+                console.log(`aliasLink2: ${aliasLink}`)
+              }
+              signupFormData.alias = aliasLink
+              if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
+                signupFormData.name = formDetails.name ?? CONST.signupFormExec.name
+              } else {
+                signupFormData.name = formDetails.name ?? CONST.signupForm.name
+              }
+
+              signupFormData.description = formDetails.description ?? CONST.signupForm.description
+              signupFormData.title = formDetails.title ?? CONST.signupForm.title
+              signupFormData.formType = formDetails.formType ?? CONST.signupForm.formType
+              signupFormData.keywords = formDetails.keywords ?? CONST.signupForm.keywords
+              // signupFormData.disclosureAgreement = formDetails.disclosureAgreement ?? CONST.signupForm.disclosure_agreement
+              // signupFormData.termsOfService = formDetails.termsOfService ?? CONST.signupForm.terms_of_service
+
+
+
+              signupFormData.inelligibilityPeriod = CONST.signupForm.ineligibilityPeriod
+              signupFormData.published = CONST.signupForm.published
+
+              if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
+                signupFormData.requireDentalHealthCoverage = false
+                signupFormData.requireSpouseEmail = true
+                signupFormData.warnRequiredDependantMedicalExam = true
+              } else {
+                signupFormData.requireDentalHealthCoverage = true
+                signupFormData.requireSpouseEmail = false
+                signupFormData.warnRequiredDependantMedicalExam = false
+              }
+
+              signupFormData.useCreditCardPaymentMethod = true
+              signupFormData.usePadPaymentMethod = true
+
+              signupFormData.isDemoForm = formDetails.isDemoform || false
+
+              const signupForm = await this.SignupFormsRepository.create(signupFormData);
+              console.log(signupForm);
+
+              signupFormId = signupForm.id || 0;
+
+              data.form.push(signupForm)
+              console.log(`signupForm.id: ${signupForm.id}`)
+              //broker_signup_forms_plans
+              // let signupFormPlansArray: BrokerSignupFormsPlans[] = [];
+              // let signupFormPlans: BrokerSignupFormsPlans = new BrokerSignupFormsPlans();
+              // signupFormPlans.formId = signupForm.id || 0;
+
+              if (formDetails.formType == CONST.SIGNUP_FORM.EXECUTIVE) {
+                //get executive plan ids ---> package_id=5
+
+                let executivePlans = await this.InsurancePlansRepository.find({ where: { packageId: CONST.EXECUTIVE_PACKAGE_ID } })
+                let executivePlanlevelObj: SignupFormsPlanLevelMapping = new SignupFormsPlanLevelMapping();
+                executivePlanlevelObj.formId = signupForm.id || 0;
+                let executivePlanlevelArray: any = [];
+                for (const executivePlan of executivePlans) {
+                  // signupFormPlans.planId = executivePlan.id || 0
+                  // console.log(`before push`)
+                  // console.log(signupFormPlans);
+                  // signupFormPlansArray.push(signupFormPlans)
+                  // await this.BrokerSignupFormsPlansRepository.create(signupFormPlans);
+                  if (!executivePlanlevelArray.includes(executivePlan.planLevel)) {
+                    executivePlanlevelArray.push(executivePlan.planLevel);
+                  }
+                }
+                for (const executivePlanLevel of executivePlanlevelArray) {
+                  executivePlanlevelObj.planLevelId = executivePlanLevel;
+                  await this.SignupFormsPlanLevelMappingRepository.create(executivePlanlevelObj);
+                }
+                // console.log(`signupFormPlansArray: ${signupFormPlansArray.length}`)
+              }
+              if (formDetails.formType == CONST.SIGNUP_FORM.CUSTOM) {
+                let planLevels = formDetails.planLevels;
+                let customPlanlevelObj: SignupFormsPlanLevelMapping = new SignupFormsPlanLevelMapping();
+                customPlanlevelObj.formId = signupForm.id || 0;
+                for (const pl of planLevels) {
+                  customPlanlevelObj.planLevelId = pl;
+                  await this.SignupFormsPlanLevelMappingRepository.create(customPlanlevelObj);
+                }
+                // for (const pl of planLevels) {
+                //   let planLevelsInRepo = await this.PlanLevelRepository.find({
+                //     where: {
+                //       and: [
+                //         { or: [{ id: pl }, { parentId: pl }] },
+                //         { published: '1' }
+                //       ]
+                //     }, fields: {
+                //       id: true
+                //     }
+                //   });
+                //   if (planLevelsInRepo) {
+                //     console.log("plan", planLevelsInRepo);
+                //     for (const planlevelloop of planLevelsInRepo) {
+                //       let countofsignupformplanlevelcondition = await this.SignupFormsPlanLevelMappingRepository.count({ and: [{ formId: signupForm.id }, { planlevelId: planlevelloop.id }] })
+                //       console.log(countofsignupformplanlevelcondition);
+                //       if (countofsignupformplanlevelcondition.count > 0)// console.log("plan levels", planlevel);
+                //       { }
+                //       else {
+                //         customPlanlevelObj.planLevelId = planlevelloop.id || 0;
+                //         let bsfl = await this.SignupFormsPlanLevelMappingRepository.create(customPlanlevelObj);
+                //         console.log("bsfl>>>>>", bsfl);
+                //       }
+                //     }
+                //   }
+                // }
+
+              }
+            }//forms
+
+          }
+
+          //handle logo
+          if (value.files) {
+            console.log(`Logo -${value.files.length}`)
+
+            if (value.files.length > 0) {
+              console.log(value.files[0].originalname)
+
+              console.log(`file.originalname`);
+              let originalname = value.files[0].originalname;
+              console.log(originalname)
+              originalname = originalname.replace(/[\])}[{(]/g, '').replace(/ /g, '')
+              console.log(originalname)
+              let filename = originalname
+              let modfilenameArr = filename.split(".")
+              let modfilename = modfilenameArr[0] + "0." + modfilenameArr[1]
+
+              // const broker = await this.BrokerRepository.findById(brokerId);
+              if (broker) {
+                await this.BrokerRepository.updateById(brokerId, {
+                  logo: BROKERPATH_STRING + filename,
+                  link: BROKERPATH_STRING + modfilename
+                })
+                message = 'Broker logo is set'
+                status = '200'
+              } else {
+                console.log('no broker with given id');
+                message = 'No broker found'
+                status = '202'
+              }
+            } else {
+              console.log(`No logo needed`)
+            }
+
+          }
+
+          data.broker = broker;
+
+          message = 'Broker registration successful';
+          status = '200';
+          statusCode = 200;
+
+        } catch (error) {
+          console.error(error);
+          message = 'Broker registration failed'
+          status = '202';
+          statusCode = 202
+          await this.BrokerLicensedStatesAndProvincesRepository.deleteAll({ brokerId: brokerId })
+          // await this.BrokerSignupFormsPlansRepository.deleteAll({ brokerId: brokerId });
+          await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formId: signupFormId });
+          await this.BrokerEoInsuranceRepository.deleteAll({ brokerId: brokerId });
+          await this.ContactInformationRepository.deleteById(contId);
+          await this.BrokerLicensedStatesAndProvincesRepository.deleteAll({ brokerId: brokerId });
+          await this.UsersRepository.deleteById(userId);
+          await this.SignupFormsRepository.deleteAll({ brokerId: brokerId });
+          await this.BrokerRepository.deleteById(brokerId);
+        }
+
+      }
+
+      this.response.status(parseInt(status)).send({
+        status: status,
+        message: message,
+        date: new Date(),
+        data: data
+      });
+
+    })
+    p.catch(onrejected => {
+      message = 'Broker logo is not set'
+      status = '202'
+      this.response.status(parseInt(status)).send({
+        status: status,
+        message: message,
+        date: new Date(),
+        data: data
+      });
+    })
+    return this.response;
+  }
 }

@@ -6,9 +6,9 @@
 import {HttpCachingProxy} from '@loopback/http-caching-proxy';
 import {merge} from 'lodash';
 import path from 'path';
-import {GeocoderDataSource} from '../datasources';
+// import {GeocoderDataSource} from '../datasources';
 // import {Todo} from '../models';
-import {Geocoder, GeoPoint} from '../services';
+// import {Geocoder, GeoPoint} from '../services';
 
 /*
  ==============================================================================
@@ -46,22 +46,22 @@ import {Geocoder, GeoPoint} from '../services';
 //   return new Todo(data);
 // }
 
-export const aLocation = {
-  address: '1 New Orchard Road, Armonk, 10504',
-  geopoint: <GeoPoint>{y: 41.10965601083235, x: -73.72466486205613},
-  get geostring() {
-    return `${this.geopoint.y},${this.geopoint.x}`;
-  },
-};
+// export const aLocation = {
+//   address: '1 New Orchard Road, Armonk, 10504',
+//   geopoint: <GeoPoint>{y: 41.10965601083235, x: -73.72466486205613},
+//   get geostring() {
+//     return `${this.geopoint.y},${this.geopoint.x}`;
+//   },
+// };
 
-export function getProxiedGeoCoderConfig(proxy: HttpCachingProxy) {
-  return merge({}, GeocoderDataSource.defaultConfig, {
-    options: {
-      proxy: proxy.url,
-      tunnel: false,
-    },
-  });
-}
+// export function getProxiedGeoCoderConfig(proxy: HttpCachingProxy) {
+//   return merge({}, GeocoderDataSource.defaultConfig, {
+//     options: {
+//       proxy: proxy.url,
+//       tunnel: false,
+//     },
+//   });
+// }
 
 export {HttpCachingProxy};
 export async function givenCachingProxy() {
@@ -74,14 +74,14 @@ export async function givenCachingProxy() {
   return proxy;
 }
 
-export async function isGeoCoderServiceAvailable(service: Geocoder) {
-  try {
-    await service.geocode(aLocation.address);
-    return true;
-  } catch (err) {
-    if (err.statusCode === 502) {
-      return false;
-    }
-    throw err;
-  }
-}
+// export async function isGeoCoderServiceAvailable(service: Geocoder) {
+//   try {
+//     await service.geocode(aLocation.address);
+//     return true;
+//   } catch (err) {
+//     if (err.statusCode === 502) {
+//       return false;
+//     }
+//     throw err;
+//   }
+// }

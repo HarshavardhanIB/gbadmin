@@ -1,6 +1,10 @@
-import { DefaultCrudRepository } from '@loopback/repository';
-import { GbadminDataSource } from '../datasources';
-import { LanguageTokens, LanguageTokensRelations } from '../models';
+import { Getter } from '@loopback/core';
+import { DefaultCrudRepository, BelongsToAccessor } from '@loopback/repository';
+import { GroupBenefitzDataSource } from '../datasources';
+import { LanguageTokens, LanguageTokensRelations, TranslationLanguages } from '../models';
+import { TranslationLanguagesRepository } from './translation-languages.repository';
 export declare class LanguageTokensRepository extends DefaultCrudRepository<LanguageTokens, typeof LanguageTokens.prototype.id, LanguageTokensRelations> {
-    constructor(dataSource: GbadminDataSource);
+    protected translationLanguagesRepositoryGetter: Getter<TranslationLanguagesRepository>;
+    readonly translationLanguages: BelongsToAccessor<TranslationLanguages, typeof LanguageTokens.prototype.id>;
+    constructor(dataSource: GroupBenefitzDataSource, translationLanguagesRepositoryGetter: Getter<TranslationLanguagesRepository>);
 }

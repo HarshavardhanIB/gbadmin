@@ -1,0 +1,33 @@
+import { Client as Fusebill } from '@fusebridge/fusebill-node';
+export declare const fusebillClient: Fusebill;
+export declare class FusebillService {
+    constructor();
+    request(url: string, method: string, data: any): Promise<any>;
+    getAllPlans(): Promise<any>;
+    getPlanByid(fusebillPlanId: string): Promise<any>;
+    getProductsByPlanid(fusebillPlanId: string): Promise<any>;
+    updateProductPrice(fusebillProductId: string): Promise<any>;
+    createPaymentsCredictCardMethod(data: any): Promise<any>;
+    createPayment(data: any): Promise<any>;
+    refundPayment(data: any): Promise<any>;
+    getCustomer(customerID: any): Promise<any>;
+    createCustomer(data: any): Promise<any>;
+    updateCustomer(data: any): Promise<any>;
+    activateCustomer(customerId: any): Promise<any>;
+    cancelCustomer(customerId: any): Promise<any>;
+    getSubscriptionsofCustomer(customerId: any): Promise<any>;
+    getSubscriptionById(subscriptionId: any): Promise<any>;
+    createSubscription(data: any): Promise<any>;
+    updateSubscription(data: any): Promise<any>;
+    cancelSubscription(data: any): Promise<any>;
+    activateSubscription(subscriptionId: any): Promise<any>;
+    provisionSubscription(subscriptionId: any): Promise<any>;
+    deleteSubscription(subscriptionId: any): Promise<any>;
+    getsubscriptionProduct(subscriptionProductId: any): Promise<any>;
+    updatesubscriptionProduct(data: any): Promise<any>;
+    newSubscriptionProductPrice(data: any): Promise<any>;
+    updateSubscriptionProductPrice(data: any): Promise<any>;
+    getInvoice(customerId: any): Promise<any>;
+    createCustomerAddress(data: any): Promise<any>;
+    updateCustomerAddress(data: any): Promise<any>;
+}

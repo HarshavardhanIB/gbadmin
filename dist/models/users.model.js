@@ -21,7 +21,6 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'boolean',
-        required: true,
         precision: 1,
         generated: 0,
         mysql: { columnName: 'block', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
@@ -96,6 +95,7 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'date',
+        default: () => new Date(),
         required: true,
         generated: 0,
         mysql: { columnName: 'registration_date', dataType: 'date', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
@@ -125,7 +125,7 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:type", customer_model_1.Customer)
 ], Users.prototype, "customer", void 0);
 Users = tslib_1.__decorate([
-    (0, repository_1.model)({ settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'users' } } }),
+    (0, repository_1.model)({ settings: { idInjection: false, mysql: { schema: 'group_benefitz', table: 'users' } } }),
     tslib_1.__metadata("design:paramtypes", [Object])
 ], Users);
 exports.Users = Users;

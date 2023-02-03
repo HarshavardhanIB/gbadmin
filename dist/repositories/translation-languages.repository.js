@@ -7,13 +7,17 @@ const repository_1 = require("@loopback/repository");
 const datasources_1 = require("../datasources");
 const models_1 = require("../models");
 let TranslationLanguagesRepository = class TranslationLanguagesRepository extends repository_1.DefaultCrudRepository {
-    constructor(dataSource) {
+    constructor(dataSource, languageTokensRepositoryGetter) {
         super(models_1.TranslationLanguages, dataSource);
+        this.languageTokensRepositoryGetter = languageTokensRepositoryGetter;
+        this.languageTokens = this.createHasManyRepositoryFactoryFor('languageTokens', languageTokensRepositoryGetter);
+        this.registerInclusionResolver('languageTokens', this.languageTokens.inclusionResolver);
     }
 };
 TranslationLanguagesRepository = tslib_1.__decorate([
-    tslib_1.__param(0, (0, core_1.inject)('datasources.gbadmin')),
-    tslib_1.__metadata("design:paramtypes", [datasources_1.GbadminDataSource])
+    tslib_1.__param(0, (0, core_1.inject)('datasources.groupBenefitz')),
+    tslib_1.__param(1, repository_1.repository.getter('LanguageTokensRepository')),
+    tslib_1.__metadata("design:paramtypes", [datasources_1.GroupBenefitzDataSource, Function])
 ], TranslationLanguagesRepository);
 exports.TranslationLanguagesRepository = TranslationLanguagesRepository;
 //# sourceMappingURL=translation-languages.repository.js.map

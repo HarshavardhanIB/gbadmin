@@ -1,5 +1,6 @@
 import { genSalt, hash } from 'bcryptjs';
 import crypto from 'crypto';
+import path from 'path';
 
 const sharedSecret = "ibAitp";
 export async function getActivationCode() {
@@ -35,6 +36,16 @@ export function objectLength(obj: any) {
 
 export function onlyUnique(value: any, index: number, self: any) {
   return self.indexOf(value) === index;
+}
+
+export async function intersection(a: any, b: any) {
+  var t;
+  if (b.length > a.length) t = b, b = a, a = t; // indexOf to loop over shorter
+  return a.filter(function (e: any) {
+    return b.indexOf(e) > -1;
+  }).filter(function (e: any, i: any, c: any) { // extra step to remove duplicates
+    return c.indexOf(e) === i;
+  });
 }
 
 export async function randomString(length: number, chars: string) {
@@ -85,3 +96,21 @@ export function createSignature(query: string) {
   const computedSignature = crypto.createHmac("sha256", sharedSecret).update(query).digest("hex");
   return computedSignature;
 }
+
+
+export function getFileAttributes(file: string) {
+  /*
+Returns:
+{
+  root: 'C:/',
+  dir: 'C://Code/my-website',
+  base: 'index.html',
+  ext: '.html',
+  name: 'index'
+}
+*/
+  if (!file || file == '')
+    file = 'D://sid/gb/gb-enrollment-form/allinputdata.json'
+  return path.parse(file);
+}
+

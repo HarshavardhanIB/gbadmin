@@ -1,8 +1,4 @@
 "use strict";
-// Copyright IBM Corp. and LoopBack contributors 2018,2020. All Rights Reserved.
-// Node module: @loopback/example-todo
-// This file is licensed under the MIT License.
-// License text available at https://opensource.org/licenses/MIT
 Object.defineProperty(exports, "__esModule", { value: true });
 const application_1 = require("./application");
 /**
@@ -12,7 +8,7 @@ async function exportOpenApiSpec() {
     var _a, _b, _c;
     const config = {
         rest: {
-            port: +((_a = process.env.PORT) !== null && _a !== void 0 ? _a : 3000),
+            port: +((_a = process.env.PORT) !== null && _a !== void 0 ? _a : 3002),
             host: (_b = process.env.HOST) !== null && _b !== void 0 ? _b : 'localhost',
         },
     };

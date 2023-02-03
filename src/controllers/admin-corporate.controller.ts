@@ -6,6 +6,7 @@ import { genSalt, hash, compare } from 'bcryptjs';
 import * as jwt from 'jsonwebtoken'
 import * as messages from '../constants/messages.constants';
 import * as constants from '../services/constants'
+import * as CONST from '../constants'
 import {
   Credentials,
   MyUserService,
@@ -17,11 +18,12 @@ import {
 import { AdminRepository, UsersRepository } from '../repositories';
 import { authenticate } from '@loopback/authentication';
 import { authorize } from '@loopback/authorization';
-import { basicAuthorization } from '../middleware/auth.midd';
+
 import { getActivationCode, randomString } from '../common-functions';
 import moment from 'moment';
 import { Users } from '../models';
 import { NewUserRequest } from './auth.controller';
+import { basicAuthorization } from '../middlewares/auth.middleware';
 // import {inject} from '@loopback/core';
 const CredentialsSchema: SchemaObject = {
   type: 'object',
@@ -52,7 +54,7 @@ export class AdminCorporateController {
     public adminRepository: AdminRepository,) { }
   @authenticate('jwt')
   @authorize({
-    allowedRoles: ['COMPANY_ADMINISTRATOR'],
+    allowedRoles: [CONST.USER_ROLE.CORPORATE_ADMINISTRATOR],
     voters: [basicAuthorization],
   })
   @post('/auth/signup', {
@@ -112,7 +114,7 @@ export class AdminCorporateController {
     else {
       res = {
         "statusCode": 201,
-        "message": "email already exits"
+        "message": "Email already exits"
       };
     }
     return res;

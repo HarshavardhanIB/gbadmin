@@ -6,7 +6,7 @@
 import { BootMixin } from '@loopback/boot';
 import { ApplicationConfig, createBindingFromClass } from '@loopback/core';
 import { RepositoryMixin } from '@loopback/repository';
-import { Request, Response, RestApplication } from '@loopback/rest';
+import { Request, Response, RestApplication, RestBindings } from '@loopback/rest';
 import {
   RestExplorerBindings,
   RestExplorerComponent,
@@ -28,9 +28,10 @@ import {
 import multer from 'multer';
 import { DbDataSource } from './datasources';
 import { FILE_UPLOAD_SERVICE, STORAGE_DIRECTORY, TokenServiceBindings, TokenServiceConstants } from './keys';
-import { ErrorHandlerMiddlewareProvider } from './middleware/error-handler.middleware'
+
 import { JWTAuthenticationStrategy } from './authentication.stratageys/jwt.strategy';
 import { AuthorizationComponent } from '@loopback/authorization';
+import { ErrorHandlerMiddlewareProvider } from './middlewares/error-handler.middleware';
 export { ApplicationConfig };
 
 export class GroupBenfitsAdminPortalApplication extends BootMixin(
@@ -41,6 +42,21 @@ export class GroupBenfitsAdminPortalApplication extends BootMixin(
 
     // Set up the custom sequence
     this.sequence(MySequence);
+
+
+    console.log(`node_env: ${process.env.NODE_ENV}`)
+    //local, dev
+    if (process.env.NODE_ENV == "dev") {
+      //if (process.env.NODE_ENV == "local" || process.env.NODE_ENV == "dev") {
+      this.bind(RestBindings.ERROR_WRITER_OPTIONS).to({debug: true});
+    } else {
+      this.bind(RestBindings.ERROR_WRITER_OPTIONS).to({debug: false});
+    }
+    //
+
+
+
+
 
     // Set up default home page
     this.static('/', path.join(__dirname, '../public'));

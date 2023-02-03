@@ -1,22 +1,49 @@
 import { belongsTo, Entity, hasMany, hasOne, model, property } from '@loopback/repository';
+import {Broker} from './broker.model';
 import { ContactInformation } from './contact-information.model';
 import { CustomerContactInfo } from './customer-contact-info.model';
 import { CustomerPlanOptionsValues } from './customer-plan-options-values.model';
 import { CustomerPlans } from './customer-plans.model';
 import { CustomerRelatives } from './customer-relatives.model';
 import { CustomerSignup } from './customer-signup.model';
+import {InsurancePlans} from './insurance-plans.model';
 import { Users } from './users.model';
-
 @model({
   settings: {
-    idInjection: false, foreignKeys: {
-      idx_customer_user_id: {
-        name: 'idx_customer_user_id',
+    idInjection: false,
+    foreignKeys: {
+      customer_ibfk_5: {
+        name: 'customer_ibfk_5',
+        entity: 'CorporateTiers',
+        entityKey: 'id',
+        foreignKey: 'actualTier',
+      },
+      customer_ibfk_4: {
+        name: 'customer_ibfk_4',
+        entity: 'CorporateTiers',
+        entityKey: 'id',
+        foreignKey: 'assignerTier',
+      },
+      customer_ibfk_3: {
+        name: 'customer_ibfk_3',
         entity: 'Users',
         entityKey: 'id',
         foreignKey: 'userId',
       },
-    }, mysql: { schema: 'gbadmin', table: 'customer' }
+      customer_ibfk_2: {
+        name: 'customer_ibfk_2',
+        entity: 'Broker',
+        entityKey: 'id',
+        foreignKey: 'brokerId',
+      },
+      customer_ibfk_1: {
+        name: 'customer_ibfk_1',
+        entity: 'Customer',
+        entityKey: 'id',
+        foreignKey: 'parentId',
+      },
+    },
+    mysql: {schema: 'group_benefitz', table: 'customer'}, strict: false
   }
 })
 export class Customer extends Entity {
@@ -70,9 +97,9 @@ export class Customer extends Entity {
   deleted?: boolean;
 
   @property({
-    type: 'date',
-    generated: 0,
-    mysql: { columnName: 'dob', dataType: 'date', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
+    // type: 'date',
+    type: 'string',
+    mysql: {columnName: 'dob', dataType: 'date', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'Y'},
   })
   dob?: string;
 
@@ -172,8 +199,14 @@ export class Customer extends Entity {
     type: 'string',
     required: true,
     length: 45,
-    generated: 0,
-    mysql: { columnName: 'last_name', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
+    mysql: {columnName: 'last_name', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'N'},
+    jsonSchema: {
+      maxLength: 40,
+      minLength: 2,
+      errorMessage: 'Last Name must be at least 2 characters and maximum 40 characters',
+      // minLength: 'Name should be at least 10 characters.',
+      //maxLength: 'Name should not exceed 30 characters.',
+    },
   })
   lastName: string;
 
@@ -195,12 +228,12 @@ export class Customer extends Entity {
 
   @property({
     type: 'number',
-    required: true,
+    // required: true,
     precision: 12,
     generated: 0,
     mysql: { columnName: 'monthly_recurring_revenue', dataType: 'float', dataLength: null, dataPrecision: 12, dataScale: null, nullable: 'N', generated: 0 },
   })
-  monthlyRecurringRevenue: number;
+  monthlyRecurringRevenue?: number;
 
   @property({
     type: 'number',
@@ -213,12 +246,12 @@ export class Customer extends Entity {
 
   @property({
     type: 'string',
-    required: true,
+    // required: true,
     length: 11,
     generated: 0,
     mysql: { columnName: 'payment_method', dataType: 'enum', dataLength: 11, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
   })
-  paymentMethod: string;
+  paymentMethod?: string;
 
   @property({
     type: 'string',
@@ -246,12 +279,12 @@ export class Customer extends Entity {
   planLevel?: number;
 
   @property({
-    type: 'date',
-    required: true,
-    generated: 0,
-    mysql: { columnName: 'registration_date', dataType: 'date', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
+    //type: 'date',
+    type: 'string',
+    //required: true,
+    mysql: {columnName: 'registration_date', dataType: 'date', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'N'},
   })
-  registrationDate: string;
+  registrationDate?: string;
 
   @property({
     type: 'string',
@@ -285,22 +318,80 @@ export class Customer extends Entity {
     mysql: { columnName: 'user_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0 },
   })
   userId?: number;
+  
+  
+  @property({
+    type: 'number',
+    precision: 10,
+    scale: 0,
+    mysql: {columnName: 'spending_limit', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y'},
+  })
+  spendingLimit?: number;
+
+  @property({
+    type: 'number',
+    // required: true,
+    precision: 12,
+    mysql: {columnName: 'annual_income', dataType: 'float', dataLength: null, dataPrecision: 12, dataScale: null, nullable: 'Y'},
+  })
+  annualIncome?: number;
+
+  @property({
+    type: 'date',
+    mysql: {columnName: 'date_of_hiring', dataType: 'date', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'Y'},
+  })
+  dateOfHiring?: string;
+
+  @property({
+    type: 'number',
+    precision: 10,
+    scale: 0,
+    mysql: {columnName: 'assigner_tier', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y'},
+  })
+  assignerTier?: number;
+
+
+  @property({
+    type: 'number',
+    precision: 10,
+    scale: 0,
+    mysql: {columnName: 'actual_tier', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y'},
+  })
+  actualTier?: number;
+
   @belongsTo(() => Users, { name: 'user' })
   user_id: number;
-  @hasMany(() => CustomerRelatives, { keyTo: 'customer_id' })
-  customerRelativeRelation: CustomerRelatives[];
+ 
+  @belongsTo(() => Broker, {name: 'broker'})
+  broker_id: number;
 
-  // @hasMany(() => CustomerRelatives)
-  // customerRelativeRelation: CustomerRelatives[];
-  @hasMany(() => ContactInformation, { through: { model: () => CustomerContactInfo, keyFrom: 'customer_id', keyTo: 'contact_id' } })
+  @hasMany(() => Customer, {keyTo: 'parent_id'})
+  childCustomers: Customer[];
+
+  @belongsTo(() => Customer, {name: 'parent'})
+  parent_id: number;
+
+  @hasMany(() => CustomerRelatives, {keyTo: 'customer_id'})
+  customerRelatives: CustomerRelatives[];
+
+  @hasOne(() => CustomerSignup, {keyTo: 'customer_id'})
+  customerSignup: CustomerSignup;
+
+  @hasMany(() => ContactInformation, {through: {model: () => CustomerContactInfo, keyFrom: 'customer_id', keyTo: 'contact_id'}})
   contactInformations: ContactInformation[];
 
-  @hasMany(() => CustomerPlanOptionsValues, { keyTo: 'customer_id' })
-  customerPlanOptionsValues: CustomerPlanOptionsValues[];
-  @hasMany(() => CustomerPlans, { keyTo: 'customer_id' }) customerPlans: CustomerPlans[];
+  @hasMany(() => CustomerContactInfo, {keyTo: 'customer_id'})
+  customerContactInfos: CustomerContactInfo[];
 
-  @hasOne(() => CustomerSignup, { keyTo: 'customer_id' })
-  customerSignup: CustomerSignup;
+  @hasMany(() => InsurancePlans, {through: {model: () => CustomerPlans, keyFrom: 'customer_id', keyTo: 'plan_id'}})
+  subscriptionPlans: InsurancePlans[];
+
+  @hasMany(() => CustomerPlans, {keyTo: 'customer_id'})
+  customerPlans: CustomerPlans[];
+
+  @hasMany(() => CustomerPlanOptionsValues, {keyTo: 'customer_id'})
+  customerPlanOptionsValues: CustomerPlanOptionsValues[];
+
   // Define well-known properties here
 
   // Indexer property to allow additional data

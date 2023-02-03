@@ -3,10 +3,25 @@ import { Entity, model, property } from '@loopback/repository';
 @model({
   settings: {
     idInjection: false,
-    mysql: { schema: 'gbadmin', table: 'plans_options_reporting' }
+    foreignKeys: {
+      fk_plan_options_reporting_insurance_packages_package_id: {
+        name: 'fk_plan_options_reporting_insurance_packages_package_id',
+        entity: 'InsurancePackages',
+        entityKey: 'id',
+        foreignKey: 'packageId',
+      },
+    },
+    mysql: {schema: 'group_benefitz', table: 'plans_options_reporting'}
   }
 })
 export class PlansOptionsReporting extends Entity {
+  @property({
+    type: 'number',
+    generated: true,
+    id: true
+  })
+  id?: number;
+  
   @property({
     type: 'string',
     length: 255,
@@ -15,12 +30,7 @@ export class PlansOptionsReporting extends Entity {
   })
   email?: string;
 
-  @property({
-    type: 'number',
-    generated: true,
-    id: true
-  })
-  id?: number;
+
 
   @property({
     type: 'string',

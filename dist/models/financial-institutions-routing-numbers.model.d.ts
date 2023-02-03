@@ -7,6 +7,7 @@ export declare class FinancialInstitutionsRoutingNumbers extends Entity {
     id?: number;
     pBankCode: string;
     pTransitNumber: string;
+    bank_id: number;
     [prop: string]: any;
     constructor(data?: Partial<FinancialInstitutionsRoutingNumbers>);
 }

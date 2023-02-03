@@ -3,12 +3,33 @@ import { Broker } from './broker.model';
 import { CustomerSignup } from './customer-signup.model';
 import { Customer } from './customer.model';
 import { SignupFormsPlanLevelMapping } from './signup-forms-plan-level-mapping.model';
-import {BrokerSignupFormsPlans} from './broker-signup-forms-plans.model';
+//import {BrokerSignupFormsPlans} from './broker-signup-forms-plans.model';
 
 @model({
-  settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'signup_forms' } }
+  settings: {
+    idInjection: false,
+    foreignKeys: {
+      idx_signup_form_broker_id: {
+        name: 'idx_signup_form_broker_id',
+        entity: 'Brokers',
+        entityKey: 'id',
+        foreignKey: 'brokerId',
+      },
+    },
+    mysql: {schema: 'group_benefitz', table: 'signup_forms'}
+  }
 })
 export class SignupForms extends Entity {
+  @property({
+    type: 'number',
+    precision: 10,
+    scale: 0,
+    generated: 1,
+    id: 1,
+    mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
+  })
+  id?: number;
+  
   @property({
     type: 'string',
     length: 1000,
@@ -48,16 +69,6 @@ export class SignupForms extends Entity {
     type: 'number',
     precision: 10,
     scale: 0,
-    generated: 1,
-    id: 1,
-    mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
-  })
-  id?: number;
-
-  @property({
-    type: 'number',
-    precision: 10,
-    scale: 0,
     generated: 0,
     mysql: { columnName: 'inelligibility_period', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0 },
   })
@@ -65,12 +76,12 @@ export class SignupForms extends Entity {
 
   @property({
     type: 'boolean',
-    required: true,
+
     precision: 1,
     generated: 0,
     mysql: { columnName: 'is_demo_form', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
   })
-  isDemoForm: boolean;
+  isDemoForm?: boolean;
 
   @property({
     type: 'string',
@@ -120,21 +131,21 @@ export class SignupForms extends Entity {
 
   @property({
     type: 'boolean',
-    required: true,
+
     precision: 1,
     generated: 0,
     mysql: { columnName: 'require_dental_health_coverage', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
   })
-  requireDentalHealthCoverage: boolean;
+  requireDentalHealthCoverage?: boolean;
 
   @property({
     type: 'boolean',
-    required: true,
+
     precision: 1,
     generated: 0,
     mysql: { columnName: 'require_spouse_email', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
   })
-  requireSpouseEmail: boolean;
+  requireSpouseEmail?: boolean;
 
   @property({
     type: 'string',
@@ -146,41 +157,42 @@ export class SignupForms extends Entity {
 
   @property({
     type: 'boolean',
-    required: true,
+
     precision: 1,
     generated: 0,
     mysql: { columnName: 'use_credit_card_payment_method', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
   })
-  useCreditCardPaymentMethod: boolean;
+  useCreditCardPaymentMethod?: boolean;
 
   @property({
     type: 'boolean',
-    required: true,
+
     precision: 1,
     generated: 0,
     mysql: { columnName: 'use_pad_payment_method', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
   })
-  usePadPaymentMethod: boolean;
+  usePadPaymentMethod?: boolean;
 
   @property({
     type: 'boolean',
-    required: true,
+
     precision: 1,
     generated: 0,
     mysql: { columnName: 'warn_required_dependant_medical_exam', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
   })
-  warnRequiredDependantMedicalExam: boolean;
+  warnRequiredDependantMedicalExam?: boolean;
+  
   @hasMany(() => Customer, { through: { model: () => CustomerSignup, keyFrom: 'form_id', keyTo: 'customer_id' } })
   customers: Customer[];
 
   @hasMany(() => SignupFormsPlanLevelMapping, { keyTo: 'form_id' })
-  signupFormsPlanLevelMappings: SignupFormsPlanLevelMapping[];
+  signupFormPlanLevels: SignupFormsPlanLevelMapping[];
 
   @belongsTo(() => Broker, { name: 'broker' })
   broker_id: number;
 
-  @hasMany(() => BrokerSignupFormsPlans, {keyTo: 'form_id'})
-  brokerSignupFormsPlans: BrokerSignupFormsPlans[];
+  //@hasMany(() => BrokerSignupFormsPlans, {keyTo: 'form_id'})
+  //brokerSignupFormsPlans: BrokerSignupFormsPlans[];
   // Define well-known properties here
 
   // Indexer property to allow additional data

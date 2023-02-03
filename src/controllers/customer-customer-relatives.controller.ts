@@ -42,7 +42,7 @@ export class CustomerCustomerRelativesController {
     @param.path.number('id') id: number,
     @param.query.object('filter') filter?: Filter<CustomerRelatives>,
   ): Promise<CustomerRelatives[]> {
-    return this.customerRepository.customerRelativeRelation(id).find(filter);
+    return this.customerRepository.customerRelatives(id).find(filter);
   }
 
   @post('/customers/{id}/customer-relatives', {
@@ -67,7 +67,7 @@ export class CustomerCustomerRelativesController {
       },
     }) customerRelatives: Omit<CustomerRelatives, 'id'>,
   ): Promise<CustomerRelatives> {
-    return this.customerRepository.customerRelativeRelation(id).create(customerRelatives);
+    return this.customerRepository.customerRelatives(id).create(customerRelatives);
   }
 
   @patch('/customers/{id}/customer-relatives', {
@@ -90,7 +90,7 @@ export class CustomerCustomerRelativesController {
     customerRelatives: Partial<CustomerRelatives>,
     @param.query.object('where', getWhereSchemaFor(CustomerRelatives)) where?: Where<CustomerRelatives>,
   ): Promise<Count> {
-    return this.customerRepository.customerRelativeRelation(id).patch(customerRelatives, where);
+    return this.customerRepository.customerRelatives(id).patch(customerRelatives, where);
   }
 
   @del('/customers/{id}/customer-relatives', {
@@ -105,6 +105,6 @@ export class CustomerCustomerRelativesController {
     @param.path.number('id') id: number,
     @param.query.object('where', getWhereSchemaFor(CustomerRelatives)) where?: Where<CustomerRelatives>,
   ): Promise<Count> {
-    return this.customerRepository.customerRelativeRelation(id).delete(where);
+    return this.customerRepository.customerRelatives(id).delete(where);
   }
 }

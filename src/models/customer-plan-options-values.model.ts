@@ -3,7 +3,22 @@ import { Entity, model, property } from '@loopback/repository';
 @model({
   settings: {
     idInjection: false,
-    mysql: { schema: 'gbadmin', table: 'customer_plan_options_values' }
+    foreignKeys: {
+      fk_plan_options_customer_id: {
+        name: 'fk_plan_options_customer_id',
+        entity: 'Customers',
+        entityKey: 'id',
+        foreignKey: 'customerId',
+      },
+      fk_customer_plan_options_plan_options_id: {
+        name: 'fk_customer_plan_options_plan_options_id',
+        entity: 'PlanOptions',
+        entityKey: 'id',
+        foreignKey: 'planOptionsId',
+      },
+
+    },
+    mysql: {schema: 'group_benefitz', table: 'customer_plan_options_values'}
   }
 })
 export class CustomerPlanOptionsValues extends Entity {

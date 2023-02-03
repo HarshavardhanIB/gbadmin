@@ -1,8 +1,7 @@
-import { BrokerEoInsuranceRepository, BrokerLicensedStatesAndProvincesRepository, BrokerRepository, SignupFormsPlanLevelMappingRepository, BrokerSignupFormsPlansRepository, ContactInformationRepository, CustomerRepository, CustomerSignupRepository, InsurancePlansRepository, PlanLevelRepository, SignupFormsRepository, StatesAndProvincesRepository, UsersRepository } from '../repositories';
+import { BrokerEoInsuranceRepository, BrokerLicensedStatesAndProvincesRepository, BrokerRepository, SignupFormsPlanLevelMappingRepository, ContactInformationRepository, CustomerRepository, CustomerSignupRepository, InsurancePlansRepository, PlanLevelRepository, SignupFormsRepository, StatesAndProvincesRepository, UsersRepository } from '../repositories';
 export declare class BrokerService {
     BrokerRepository: BrokerRepository;
     BrokerLicensedStatesAndProvincesRepository: BrokerLicensedStatesAndProvincesRepository;
-    BrokerSignupFormsPlansRepository: BrokerSignupFormsPlansRepository;
     SignupFormsPlanLevelMappingRepository: SignupFormsPlanLevelMappingRepository;
     UsersRepository: UsersRepository;
     ContactInformationRepository: ContactInformationRepository;
@@ -13,7 +12,7 @@ export declare class BrokerService {
     InsurancePlansRepository: InsurancePlansRepository;
     PlanLevelRepository: PlanLevelRepository;
     BrokerEoInsuranceRepository: BrokerEoInsuranceRepository;
-    constructor(/* Add @inject to inject parameters */ BrokerRepository: BrokerRepository, BrokerLicensedStatesAndProvincesRepository: BrokerLicensedStatesAndProvincesRepository, BrokerSignupFormsPlansRepository: BrokerSignupFormsPlansRepository, SignupFormsPlanLevelMappingRepository: SignupFormsPlanLevelMappingRepository, UsersRepository: UsersRepository, ContactInformationRepository: ContactInformationRepository, SignupFormsRepository: SignupFormsRepository, StatesAndProvincesRepository: StatesAndProvincesRepository, CustomerSignupRepository: CustomerSignupRepository, CustomerRepository: CustomerRepository, InsurancePlansRepository: InsurancePlansRepository, PlanLevelRepository: PlanLevelRepository, BrokerEoInsuranceRepository: BrokerEoInsuranceRepository);
+    constructor(/* Add @inject to inject parameters */ BrokerRepository: BrokerRepository, BrokerLicensedStatesAndProvincesRepository: BrokerLicensedStatesAndProvincesRepository, SignupFormsPlanLevelMappingRepository: SignupFormsPlanLevelMappingRepository, UsersRepository: UsersRepository, ContactInformationRepository: ContactInformationRepository, SignupFormsRepository: SignupFormsRepository, StatesAndProvincesRepository: StatesAndProvincesRepository, CustomerSignupRepository: CustomerSignupRepository, CustomerRepository: CustomerRepository, InsurancePlansRepository: InsurancePlansRepository, PlanLevelRepository: PlanLevelRepository, BrokerEoInsuranceRepository: BrokerEoInsuranceRepository);
     print(): Promise<void>;
     updateContact(id: number, ContactInformation: any): Promise<{
         statusCode: number;

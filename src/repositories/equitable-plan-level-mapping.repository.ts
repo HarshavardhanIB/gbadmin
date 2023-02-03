@@ -1,6 +1,6 @@
 import {inject} from '@loopback/core';
 import {DefaultCrudRepository} from '@loopback/repository';
-import {GbadminDataSource} from '../datasources';
+import {GroupBenefitzDataSource} from '../datasources';
 import {EquitablePlanLevelMapping, EquitablePlanLevelMappingRelations} from '../models';
 
 export class EquitablePlanLevelMappingRepository extends DefaultCrudRepository<
@@ -9,7 +9,7 @@ export class EquitablePlanLevelMappingRepository extends DefaultCrudRepository<
   EquitablePlanLevelMappingRelations
 > {
   constructor(
-    @inject('datasources.gbadmin') dataSource: GbadminDataSource,
+    @inject('datasources.groupBenefitz') dataSource: GroupBenefitzDataSource,
   ) {
     super(EquitablePlanLevelMapping, dataSource);
   }

@@ -1,7 +1,7 @@
 "use strict";
 // import { inject } from '@loopback/core';
 // import { DefaultCrudRepository } from '@loopback/repository';
-// import { GbadminDataSource } from '../datasources';
+// import { GroupBenefitzDataSource } from '../datasources';
 // import { TieredRebatesData, TieredRebatesDataRelations } from '../models';
 // export class TieredRebatesDataRepository extends DefaultCrudRepository<
 //   TieredRebatesData,
@@ -9,7 +9,7 @@
 //   TieredRebatesDataRelations
 // > {
 //   constructor(
-//     @inject('datasources.gbadmin') dataSource: GbadminDataSource,
+//     @inject('datasources.groupBenefitz') dataSource: GroupBenefitzDataSource,
 //   ) {
 //     super(TieredRebatesData, dataSource);
 //   }

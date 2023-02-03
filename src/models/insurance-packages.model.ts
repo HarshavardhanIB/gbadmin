@@ -3,7 +3,10 @@ import { InsurancePlans } from './insurance-plans.model';
 import { PlanLevel } from './plan-level.model';
 
 @model({
-  settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'insurance_packages' } }
+  settings: {
+    idInjection: false,
+    mysql: {schema: 'group_benefitz', table: 'insurance_packages'}
+  }
 })
 export class InsurancePackages extends Entity {
   @property({
@@ -90,6 +93,10 @@ export class InsurancePackages extends Entity {
     mysql: { columnName: 'required_package', dataType: 'tinyint', dataLength: null, dataPrecision: 3, dataScale: 0, nullable: 'N', generated: 0 },
   })
   requiredPackage: number;
+  
+    @hasMany(() => InsurancePlans, {keyTo: 'packageId'})
+  plans: InsurancePlans[];
+  
   @hasMany(() => PlanLevel, { through: { model: () => InsurancePlans, keyFrom: 'package_id', keyTo: 'plan_level' } })
   planGroups: PlanLevel[];
 

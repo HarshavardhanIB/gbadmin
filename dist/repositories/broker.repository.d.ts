@@ -1,6 +1,6 @@
 import { Getter } from '@loopback/core';
 import { DefaultCrudRepository, HasOneRepositoryFactory, BelongsToAccessor, HasManyRepositoryFactory } from '@loopback/repository';
-import { GbadminDataSource } from '../datasources';
+import { GroupBenefitzDataSource } from '../datasources';
 import { Broker, BrokerRelations, Users, ContactInformation, BrokerEoInsurance, BrokerLicensedStatesAndProvinces, SignupForms } from '../models';
 import { UsersRepository } from './users.repository';
 import { ContactInformationRepository } from './contact-information.repository';
@@ -14,9 +14,11 @@ export declare class BrokerRepository extends DefaultCrudRepository<Broker, type
     protected brokerLicensedStatesAndProvincesRepositoryGetter: Getter<BrokerLicensedStatesAndProvincesRepository>;
     protected signupFormsRepositoryGetter: Getter<SignupFormsRepository>;
     readonly contactInfo: BelongsToAccessor<ContactInformation, typeof Broker.prototype.id>;
-    readonly brokerEoInsurance: HasOneRepositoryFactory<BrokerEoInsurance, typeof Broker.prototype.id>;
     readonly brokerLicensedStatesAndProvinces: HasManyRepositoryFactory<BrokerLicensedStatesAndProvinces, typeof Broker.prototype.id>;
+    readonly subBrokers: HasManyRepositoryFactory<Broker, typeof Broker.prototype.id>;
+    readonly parent: BelongsToAccessor<Broker, typeof Broker.prototype.id>;
+    readonly brokerEoInsurance: HasOneRepositoryFactory<BrokerEoInsurance, typeof Broker.prototype.id>;
     readonly signupForms: HasManyRepositoryFactory<SignupForms, typeof Broker.prototype.id>;
     readonly user: BelongsToAccessor<Users, typeof Broker.prototype.id>;
-    constructor(dataSource: GbadminDataSource, usersRepositoryGetter: Getter<UsersRepository>, contactInformationRepositoryGetter: Getter<ContactInformationRepository>, brokerEoInsuranceRepositoryGetter: Getter<BrokerEoInsuranceRepository>, brokerLicensedStatesAndProvincesRepositoryGetter: Getter<BrokerLicensedStatesAndProvincesRepository>, signupFormsRepositoryGetter: Getter<SignupFormsRepository>);
+    constructor(dataSource: GroupBenefitzDataSource, usersRepositoryGetter: Getter<UsersRepository>, contactInformationRepositoryGetter: Getter<ContactInformationRepository>, brokerEoInsuranceRepositoryGetter: Getter<BrokerEoInsuranceRepository>, brokerLicensedStatesAndProvincesRepositoryGetter: Getter<BrokerLicensedStatesAndProvincesRepository>, signupFormsRepositoryGetter: Getter<SignupFormsRepository>);
 }

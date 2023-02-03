@@ -1,9 +1,40 @@
-import { Entity, model, property } from '@loopback/repository';
+import {Entity, model, property, belongsTo} from '@loopback/repository';
+import {FinancialInstitutions} from './financial-institutions.model';
 
 @model({
-  settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'bank_codes' } }
+  settings: {
+    idInjection: false,
+    foreignKeys: {
+      fk_financial_inst_bank_id: {
+        name: 'fk_financial_inst_bank_id',
+        entity: 'FinancialInstitutions',
+        entityKey: 'id',
+        foreignKey: 'bankId',
+      }
+    },
+    mysql: {schema: 'group_benefitz', table: 'bank_codes'}
+  }
 })
 export class BankCodes extends Entity {
+  @property({
+    type: 'number',
+    required: true,
+    precision: 10,
+    scale: 0,
+    id: 1,
+    mysql: {columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N'},
+  })
+  id: number;
+  
+   @property({
+    type: 'number',
+    required: true,
+    precision: 10,
+    scale: 0,
+    generated: 0,
+    mysql: { columnName: 'bank_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0 },
+  })
+  bankId: number; 
   @property({
     type: 'string',
     required: true,
@@ -13,24 +44,8 @@ export class BankCodes extends Entity {
   })
   bankCode: string;
 
-  @property({
-    type: 'number',
-    required: true,
-    precision: 10,
-    scale: 0,
-    generated: 0,
-    mysql: { columnName: 'bank_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0 },
-  })
-  bankId: number;
-
-  @property({
-    type: 'number',
-
-    generated: true,
-    id: true
-  })
-  id?: number;
-
+  @belongsTo(() => FinancialInstitutions, {name: 'bank'})
+  bank_id: number;
   // Define well-known properties here
 
   // Indexer property to allow additional data

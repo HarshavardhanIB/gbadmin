@@ -17,7 +17,8 @@ export const ERRORS: any = {
   branchCode: `Branch code must be only numbers of length 5`,
   accountNo: `Account number must be only numbers of length between 5 and 12`,
   missingDetails: `Input details are insufficient`,
-  invalidBankDetails: `Invalid bank details`
+  invalidBankDetails: `Invalid bank details`,
+  someThingwentWrong:'Something went wrong'
 }
 
 export const MAIL: any = {
@@ -29,5 +30,16 @@ export const MAIL: any = {
 export const EMAIL_EXISTS: any = {
   ACCESSIBLE_ACCOUNT: `The email address already exists.Please contact your broker for assistance at {{broker_mail}}`,
   INACCESSIBLE_ACCOUNT: `The email address already exists.Please contact GroupBenefitz Admin at {{admin_mail}}`
+}
+//corporate messages
+export const CORPORATE_MSG={
+  REGISTRATION_SUCCESS:'Corporate registratered successfully ',
+  REGISTRATION_FAIL:'Corporate registration failed',
+  LOGO_NOT_SET:'logo is not set',
+  LOGO:'logo',
+  NOLOGO:'No logo found'
+}
+export const BROKER_MSG={
+BROKERCOUNT:"The brokers count",
 
 }

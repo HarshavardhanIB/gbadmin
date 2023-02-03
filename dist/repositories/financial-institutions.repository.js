@@ -7,13 +7,17 @@ const repository_1 = require("@loopback/repository");
 const datasources_1 = require("../datasources");
 const models_1 = require("../models");
 let FinancialInstitutionsRepository = class FinancialInstitutionsRepository extends repository_1.DefaultCrudRepository {
-    constructor(dataSource) {
+    constructor(dataSource, financialInstitutionsRoutingNumbersRepositoryGetter) {
         super(models_1.FinancialInstitutions, dataSource);
+        this.financialInstitutionsRoutingNumbersRepositoryGetter = financialInstitutionsRoutingNumbersRepositoryGetter;
+        this.branches = this.createHasManyRepositoryFactoryFor('branches', financialInstitutionsRoutingNumbersRepositoryGetter);
+        this.registerInclusionResolver('branches', this.branches.inclusionResolver);
     }
 };
 FinancialInstitutionsRepository = tslib_1.__decorate([
-    tslib_1.__param(0, (0, core_1.inject)('datasources.gbadmin')),
-    tslib_1.__metadata("design:paramtypes", [datasources_1.GbadminDataSource])
+    tslib_1.__param(0, (0, core_1.inject)('datasources.groupBenefitz')),
+    tslib_1.__param(1, repository_1.repository.getter('FinancialInstitutionsRoutingNumbersRepository')),
+    tslib_1.__metadata("design:paramtypes", [datasources_1.GroupBenefitzDataSource, Function])
 ], FinancialInstitutionsRepository);
 exports.FinancialInstitutionsRepository = FinancialInstitutionsRepository;
 //# sourceMappingURL=financial-institutions.repository.js.map

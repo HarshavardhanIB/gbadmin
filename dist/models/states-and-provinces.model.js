@@ -3,12 +3,25 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.StatesAndProvinces = void 0;
 const tslib_1 = require("tslib");
 const repository_1 = require("@loopback/repository");
+const country_model_1 = require("./country.model");
+const insurance_plans_model_1 = require("./insurance-plans.model");
 const plans_availability_model_1 = require("./plans-availability.model");
 let StatesAndProvinces = class StatesAndProvinces extends repository_1.Entity {
     constructor(data) {
         super(data);
     }
 };
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'number',
+        precision: 10,
+        scale: 0,
+        generated: 1,
+        id: 1,
+        mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
+    }),
+    tslib_1.__metadata("design:type", Number)
+], StatesAndProvinces.prototype, "id", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
@@ -39,17 +52,6 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", String)
 ], StatesAndProvinces.prototype, "fusebillId", void 0);
-tslib_1.__decorate([
-    (0, repository_1.property)({
-        type: 'number',
-        precision: 10,
-        scale: 0,
-        generated: 1,
-        id: 1,
-        mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
-    }),
-    tslib_1.__metadata("design:type", Number)
-], StatesAndProvinces.prototype, "id", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'string',
@@ -96,12 +98,23 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:type", String)
 ], StatesAndProvinces.prototype, "zipcodes", void 0);
 tslib_1.__decorate([
+    (0, repository_1.hasMany)(() => insurance_plans_model_1.InsurancePlans, { through: { model: () => plans_availability_model_1.PlansAvailability, keyFrom: 'state_id', keyTo: 'plan_id' } }),
+    tslib_1.__metadata("design:type", Array)
+], StatesAndProvinces.prototype, "insurancePlans", void 0);
+tslib_1.__decorate([
+    (0, repository_1.belongsTo)(() => country_model_1.Country, { name: 'country' }),
+    tslib_1.__metadata("design:type", Number)
+], StatesAndProvinces.prototype, "country_id", void 0);
+tslib_1.__decorate([
     (0, repository_1.hasMany)(() => plans_availability_model_1.PlansAvailability, { keyTo: 'state_id' }),
     tslib_1.__metadata("design:type", Array)
 ], StatesAndProvinces.prototype, "planAvailability", void 0);
 StatesAndProvinces = tslib_1.__decorate([
     (0, repository_1.model)({
-        settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'states_and_provinces' } }
+        settings: {
+            idInjection: false,
+            mysql: { schema: 'group_benefitz', table: 'states_and_provinces' }
+        }
     }),
     tslib_1.__metadata("design:paramtypes", [Object])
 ], StatesAndProvinces);

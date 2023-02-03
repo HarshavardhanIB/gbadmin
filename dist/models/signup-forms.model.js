@@ -7,12 +7,23 @@ const broker_model_1 = require("./broker.model");
 const customer_signup_model_1 = require("./customer-signup.model");
 const customer_model_1 = require("./customer.model");
 const signup_forms_plan_level_mapping_model_1 = require("./signup-forms-plan-level-mapping.model");
-const broker_signup_forms_plans_model_1 = require("./broker-signup-forms-plans.model");
+//import {BrokerSignupFormsPlans} from './broker-signup-forms-plans.model';
 let SignupForms = class SignupForms extends repository_1.Entity {
     constructor(data) {
         super(data);
     }
 };
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'number',
+        precision: 10,
+        scale: 0,
+        generated: 1,
+        id: 1,
+        mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
+    }),
+    tslib_1.__metadata("design:type", Number)
+], SignupForms.prototype, "id", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'string',
@@ -57,17 +68,6 @@ tslib_1.__decorate([
         type: 'number',
         precision: 10,
         scale: 0,
-        generated: 1,
-        id: 1,
-        mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
-    }),
-    tslib_1.__metadata("design:type", Number)
-], SignupForms.prototype, "id", void 0);
-tslib_1.__decorate([
-    (0, repository_1.property)({
-        type: 'number',
-        precision: 10,
-        scale: 0,
         generated: 0,
         mysql: { columnName: 'inelligibility_period', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y', generated: 0 },
     }),
@@ -76,7 +76,6 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'boolean',
-        required: true,
         precision: 1,
         generated: 0,
         mysql: { columnName: 'is_demo_form', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
@@ -138,7 +137,6 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'boolean',
-        required: true,
         precision: 1,
         generated: 0,
         mysql: { columnName: 'require_dental_health_coverage', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
@@ -148,7 +146,6 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'boolean',
-        required: true,
         precision: 1,
         generated: 0,
         mysql: { columnName: 'require_spouse_email', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
@@ -167,7 +164,6 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'boolean',
-        required: true,
         precision: 1,
         generated: 0,
         mysql: { columnName: 'use_credit_card_payment_method', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
@@ -177,7 +173,6 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'boolean',
-        required: true,
         precision: 1,
         generated: 0,
         mysql: { columnName: 'use_pad_payment_method', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
@@ -187,7 +182,6 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'boolean',
-        required: true,
         precision: 1,
         generated: 0,
         mysql: { columnName: 'warn_required_dependant_medical_exam', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
@@ -201,18 +195,25 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.hasMany)(() => signup_forms_plan_level_mapping_model_1.SignupFormsPlanLevelMapping, { keyTo: 'form_id' }),
     tslib_1.__metadata("design:type", Array)
-], SignupForms.prototype, "signupFormsPlanLevelMappings", void 0);
+], SignupForms.prototype, "signupFormPlanLevels", void 0);
 tslib_1.__decorate([
     (0, repository_1.belongsTo)(() => broker_model_1.Broker, { name: 'broker' }),
     tslib_1.__metadata("design:type", Number)
 ], SignupForms.prototype, "broker_id", void 0);
-tslib_1.__decorate([
-    (0, repository_1.hasMany)(() => broker_signup_forms_plans_model_1.BrokerSignupFormsPlans, { keyTo: 'form_id' }),
-    tslib_1.__metadata("design:type", Array)
-], SignupForms.prototype, "brokerSignupFormsPlans", void 0);
 SignupForms = tslib_1.__decorate([
     (0, repository_1.model)({
-        settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'signup_forms' } }
+        settings: {
+            idInjection: false,
+            foreignKeys: {
+                idx_signup_form_broker_id: {
+                    name: 'idx_signup_form_broker_id',
+                    entity: 'Brokers',
+                    entityKey: 'id',
+                    foreignKey: 'brokerId',
+                },
+            },
+            mysql: { schema: 'group_benefitz', table: 'signup_forms' }
+        }
     }),
     tslib_1.__metadata("design:paramtypes", [Object])
 ], SignupForms);

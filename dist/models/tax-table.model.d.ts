@@ -1,7 +1,7 @@
 import { Entity } from '@loopback/repository';
 export declare class TaxTable extends Entity {
-    countryId: number;
     id?: number;
+    countryId: number;
     isFederalTax: boolean;
     rate: number;
     stateId?: number;

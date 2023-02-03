@@ -12,6 +12,67 @@ const node_fetch_1 = tslib_1.__importDefault(require("node-fetch"));
 const core_1 = require("@loopback/core");
 let HttpService = class HttpService {
     constructor( /* Add @inject to inject parameters */) { }
+    async get(url, headers, staticService) {
+        let config = {
+        // data:{
+        // }
+        };
+        if (headers) {
+            config.headers = headers;
+        }
+        try {
+            const response = await axios_1.default.get(url, config);
+            //console.log(response.data);
+            if (staticService) {
+                return response;
+            }
+            else {
+                return response.data;
+            }
+        }
+        catch (error) {
+            console.log(`Aitestpro server connection??`);
+            console.log(`${process.env.AITPSERVER}`);
+            if (error.response) {
+                if (error.response.data)
+                    return error.response.data;
+                else
+                    return error.response;
+            }
+            else {
+                console.error(error);
+                return error;
+            }
+            //return error.response.data.message;
+        }
+    }
+    async post(url, data, headers) {
+        let config = {
+        //data: data,
+        };
+        if (headers) {
+            config.headers = headers;
+        }
+        try {
+            const response = await axios_1.default.post(url, data, config);
+            //console.log(response.data);
+            return response.data;
+        }
+        catch (error) {
+            console.log(`Aitestpro server connection??`);
+            console.log(`${process.env.AITPSERVER}`);
+            if (error.response) {
+                if (error.response.data)
+                    return error.response.data;
+                else
+                    return error.response;
+            }
+            else {
+                console.error(error);
+                return error;
+            }
+        }
+    }
     async fetchXml(url, dir) {
         const streamPipeline = (0, util_1.promisify)(stream_1.pipeline);
         const res = await (0, node_fetch_1.default)(url);

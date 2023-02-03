@@ -11,16 +11,16 @@ let SignupFormsSignupFormsPlanLevelMappingController = class SignupFormsSignupFo
         this.signupFormsRepository = signupFormsRepository;
     }
     async find(id, filter) {
-        return this.signupFormsRepository.signupFormsPlanLevelMappings(id).find(filter);
+        return this.signupFormsRepository.signupFormPlanLevels(id).find(filter);
     }
     async create(id, signupFormsPlanLevelMapping) {
-        return this.signupFormsRepository.signupFormsPlanLevelMappings(id).create(signupFormsPlanLevelMapping);
+        return this.signupFormsRepository.signupFormPlanLevels(id).create(signupFormsPlanLevelMapping);
     }
     async patch(id, signupFormsPlanLevelMapping, where) {
-        return this.signupFormsRepository.signupFormsPlanLevelMappings(id).patch(signupFormsPlanLevelMapping, where);
+        return this.signupFormsRepository.signupFormPlanLevels(id).patch(signupFormsPlanLevelMapping, where);
     }
     async delete(id, where) {
-        return this.signupFormsRepository.signupFormsPlanLevelMappings(id).delete(where);
+        return this.signupFormsRepository.signupFormPlanLevels(id).delete(where);
     }
 };
 tslib_1.__decorate([

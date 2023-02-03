@@ -4,10 +4,17 @@ import { PlanLevel } from './plan-level.model';
 @model({
   settings: {
     idInjection: false,
-    mysql: { schema: 'gbadmin', table: 'signup_forms_plan_level_mapping' }
+    mysql: {schema: 'group_benefitz', table: 'signup_forms_plan_level_mapping'}
   }
 })
 export class SignupFormsPlanLevelMapping extends Entity {
+
+  @property({
+    type: 'number',
+    generated: true,
+    id: true
+  })
+  id?: number;
   @property({
     type: 'number',
     required: true,
@@ -18,12 +25,6 @@ export class SignupFormsPlanLevelMapping extends Entity {
   })
   formId: number;
 
-  @property({
-    type: 'number',
-    generated: true,
-    id: true
-  })
-  id?: number;
 
   @property({
     type: 'number',

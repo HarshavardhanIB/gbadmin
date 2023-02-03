@@ -18,10 +18,10 @@ let PlansAvailabilityRepository = class PlansAvailabilityRepository extends repo
     }
 };
 PlansAvailabilityRepository = tslib_1.__decorate([
-    tslib_1.__param(0, (0, core_1.inject)('datasources.gbadmin')),
+    tslib_1.__param(0, (0, core_1.inject)('datasources.groupBenefitz')),
     tslib_1.__param(1, repository_1.repository.getter('StatesAndProvincesRepository')),
     tslib_1.__param(2, repository_1.repository.getter('InsurancePlansRepository')),
-    tslib_1.__metadata("design:paramtypes", [datasources_1.GbadminDataSource, Function, Function])
+    tslib_1.__metadata("design:paramtypes", [datasources_1.GroupBenefitzDataSource, Function, Function])
 ], PlansAvailabilityRepository);
 exports.PlansAvailabilityRepository = PlansAvailabilityRepository;
 //# sourceMappingURL=plans-availability.repository.js.map

@@ -1,8 +1,8 @@
 import { Entity, hasOne, model, property } from '@loopback/repository';
 import { Customer } from './customer.model';
 
-@model({ settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'users' } } })
-export class Users extends Entity {
+@model({ settings: { idInjection: false, mysql: { schema: 'group_benefitz', table: 'users' } } })
+export class Users extends Entity{
   @property({
     type: 'string',
     length: 100,
@@ -13,12 +13,11 @@ export class Users extends Entity {
 
   @property({
     type: 'boolean',
-    required: true,
     precision: 1,
     generated: 0,
     mysql: { columnName: 'block', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'N', generated: 0 },
   })
-  block: boolean;
+  block?: boolean;
 
   @property({
     type: 'number',
@@ -80,6 +79,7 @@ export class Users extends Entity {
 
   @property({
     type: 'date',
+    default: () => new Date(),
     required: true,
     generated: 0,
     mysql: { columnName: 'registration_date', dataType: 'date', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
@@ -101,6 +101,7 @@ export class Users extends Entity {
     mysql: { columnName: 'username', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   username?: string;
+  
   @hasOne(() => Customer, { keyTo: 'user_id' })
   customer: Customer;
   // Define well-known properties here

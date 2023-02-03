@@ -2,7 +2,7 @@ import { Entity } from '@loopback/repository';
 import { Customer } from './customer.model';
 export declare class Users extends Entity {
     activation?: string;
-    block: boolean;
+    block?: boolean;
     companyId?: number;
     deleted?: boolean;
     id?: number;

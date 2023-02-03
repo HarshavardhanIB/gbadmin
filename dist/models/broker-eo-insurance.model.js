@@ -68,7 +68,10 @@ tslib_1.__decorate([
 ], BrokerEoInsurance.prototype, "policyNumber", void 0);
 BrokerEoInsurance = tslib_1.__decorate([
     (0, repository_1.model)({
-        settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'broker_eo_insurance' } }
+        settings: {
+            idInjection: false,
+            mysql: { schema: 'group_benefitz', table: 'broker_eo_insurance' }
+        }
     }),
     tslib_1.__metadata("design:paramtypes", [Object])
 ], BrokerEoInsurance);

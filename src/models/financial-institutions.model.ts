@@ -1,9 +1,10 @@
-import { Entity, model, property } from '@loopback/repository';
+import {Entity, hasMany, model, property} from '@loopback/repository';
+import {FinancialInstitutionsRoutingNumbers} from './financial-institutions-routing-numbers.model';
 
 @model({
   settings: {
     idInjection: false,
-    mysql: { schema: 'gbadmin', table: 'financial_institutions' }
+    mysql: {schema: 'group_benefitz', table: 'financial_institutions'}
   }
 })
 export class FinancialInstitutions extends Entity {
@@ -40,6 +41,9 @@ export class FinancialInstitutions extends Entity {
     mysql: { columnName: 'name', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'N', generated: 0 },
   })
   name: string;
+
+  @hasMany(() => FinancialInstitutionsRoutingNumbers, {keyTo: 'bank_id'})
+  branches: FinancialInstitutionsRoutingNumbers[];
 
   // Define well-known properties here
 

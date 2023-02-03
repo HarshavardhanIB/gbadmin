@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PlanOptions = void 0;
 const tslib_1 = require("tslib");
 const repository_1 = require("@loopback/repository");
+const plan_options_values_model_1 = require("./plan-options-values.model");
 let PlanOptions = class PlanOptions extends repository_1.Entity {
     constructor(data) {
         super(data);
@@ -45,9 +46,13 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", String)
 ], PlanOptions.prototype, "type", void 0);
+tslib_1.__decorate([
+    (0, repository_1.hasMany)(() => plan_options_values_model_1.PlanOptionsValues, { keyTo: 'plan_options_id' }),
+    tslib_1.__metadata("design:type", Array)
+], PlanOptions.prototype, "planOptionsValues", void 0);
 PlanOptions = tslib_1.__decorate([
     (0, repository_1.model)({
-        settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'plan_options' } }
+        settings: { idInjection: false, mysql: { schema: 'group_benefitz', table: 'plan_options' } }
     }),
     tslib_1.__metadata("design:paramtypes", [Object])
 ], PlanOptions);

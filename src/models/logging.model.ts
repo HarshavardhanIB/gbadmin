@@ -1,6 +1,17 @@
 import { Entity, model, property } from '@loopback/repository';
 
-@model({ settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'logging' } } })
+export enum Operation {
+  INSERT_ONE = 'INSERT_ONE',
+  INSERT_MANY = 'INSERT_MANY',
+  UPDATE_ONE = 'UPDATE_ONE',
+  UPDATE_MANY = 'UPDATE_MANY',
+  DELETE_ONE = 'DELETE_ONE',
+  DELETE_MANY = 'DELETE_MANY',
+}
+
+@model({
+  settings: {idInjection: false, mysql: {schema: 'group_benefitz', table: 'logging'}}
+})
 export class Logging extends Entity {
   @property({
     type: 'number',

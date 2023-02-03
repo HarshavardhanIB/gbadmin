@@ -1,7 +1,7 @@
 import { Entity } from '@loopback/repository';
 export declare class SignupFormsPlanLevelMapping extends Entity {
-    formId: number;
     id?: number;
+    formId: number;
     planLevelId: number;
     plan_level_id: number;
     form_id?: number;

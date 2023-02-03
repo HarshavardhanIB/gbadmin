@@ -1,9 +1,18 @@
-import { Entity, model, property } from '@loopback/repository';
+import {belongsTo, Entity, model, property} from '@loopback/repository';
+import {FinancialInstitutions} from './financial-institutions.model';
 
 @model({
   settings: {
     idInjection: false,
-    mysql: { schema: 'gbadmin', table: 'financial_institutions_routing_numbers' }
+    foreignKeys: {
+      fk_bank_id: {
+        name: 'fk_bank_id',
+        entity: 'FinancialInstitutions',
+        entityKey: 'id',
+        foreignKey: 'bankId',
+      }
+    },
+    mysql: {schema: 'group_benefitz', table: 'financial_institutions_routing_numbers'}
   }
 })
 export class FinancialInstitutionsRoutingNumbers extends Entity {
@@ -69,6 +78,8 @@ export class FinancialInstitutionsRoutingNumbers extends Entity {
   })
   pTransitNumber: string;
 
+  @belongsTo(() => FinancialInstitutions, {name: 'bank'})
+  bank_id: number;
   // Define well-known properties here
 
   // Indexer property to allow additional data

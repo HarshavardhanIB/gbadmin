@@ -29,17 +29,17 @@ import {
 import { Users, ContactInformation, CustomerContactInfo, CustomerPlanOptionsValues, CustomerPlans, CustomerRelatives, CustomerSignup, Customer } from '../models';
 import { UsersRepository, ContactInformationRepository, CustomerContactInfoRepository, CustomerPlanOptionsValuesRepository, CustomerPlansRepository, CustomerRelativesRepository, CustomerRepository, CustomerSignupRepository } from '../repositories';
 import { authorize } from '@loopback/authorization';
-import { basicAuthorization } from '../middleware/auth.midd';
+import { basicAuthorization } from '../middlewares/auth.middleware';
 import { SecurityBindings, securityId, UserProfile } from '@loopback/security';
 import * as CONST from '../constants';
 import moment from 'moment';
 import { from } from 'form-data';
 import { toArray } from 'lodash';
-// @authenticate('jwt')
-// @authorize({
-//   allowedRoles: ['BROKER', 'ADMINISTRATOR'],
-//   voters: [basicAuthorization]
-// })
+@authenticate('jwt')
+@authorize({
+  allowedRoles: [CONST.USER_ROLE.BROKER, CONST.USER_ROLE.ADMINISTRATOR],
+  voters: [basicAuthorization]
+})
 export class customerController {
   constructor(
     @repository(UsersRepository)

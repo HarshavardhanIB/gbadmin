@@ -4,7 +4,7 @@ import { StatesAndProvinces } from './states-and-provinces.model';
 @model({
   settings: {
     idInjection: false,
-    mysql: { schema: 'gbadmin', table: 'broker_licensed_states_and_provinces' }
+    mysql: {schema: 'group_benefitz', table: 'broker_licensed_states_and_provinces'}
   }
 })
 export class BrokerLicensedStatesAndProvinces extends Entity {

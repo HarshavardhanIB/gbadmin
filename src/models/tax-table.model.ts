@@ -1,16 +1,9 @@
 import { Entity, model, property } from '@loopback/repository';
 
-@model({ settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'tax_table' } } })
+@model({
+  settings: {idInjection: false, mysql: {schema: 'group_benefitz', table: 'tax_table'}}
+})
 export class TaxTable extends Entity {
-  @property({
-    type: 'number',
-    required: true,
-    precision: 10,
-    scale: 0,
-    generated: 0,
-    mysql: { columnName: 'country_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0 },
-  })
-  countryId: number;
 
   @property({
     type: 'number',
@@ -21,6 +14,17 @@ export class TaxTable extends Entity {
     mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
   })
   id?: number;
+
+  @property({
+    type: 'number',
+    required: true,
+    precision: 10,
+    scale: 0,
+    generated: 0,
+    mysql: { columnName: 'country_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0 },
+  })
+  countryId: number;
+
 
   @property({
     type: 'boolean',

@@ -1,9 +1,4 @@
-// Copyright IBM Corp. and LoopBack contributors 2018,2020. All Rights Reserved.
-// Node module: @loopback/example-todo
-// This file is licensed under the MIT License.
-// License text available at https://opensource.org/licenses/MIT
 
-// export * from './todo.repository';
 export * from './users.repository';
 export * from './contact-information.repository';
 export * from './customer-contact-info.repository';
@@ -25,7 +20,7 @@ export * from './plans-options-reporting.repository';
 export * from './signup-forms.repository';
 export * from './states-and-provinces.repository';
 export * from './broker-licensed-states-and-provinces.repository';
-export * from './broker-signup-forms-plans.repository';
+// export * from './broker-signup-forms-plans.repository';
 export * from './broker.repository';
 // export * from './tiered-rebates-data.repository';
 // export * from './tiered-rebates.repository';
@@ -35,10 +30,10 @@ export * from './bank-codes.repository';
 export * from './broker-available-plan-levels.repository';
 // export * from './broker-registration.repository';
 // export * from './company.repository';
-export * from './corporate-broker-packages.repository';
+// export * from './corporate-broker-packages.repository';
 export * from './corporate-paid-tiered-plan-levels.repository';
 export * from './corporate-tiers.repository';
-export * from './corporate-wallet.repository';
+// export * from './corporate-wallet.repository';
 export * from './country.repository';
 export * from './equitable-plan-level-mapping.repository';
 export * from './financial-institutions-routing-numbers.repository';
@@ -50,6 +45,6 @@ export * from './language-tokens.repository';
 export * from './logging.repository';
 export * from './plan-features.repository';
 export * from './plan-level-features.repository';
-export * from './service-provider.repository';
+// export * from './service-provider.repository';
 export * from './tax-table.repository';
 export * from './translation-languages.repository';

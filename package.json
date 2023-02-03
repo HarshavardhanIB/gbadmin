@@ -1,20 +1,15 @@
 {
-  "name": "gbapi",
-  "description": "GB Portal ",
-  "version": "0.4.3",
+  "name": "groupbenefits-adminportal-api",
+  "description": "API services for GroupBenefitz Admin Portal",
+  "version": "0.1.0.0",
   "keywords": [
-    "loopback",
-    "LoopBack",
-    "example",
-    "tutorial",
-    "CRUD",
-    "models",
-    "todo"
+    "API",
+    "LoopBack"
   ],
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "author": "",
+  "author": "AiTestPro Admin <admin@aitestpro.com>",
   "copyright.owner": "",
   "repository": {
     "type": "git",
@@ -51,6 +46,7 @@
     "access": "public"
   },
   "dependencies": {
+    "@fusebridge/fusebill-node": "^0.0.8",
     "@loopback/authentication": "^9.0.4",
     "@loopback/authentication-jwt": "^0.12.4",
     "@loopback/authorization": "^0.12.6",
@@ -64,6 +60,7 @@
     "axios": "^1.2.1",
     "crypto": "^1.0.1",
     "dotenv": "^16.0.3",
+    "exceljs": "^4.3.0",
     "form-data": "^4.0.0",
     "jsonwebtoken": "^8.5.1",
     "loopback-connector-mysql": "^5.4.4",
@@ -73,6 +70,7 @@
     "multer": "^1.4.5-lts.1",
     "node-fetch": "^2.6.7",
     "nodemailer": "^6.8.0",
+    "pdf-lib": "^1.17.1",
     "resize-img": "^2.0.0",
     "sharp": "^0.31.3",
     "tslib": "^2.4.0"

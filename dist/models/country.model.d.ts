@@ -1,4 +1,5 @@
 import { Entity } from '@loopback/repository';
+import { StatesAndProvinces } from './states-and-provinces.model';
 export declare class Country extends Entity {
     currency?: string;
     currencySymbol?: string;
@@ -9,6 +10,7 @@ export declare class Country extends Entity {
     name?: string;
     published?: boolean;
     shortName?: string;
+    statesAndProvinces: StatesAndProvinces[];
     [prop: string]: any;
     constructor(data?: Partial<Country>);
 }

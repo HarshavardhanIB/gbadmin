@@ -24,6 +24,7 @@ const constants = tslib_1.__importStar(require("../services/constants"));
 const jwt_service_1 = require("../services/jwt.service");
 const models_1 = require("../models");
 const services_1 = require("../services");
+const paths_1 = require("../paths");
 let NewUserRequest = class NewUserRequest extends admin_model_1.Admin {
 };
 tslib_1.__decorate([
@@ -237,7 +238,7 @@ let AuthController = class AuthController {
     }
     // @get('/auth/forgotPassword/{mailid}')
     async forgotPassword(email) {
-        var _a;
+        var _a, _b;
         let response;
         let userEnterEmailId = email.email;
         let activeStatus = await this.usersRepository.findOne({ where: { username: userEnterEmailId }, fields: { block: true, activation: true, id: true } });
@@ -245,7 +246,7 @@ let AuthController = class AuthController {
         if (activeStatus) {
             let id = activeStatus.id;
             let HTMLcontentFile = ((_a = process.env.APP_URL) !== null && _a !== void 0 ? _a : "https://devresources.aitestpro.com/apps/temp") + "/gb_user_activation.html?key=" + activeStatus.activation;
-            let inActiveUser = activeStatus.block;
+            let inActiveUser = (_b = activeStatus.block) !== null && _b !== void 0 ? _b : true;
             // const active_buffer = Buffer.from(activeStatus.block);
             // const active_boolean = Boolean(active_buffer.readInt8());
             let userNewPassword = await (0, common_services_1.generateRandomPassword)();
@@ -365,7 +366,7 @@ let AuthController = class AuthController {
     }
 };
 tslib_1.__decorate([
-    (0, rest_1.post)('/auth/login', {
+    (0, rest_1.post)(paths_1.AUTH.LOGIN, {
         responses: {
             '200': {
                 description: 'Token',
@@ -391,7 +392,7 @@ tslib_1.__decorate([
 ], AuthController.prototype, "login", null);
 tslib_1.__decorate([
     (0, authentication_1.authenticate)('jwt'),
-    (0, rest_1.get)('/user/whoAmI', {
+    (0, rest_1.get)(paths_1.AUTH.WHOAMI, {
         responses: {
             '200': {
                 description: 'Return current user',
@@ -411,7 +412,7 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], AuthController.prototype, "whoAmI", null);
 tslib_1.__decorate([
-    (0, rest_1.post)('/auth/signup', {
+    (0, rest_1.post)(paths_1.AUTH.SIGNUP, {
         responses: {
             '200': {
                 description: 'User',
@@ -440,14 +441,14 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], AuthController.prototype, "signUp", null);
 tslib_1.__decorate([
-    (0, rest_1.post)('/auth/signin'),
+    (0, rest_1.post)(paths_1.AUTH.SIGNIN),
     tslib_1.__param(0, (0, rest_1.requestBody)(exports.CredentialsRequestBody)),
     tslib_1.__metadata("design:type", Function),
     tslib_1.__metadata("design:paramtypes", [Object]),
     tslib_1.__metadata("design:returntype", Promise)
 ], AuthController.prototype, "userLogin", null);
 tslib_1.__decorate([
-    (0, rest_1.post)('/auth/forgotpassword'),
+    (0, rest_1.post)(paths_1.AUTH.FORGOTPASSWORD),
     tslib_1.__param(0, (0, rest_1.requestBody)({
         content: {
             'application/json': { schema: forgotmail },
@@ -458,7 +459,7 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], AuthController.prototype, "forgotPassword", null);
 tslib_1.__decorate([
-    (0, rest_1.get)('/auth/userActivation/{key}'),
+    (0, rest_1.get)(paths_1.AUTH.USER_ACTIVATION),
     tslib_1.__param(0, rest_1.param.path.string('key')),
     tslib_1.__metadata("design:type", Function),
     tslib_1.__metadata("design:paramtypes", [String]),
@@ -466,7 +467,7 @@ tslib_1.__decorate([
 ], AuthController.prototype, "activeuser", null);
 tslib_1.__decorate([
     (0, authentication_1.authenticate)('jwt'),
-    (0, rest_1.post)('/user/changePassword'),
+    (0, rest_1.post)(paths_1.AUTH.CHANGE_PASSWORD),
     tslib_1.__param(0, (0, rest_1.requestBody)({
         content: {
             'application/json': { schema: chnagePassword },
@@ -478,13 +479,13 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], AuthController.prototype, "chnagePasswords", null);
 tslib_1.__decorate([
-    (0, rest_1.get)('/auth/app'),
+    (0, rest_1.get)(paths_1.AUTH.APP),
     tslib_1.__metadata("design:type", Function),
     tslib_1.__metadata("design:paramtypes", []),
     tslib_1.__metadata("design:returntype", Promise)
 ], AuthController.prototype, "app", null);
 tslib_1.__decorate([
-    (0, rest_1.get)('/userIp'),
+    (0, rest_1.get)(paths_1.AUTH.IP),
     tslib_1.__metadata("design:type", Function),
     tslib_1.__metadata("design:paramtypes", []),
     tslib_1.__metadata("design:returntype", Promise)

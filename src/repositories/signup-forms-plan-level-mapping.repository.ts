@@ -1,6 +1,6 @@
 import { inject, Getter } from '@loopback/core';
 import { DefaultCrudRepository, repository, BelongsToAccessor } from '@loopback/repository';
-import { GbadminDataSource } from '../datasources';
+import { GroupBenefitzDataSource } from '../datasources';
 import { SignupFormsPlanLevelMapping, SignupFormsPlanLevelMappingRelations, PlanLevel } from '../models';
 import { PlanLevelRepository } from './plan-level.repository';
 
@@ -13,7 +13,8 @@ export class SignupFormsPlanLevelMappingRepository extends DefaultCrudRepository
   public readonly planLevels: BelongsToAccessor<PlanLevel, typeof SignupFormsPlanLevelMapping.prototype.id>;
 
   constructor(
-    @inject('datasources.gbadmin') dataSource: GbadminDataSource, @repository.getter('PlanLevelRepository') protected planLevelRepositoryGetter: Getter<PlanLevelRepository>,
+    @inject('datasources.groupBenefitz') dataSource: GroupBenefitzDataSource,
+    @repository.getter('PlanLevelRepository') protected planLevelRepositoryGetter: Getter<PlanLevelRepository>,
   ) {
     super(SignupFormsPlanLevelMapping, dataSource);
     this.planLevels = this.createBelongsToAccessorFor('planLevels', planLevelRepositoryGetter,);

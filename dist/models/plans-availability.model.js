@@ -13,6 +13,14 @@ let PlansAvailability = class PlansAvailability extends repository_1.Entity {
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
+        generated: true,
+        id: true
+    }),
+    tslib_1.__metadata("design:type", Number)
+], PlansAvailability.prototype, "id", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'number',
         precision: 12,
         generated: 0,
         mysql: { columnName: 'gst', dataType: 'float', dataLength: null, dataPrecision: 12, dataScale: null, nullable: 'Y', generated: 0 },
@@ -28,14 +36,6 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", Number)
 ], PlansAvailability.prototype, "hst", void 0);
-tslib_1.__decorate([
-    (0, repository_1.property)({
-        type: 'number',
-        generated: true,
-        id: true
-    }),
-    tslib_1.__metadata("design:type", Number)
-], PlansAvailability.prototype, "id", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
@@ -114,7 +114,24 @@ tslib_1.__decorate([
 ], PlansAvailability.prototype, "plan_id", void 0);
 PlansAvailability = tslib_1.__decorate([
     (0, repository_1.model)({
-        settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'plans_availability' } }
+        settings: {
+            idInjection: false,
+            foreignKeys: {
+                idx_plans_availability_plan_id: {
+                    name: 'idx_plans_availability_plan_id',
+                    entity: 'InsurancePlans',
+                    entityKey: 'id',
+                    foreignKey: 'planId',
+                },
+                idx_plans_availability_state_id: {
+                    name: 'idx_plans_availability_state_id',
+                    entity: 'StatesAndProvinces',
+                    entityKey: 'id',
+                    foreignKey: 'stateId',
+                },
+            },
+            mysql: { schema: 'group_benefitz', table: 'plans_availability' }
+        }
     }),
     tslib_1.__metadata("design:paramtypes", [Object])
 ], PlansAvailability);

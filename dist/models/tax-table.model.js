@@ -11,17 +11,6 @@ let TaxTable = class TaxTable extends repository_1.Entity {
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
-        required: true,
-        precision: 10,
-        scale: 0,
-        generated: 0,
-        mysql: { columnName: 'country_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0 },
-    }),
-    tslib_1.__metadata("design:type", Number)
-], TaxTable.prototype, "countryId", void 0);
-tslib_1.__decorate([
-    (0, repository_1.property)({
-        type: 'number',
         precision: 10,
         scale: 0,
         generated: 1,
@@ -30,6 +19,17 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", Number)
 ], TaxTable.prototype, "id", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'number',
+        required: true,
+        precision: 10,
+        scale: 0,
+        generated: 0,
+        mysql: { columnName: 'country_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 0 },
+    }),
+    tslib_1.__metadata("design:type", Number)
+], TaxTable.prototype, "countryId", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'boolean',
@@ -89,7 +89,9 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:type", Number)
 ], TaxTable.prototype, "zoneId", void 0);
 TaxTable = tslib_1.__decorate([
-    (0, repository_1.model)({ settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'tax_table' } } }),
+    (0, repository_1.model)({
+        settings: { idInjection: false, mysql: { schema: 'group_benefitz', table: 'tax_table' } }
+    }),
     tslib_1.__metadata("design:paramtypes", [Object])
 ], TaxTable);
 exports.TaxTable = TaxTable;

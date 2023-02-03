@@ -1,19 +1,22 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.BrokerSignupFormsPlansRepository = void 0;
-const tslib_1 = require("tslib");
-const core_1 = require("@loopback/core");
-const repository_1 = require("@loopback/repository");
-const datasources_1 = require("../datasources");
-const models_1 = require("../models");
-let BrokerSignupFormsPlansRepository = class BrokerSignupFormsPlansRepository extends repository_1.DefaultCrudRepository {
-    constructor(dataSource) {
-        super(models_1.BrokerSignupFormsPlans, dataSource);
-    }
-};
-BrokerSignupFormsPlansRepository = tslib_1.__decorate([
-    tslib_1.__param(0, (0, core_1.inject)('datasources.gbadmin')),
-    tslib_1.__metadata("design:paramtypes", [datasources_1.GbadminDataSource])
-], BrokerSignupFormsPlansRepository);
-exports.BrokerSignupFormsPlansRepository = BrokerSignupFormsPlansRepository;
+// import {inject} from '@loopback/core';
+// import {DefaultCrudRepository} from '@loopback/repository';
+// import {GroupBenefitzDataSource} from '../datasources';
+// import {BrokerSignupFormsPlans, BrokerSignupFormsPlansRelations} from '../models';
+// //import {BrokerPlanOptionsRepository} from './broker-plan-options.repository';
+// export class BrokerSignupFormsPlansRepository extends DefaultCrudRepository<
+//   BrokerSignupFormsPlans,
+//   typeof BrokerSignupFormsPlans.prototype.id,
+//   BrokerSignupFormsPlansRelations
+// > {
+//   constructor(
+//     @inject('datasources.groupBenefitz') dataSource: GroupBenefitzDataSource,
+//     //@repository.getter('BrokerPlanOptionsRepository') protected brokerPlanOptionsRepositoryGetter: Getter<BrokerPlanOptionsRepository>,
+//     //@repository.getter('PlanOptionsRepository') protected planOptionsRepositoryGetter: Getter<PlanOptionsRepository>,
+//   ) {
+//     super(BrokerSignupFormsPlans, dataSource);
+//     //this.planOptions = this.createHasManyThroughRepositoryFactoryFor('planOptions', planOptionsRepositoryGetter, brokerPlanOptionsRepositoryGetter,);
+//     //this.registerInclusionResolver('planOptions', this.planOptions.inclusionResolver);
+//   }
+// }
 //# sourceMappingURL=broker-signup-forms-plans.repository.js.map

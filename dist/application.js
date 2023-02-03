@@ -21,14 +21,24 @@ const authentication_jwt_1 = require("@loopback/authentication-jwt");
 const multer_1 = tslib_1.__importDefault(require("multer"));
 const datasources_1 = require("./datasources");
 const keys_1 = require("./keys");
-const error_handler_middleware_1 = require("./middleware/error-handler.middleware");
 const jwt_strategy_1 = require("./authentication.stratageys/jwt.strategy");
 const authorization_1 = require("@loopback/authorization");
+const error_handler_middleware_1 = require("./middlewares/error-handler.middleware");
 class GroupBenfitsAdminPortalApplication extends (0, boot_1.BootMixin)((0, service_proxy_1.ServiceMixin)((0, repository_1.RepositoryMixin)(rest_1.RestApplication))) {
     constructor(options = {}) {
         super(options);
         // Set up the custom sequence
         this.sequence(sequence_1.MySequence);
+        console.log(`node_env: ${process.env.NODE_ENV}`);
+        //local, dev
+        if (process.env.NODE_ENV == "dev") {
+            //if (process.env.NODE_ENV == "local" || process.env.NODE_ENV == "dev") {
+            this.bind(rest_1.RestBindings.ERROR_WRITER_OPTIONS).to({ debug: true });
+        }
+        else {
+            this.bind(rest_1.RestBindings.ERROR_WRITER_OPTIONS).to({ debug: false });
+        }
+        //
         // Set up default home page
         this.static('/', path_1.default.join(__dirname, '../public'));
         // Customize @loopback/rest-explorer configuration here

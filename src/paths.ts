@@ -1,7 +1,9 @@
 export const BASE_URL = process.env.BASE_URL || 'http://localhost:3000'
+
 export const RESOURCES_PATH = BASE_URL + '/app/resources/'
 export const IMG_RESOURCES_PATH = BASE_URL + '/app/resources/images/'
 export const SERVER_FILES_PATH = BASE_URL + '/app/server/'
+export const SERVER_ROE_FILES_PATH = BASE_URL + '/app/server/ROE/'
 
 export const SERVER_EXTDATA_PATH = BASE_URL + '/app/temp/externalData/'
 
@@ -25,6 +27,7 @@ export const BROKERPATH_STRING = 'app/resources/images/broker/';
 export const SERVER_FOLDER = './public/server'
 export const REPORTS_FOLDER = SERVER_FOLDER + '/reports'
 export const REPORTS_PATH = SERVER_FILES_PATH + 'reports/'
+export const SERVER_ROE_FOLDER = './public/server/ROE'
 
 export const CUSTOMER_CHEQUES_FOLDER = "./support/customer/bank"
 export const CUSTOMER_CHEQUES_PATH = BASE_URL + '/app/temp/bankCheque/'
@@ -56,3 +59,51 @@ export const USER_API_BASE_PATH = API_BASE_PATH + "user/"
 //OTHERS
 //FUSEBILL
 export const FUSEBILL_API_BASE_PATH = API_BASE_PATH + "fusebill/"
+//corporate paths
+export const CORPORATE={
+    SIGNUP:'/corporate/signup',
+    LOGO:'/corporate/{company}/logo',
+    FORMCONFIG:'/formConfig'
+}
+// broker paths
+export const BROKER={
+    COUNT:'/brokers/count',
+    BROKER:'/broker',
+    BROKERS:'/brokers',
+    BROKERID:'/broker/{brokerId}',
+    CUSTOMERLIST:'/admin/broker/{brokerId}/customerlist',
+    LOGO:'/broker/{brokerid}/logo',
+    FORM:'/broker/form/{formId}',
+    BROKER_FORM:'/broker/{brokerid}/brokerForm/',
+    MODIFY_FORM:'/broker/form/{formid}/modify',
+    UPDATE_CONTACTINFO:'/broker/{brokerId}/updateContactInfo',
+    UPDATE_LICENSE:'/broker/updateLicenseState/{brokerId}',
+    UPDATE_EOI:'/broker/updateLicenceEO/{brokerId}',
+    CHANGE_EMAIL:'/broker/change_emailId/{brokerId}',
+    FORM_CONFIG:'/broker/formConfig',
+    PLAN_LEVELS:'/broker/plans/pl',
+    CREATE_FORM:'/broker/{brokerId}/createForm',
+    CREATE_FORM_WITH_SALESTRACKING_CODE:'/broker/{brokerIdOrName}/createForm/{trackingCode}',
+    FORM_DETAILS:'/broker/{formId}/formDetails',
+    BROKER_DETAILS:'/broker/{brokerId}/details',
+    BROKER_FORMS:'/broker/{brokerid}/forms',
+    BROKER_FORM_DETAILS:'/broker/{brokerid}/form/{formId}/details',
+    BROKER_CUSTOMERS:'/broker/{brokerid}/customers',
+    BROKER_CUSTOMER_DETAILS:'/broker/{brokerid}/customer/{customerId}/details',
+    BROKER_FORM_CUSTOMER_DETAILS:'/broker/{brokerid}/form/{formId}/customer/{customerId}/details',
+    SEARCH:'/broker/search',
+    REGISTRATION:'/broker/registration',
+}
+//AUTH 
+export const AUTH={
+    LOGIN:'/auth/login',
+    WHOAMI:'/user/whoAmI',
+    SIGNUP:'/auth/signup',
+    SIGNIN:'/auth/signin',
+    FORGOTPASSWORD:'/auth/forgotPassword/{mailid}',
+    USER_ACTIVATION:'/auth/userActivation/{key}',
+    CHANGE_PASSWORD:'/user/changePassword',
+    APP:'/auth/app',
+    IP:'/userIp',
+    
+}

@@ -1,7 +1,11 @@
-import { Entity, model, property } from '@loopback/repository';
+import {Entity, hasMany, model, property} from '@loopback/repository';
+import {LanguageTokens} from './language-tokens.model';
 
 @model({
-  settings: { idInjection: false, mysql: { schema: 'gbadmin', table: 'translation_languages' } }
+  settings: {
+    idInjection: false,
+    mysql: {schema: 'group_benefitz', table: 'translation_languages'}
+  }
 })
 export class TranslationLanguages extends Entity {
   @property({
@@ -46,6 +50,9 @@ export class TranslationLanguages extends Entity {
   })
   slug?: string;
 
+
+  @hasMany(() => LanguageTokens, {keyTo: 'translationLanguageId'})
+  languageTokens: LanguageTokens[];
   // Define well-known properties here
 
   // Indexer property to allow additional data

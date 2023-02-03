@@ -58,6 +58,7 @@ export declare const SIGNUP_FORM: {
 };
 export declare const FORM_TYPE_ARRAY: string[];
 export declare const LICENSE_COVERAGE: string[];
+export declare const PRODUCT_TYPE_ARRAY: string[];
 export declare const BROKER: {
     BROKERAGE: string;
     ADVISOR: string;
@@ -81,6 +82,8 @@ export declare const DEFAULT_FORM: {
 };
 export declare const DEFAULT_LANGAUGE = "en";
 export declare const httpStatus: any;
+export declare const GB_DEV: string;
+export declare const GB_SUPPORT: string;
 export declare const GB_ADMIN: string;
 export declare const CUSTOMER_ENROLL_REPORT_MAIL_SUBJECT_SYSADMIN = "Customers Enrollment Report at GroupBenefitz";
 export declare const CUSTOMER_ENROLL_REPORT_MAIL_SUBJECT_BROKER = "Customers Enrollment Report at GroupBenefitz";
@@ -109,10 +112,10 @@ export declare const serviceEndpoints: {
     externalData: string;
 };
 export declare const commonExecutionData: any;
-export declare const TestData: any;
-export declare const targetTestcases: any;
+export declare const TestDataGreenshield_BCK: any;
 export declare const TestDataGreenshield: any;
 export declare const targetTestcasesGreenshield: any;
+export declare const TestDataEquitableSave: any;
 export declare const TestDataEquitable: any;
 export declare const targetTestcasesEquitable: any;
 export declare const TestDataExecutive: any;
@@ -151,4 +154,10 @@ export declare const ACH_PAYMENT_STATUS: {
 export declare const ACH_PAYMENT_STATUS_LIST: any;
 export declare const PAD_CLIENT_ID: string;
 export declare const PAD_CLIENT_SECRET: string;
+export declare const BROKER_LICENSE_COVERAGE: {
+    LIFE_A_S: string;
+    A_S: string;
+    LIFE: string;
+};
+export declare const BROKER_LICENSE_COVERAGE_LIST: any;
 export declare const MAINAPI_DOMAIN: string;

@@ -1,8 +1,9 @@
 import { Entity } from '@loopback/repository';
 export declare class BankCodes extends Entity {
-    bankCode: string;
+    id: number;
     bankId: number;
-    id?: number;
+    bankCode: string;
+    bank_id: number;
     [prop: string]: any;
     constructor(data?: Partial<BankCodes>);
 }

@@ -1,8 +1,8 @@
 import { Entity } from '@loopback/repository';
 export declare class PlansAvailability extends Entity {
+    id?: number;
     gst?: number;
     hst?: number;
-    id?: number;
     planId: number;
     price: number;
     pst?: number;

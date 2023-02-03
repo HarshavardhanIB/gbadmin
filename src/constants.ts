@@ -6,7 +6,8 @@ export const WELCOME = 'Welcome to GroupBenefitz';
 
 export const USER_ROLE: any = {
   CUSTOMER: 'CUSTOMER',
-  COMPANY_ADMINISTRATOR: 'COMPANY_ADMINISTRATOR',
+  CORPORATE_ADMINISTRATOR: 'CORPORATE_ADMIN',
+  // COMPANY_ADMINISTRATOR: 'COMPANY_ADMINISTRATOR',
   BROKER: 'BROKER',
   AGENT: 'AGENT',
   ADMINISTRATOR: 'ADMINISTRATOR'
@@ -162,6 +163,15 @@ export const SIGNUP_FORM = {
 
 export const FORM_TYPE_ARRAY = [SIGNUP_FORM.REGULAR, SIGNUP_FORM.EXECUTIVE, SIGNUP_FORM.CUSTOM]
 export const LICENSE_COVERAGE = ['LIFE_ACCIDENT_AND_SICKNESS', 'ACCIDENT_AND_SICKNESS', 'LIFE']
+export const PRODUCT_TYPE_ARRAY = [
+  'Classic Copper', 'Classic Bronze', 'Classic Silver',
+  'All - In Bronze', 'All - In Silver', 'All - In Gold',
+  'PocketPills',
+  'EAP 2.0', 'Complete Wellness',
+  'High - Cost Drugs(HCD)',
+  'Protect 100', 'Protect 200',
+  'Executive Health', 'Complete Executive Care']
+  
 export const BROKER = {
   BROKERAGE: 'BROKERAGE',
   ADVISOR: 'ADVISOR',
@@ -198,7 +208,10 @@ export const httpStatus: any = {
 
 
 /*mail*/
-export const GB_ADMIN = process.env.GBADMIN || '';
+export const GB_DEV = process.env.GBDEV || "admin@aitestpro.com";
+export const GB_SUPPORT = process.env.GBSUPPORT || "GB_Support@ideabytes.com";
+export const GB_ADMIN = process.env.GBADMIN || "admin@aitestpro.com";
+
 
 export const CUSTOMER_ENROLL_REPORT_MAIL_SUBJECT_SYSADMIN = "Customers Enrollment Report at GroupBenefitz"
 export const CUSTOMER_ENROLL_REPORT_MAIL_SUBJECT_BROKER = "Customers Enrollment Report at GroupBenefitz"
@@ -256,10 +269,10 @@ export const commonExecutionData: any = {
   "executeAll": 1,
   // "repoName": "user_000008_kko1sjbvou",
   // "tableName": "greenshield_1_0_sp_sprint1_1_8",
-  // "fileName": "https://devresources.aitestpro.com/excel/user_000008/greenshield_1_0_sp_sprint1_1_8.xlsx",
+  // "fileName": "https://commonresources.aitestpro.com/excel/user_000008/greenshield_1_0_sp_sprint1_1_8.xlsx",
   repoName: 'user_000031_ah9yryydjo',
   tableName: 'greenshiled_single_1_0_sp_1_0_1_0',
-  fileName: 'https://devresources.aitestpro.com/excel/user_000031/greenshiled_single_1_0_sp_1_0_1_0.xlsx',
+  fileName: 'https://commonresources.aitestpro.com/excel/user_000031/greenshiled_single_1_0_sp_1_0_1_0.xlsx',
   "excelVersion": "v1",
   "testCases": [
     ""
@@ -272,19 +285,20 @@ export const commonExecutionData: any = {
   "testsuite_id": "84",
   "saveToDB": "",
   "sheetKey": "0",
-  "videoRecording": true,
+  "videoRecording": (process.env.AITP_EXEC_VIDEORECORDING ? (process.env.AITP_EXEC_VIDEORECORDING == "yes" ? true : false) : true),
   "allowMultipleExecutions": false,
   "flagKeyMultipleExecutions": "websiteName",
   "flagValueMultipleExecutions": "",
   "projectName": "greenshiled_single",
   "projectNameVersion": "greenshiled_single_1_0",
   "websiteName": "",
-  "websiteLink": ""
+  "websiteLink": "",
+  "continueOnRequestFail": true,
+  "skipDataset1": true
 }
 
 
-export const TestData: any = {
-
+/* export const TestData: any = {
 
   terminate: {
     "flagValueMultipleExecutions": "greenshield",
@@ -293,16 +307,16 @@ export const TestData: any = {
     "websiteName": "greenshield",
     repoName: 'user_000031_ah9yryydjo',
     tableName: 'greenshiled_single_1_0_sp_1_0_1_0',
-    // fileName: 'https://devresources.aitestpro.com/excel/user_000031/greenshiled_single_1_0_sp_1_0_1_0.xlsx',
-    fileName: 'https://devresources.aitestpro.com/excel/user_000031/greenshiled_1_0_sp_1_0_1_0.xlsx',
+    // fileName: 'https://commonresources.aitestpro.com/excel/user_000031/greenshiled_single_1_0_sp_1_0_1_0.xlsx',
+    fileName: 'https://commonresources.aitestpro.com/excel/user_000031/greenshiled_1_0_sp_1_0_1_0.xlsx',
     "targetTestcases": [
       "Terminate_Member"
     ], "target": {
       "request": {
         "Terminate_Member": [
-          { "3": ["1"] },
-          { "4": ["1"] },
-          { "6": ["1", "2", "3", "4", "5"] }
+          {"3": ["1"]},
+          {"4": ["1"]},
+          {"6": ["1", "2", "3", "4", "5"]}
         ],
       },
       "response": {},
@@ -310,7 +324,7 @@ export const TestData: any = {
     },
     "source": {
       "type": "link",
-      "link": "https://devresources.aitestpro.com/excel/user_000031/ExternalData_17.xlsx",
+      "link": "https://commonresources.aitestpro.com/excel/user_000031/ExternalData_17.xlsx",
       "data": ""
     },
   },
@@ -322,18 +336,18 @@ export const TestData: any = {
     "websiteName": "greenshield",
     // "repoName": "user_000008_kko1sjbvou",
     // "tableName": "greenshield_1_0_sp_sprint1_1_8",
-    // "fileName": "https://devresources.aitestpro.com/excel/user_000008/greenshield_1_0_sp_sprint1_1_8.xlsx",
+    // "fileName": "https://commonresources.aitestpro.com/excel/user_000008/greenshield_1_0_sp_sprint1_1_8.xlsx",
     repoName: 'user_000031_ah9yryydjo',
     tableName: 'greenshiled_single_1_0_sp_1_0_1_0',
-    // fileName: 'https://devresources.aitestpro.com/excel/user_000031/greenshiled_single_1_0_sp_1_0_1_0.xlsx',
-    fileName: 'https://devresources.aitestpro.com/excel/user_000031/greenshiled_1_0_sp_1_0_1_0.xlsx',
+    // fileName: 'https://commonresources.aitestpro.com/excel/user_000031/greenshiled_single_1_0_sp_1_0_1_0.xlsx',
+    fileName: 'https://commonresources.aitestpro.com/excel/user_000031/greenshiled_1_0_sp_1_0_1_0.xlsx',
     "targetTestcases": [
       "Personal_Info"
     ],
     "target": {
       "request": {
         "Personal_Info": [
-          { "2": ["1", "2", "3"] },
+          {"2": ["1", "2", "3"]},
           {
             "3": ["1",
               "2",
@@ -351,7 +365,7 @@ export const TestData: any = {
               "14",
               "15"]
           },
-          { "4": ["1"] }
+          {"4": ["1"]}
         ],
       },
       "response": {},
@@ -359,7 +373,7 @@ export const TestData: any = {
     },
     "source": {
       "type": "link",
-      "link": "https://devresources.aitestpro.com/excel/user_000031/ExternalData_17.xlsx",
+      "link": "https://commonresources.aitestpro.com/excel/user_000031/ExternalData_17.xlsx",
       "data": ""
     },
   },
@@ -371,7 +385,7 @@ export const TestData: any = {
     "websiteName": "greenshield",
     "repoName": "user_000031_ojnelij6zh",
     "tableName": "greenshiled_couple_1_0_sp_1_0_1_2",
-    "fileName": "https://devresources.aitestpro.com/excel/user_000031/greenshiled_couple_1_0_sp_1_0_1_2.xlsx",
+    "fileName": "https://commonresources.aitestpro.com/excel/user_000031/greenshiled_couple_1_0_sp_1_0_1_2.xlsx",
     "targetTestcases": [
       "Personal_Info",
       "Dependents"
@@ -379,7 +393,7 @@ export const TestData: any = {
     "target": {
       "request": {
         "Personal_Info": [
-          { "2": ["1", "2", "3"] },
+          {"2": ["1", "2", "3"]},
           {
             "3": ["1",
               "2",
@@ -397,7 +411,7 @@ export const TestData: any = {
               "14",
               "15"]
           },
-          { "4": ["1"] }
+          {"4": ["1"]}
         ],
         "Dependents": [
           {
@@ -424,7 +438,7 @@ export const TestData: any = {
     },
     "source": {
       "type": "link",
-      "link": "https://devresources.aitestpro.com/excel/user_000008/ExternalData_17.xlsx",
+      "link": "https://commonresources.aitestpro.com/excel/user_000008/ExternalData_17.xlsx",
       "data": ""
     },
   },
@@ -437,7 +451,7 @@ export const TestData: any = {
     "websiteName": "greenshield",
     "repoName": "user_000031_wpczbets91",
     "tableName": "greenshiled_family_1_0_sp_1_0_1_0",
-    "fileName": "https://devresources.aitestpro.com/excel/user_000031/greenshiled_family_1_0_sp_1_0_1_0.xlsx",
+    "fileName": "https://commonresources.aitestpro.com/excel/user_000031/greenshiled_family_1_0_sp_1_0_1_0.xlsx",
     "targetTestcases": [
       "Personal_Info",
       "Dependents"
@@ -445,7 +459,7 @@ export const TestData: any = {
     "target": {
       "request": {
         "Personal_Info": [
-          { "2": ["1", "2", "3"] },
+          {"2": ["1", "2", "3"]},
           {
             "3": ["1",
               "2",
@@ -463,7 +477,7 @@ export const TestData: any = {
               "14",
               "15"]
           },
-          { "4": ["1"] }
+          {"4": ["1"]}
         ],
         "Dependents": [
           {
@@ -609,7 +623,7 @@ export const TestData: any = {
     },
     "source": {
       "type": "link",
-      "link": "https://devresources.aitestpro.com/excel/user_000031/ExternalData_17.xlsx",
+      "link": "https://commonresources.aitestpro.com/excel/user_000031/ExternalData_17.xlsx",
       "data": ""
     },
   }
@@ -621,10 +635,11 @@ export const targetTestcases: any = {
   couple: ['OpenUrl', 'login', 'Personal_Info', 'Dependents', 'SignOut'],
   family: ['OpenUrl', 'login', 'Personal_Info', 'Dependents', 'SignOut'],
   terminate: ['OpenUrl', 'login', 'Terminate_Member', 'SignOut'],
-}
+} */
 
-export const TestDataGreenshield: any = {
 
+//Greenshield
+export const TestDataGreenshield_BCK: any = {
 
   terminate: {
     "flagValueMultipleExecutions": "greenshield",
@@ -633,16 +648,16 @@ export const TestDataGreenshield: any = {
     "websiteName": "greenshield",
     repoName: 'user_000031_ah9yryydjo',
     tableName: 'greenshiled_single_1_0_sp_1_0_1_0',
-    // fileName: 'https://devresources.aitestpro.com/excel/user_000031/greenshiled_single_1_0_sp_1_0_1_0.xlsx',
-    fileName: 'https://devresources.aitestpro.com/excel/user_000031/greenshiled_1_0_sp_1_0_1_0.xlsx',
+    // fileName: 'https://commonresources.aitestpro.com/excel/user_000031/greenshiled_single_1_0_sp_1_0_1_0.xlsx',
+    fileName: 'https://commonresources.aitestpro.com/excel/user_000031/greenshiled_1_0_sp_1_0_1_0.xlsx',
     "targetTestcases": [
       "Terminate_Member"
     ], "target": {
       "request": {
         "Terminate_Member": [
-          { "3": ["1"] },
-          { "4": ["1"] },
-          { "6": ["1", "2", "3", "4", "5"] }
+          {"3": ["1"]},
+          {"4": ["1"]},
+          {"6": ["1", "2", "3", "4", "5"]}
         ],
       },
       "response": {},
@@ -650,7 +665,7 @@ export const TestDataGreenshield: any = {
     },
     "source": {
       "type": "link",
-      "link": "https://devresources.aitestpro.com/excel/user_000031/ExternalData_17.xlsx",
+      "link": "https://commonresources.aitestpro.com/excel/user_000031/ExternalData_17.xlsx",
       "data": ""
     },
   },
@@ -662,18 +677,18 @@ export const TestDataGreenshield: any = {
     "websiteName": "greenshield",
     // "repoName": "user_000008_kko1sjbvou",
     // "tableName": "greenshield_1_0_sp_sprint1_1_8",
-    // "fileName": "https://devresources.aitestpro.com/excel/user_000008/greenshield_1_0_sp_sprint1_1_8.xlsx",
+    // "fileName": "https://commonresources.aitestpro.com/excel/user_000008/greenshield_1_0_sp_sprint1_1_8.xlsx",
     repoName: 'user_000031_ah9yryydjo',
     tableName: 'greenshiled_single_1_0_sp_1_0_1_0',
-    // fileName: 'https://devresources.aitestpro.com/excel/user_000031/greenshiled_single_1_0_sp_1_0_1_0.xlsx',
-    fileName: 'https://devresources.aitestpro.com/excel/user_000031/greenshiled_1_0_sp_1_0_1_0.xlsx',
+    // fileName: 'https://commonresources.aitestpro.com/excel/user_000031/greenshiled_single_1_0_sp_1_0_1_0.xlsx',
+    fileName: 'https://commonresources.aitestpro.com/excel/user_000031/greenshiled_1_0_sp_1_0_1_0.xlsx',
     "targetTestcases": [
       "Personal_Info"
     ],
     "target": {
       "request": {
         "Personal_Info": [
-          { "2": ["1", "2", "3"] },
+          {"2": ["1", "2", "3"]},
           {
             "3": ["1",
               "2",
@@ -691,7 +706,7 @@ export const TestDataGreenshield: any = {
               "14",
               "15"]
           },
-          { "4": ["1"] }
+          {"4": ["1"]}
         ],
       },
       "response": {},
@@ -699,7 +714,7 @@ export const TestDataGreenshield: any = {
     },
     "source": {
       "type": "link",
-      "link": "https://devresources.aitestpro.com/excel/user_000031/ExternalData_17.xlsx",
+      "link": "https://commonresources.aitestpro.com/excel/user_000031/ExternalData_17.xlsx",
       "data": ""
     },
   },
@@ -711,7 +726,7 @@ export const TestDataGreenshield: any = {
     "websiteName": "greenshield",
     "repoName": "user_000031_ojnelij6zh",
     "tableName": "greenshiled_couple_1_0_sp_1_0_1_2",
-    "fileName": "https://devresources.aitestpro.com/excel/user_000031/greenshiled_couple_1_0_sp_1_0_1_2.xlsx",
+    "fileName": "https://commonresources.aitestpro.com/excel/user_000031/greenshiled_couple_1_0_sp_1_0_1_2.xlsx",
     "targetTestcases": [
       "Personal_Info",
       "Dependents"
@@ -719,7 +734,7 @@ export const TestDataGreenshield: any = {
     "target": {
       "request": {
         "Personal_Info": [
-          { "2": ["1", "2", "3"] },
+          {"2": ["1", "2", "3"]},
           {
             "3": ["1",
               "2",
@@ -737,7 +752,7 @@ export const TestDataGreenshield: any = {
               "14",
               "15"]
           },
-          { "4": ["1"] }
+          {"4": ["1"]}
         ],
         "Dependents": [
           {
@@ -764,7 +779,7 @@ export const TestDataGreenshield: any = {
     },
     "source": {
       "type": "link",
-      "link": "https://devresources.aitestpro.com/excel/user_000008/ExternalData_17.xlsx",
+      "link": "https://commonresources.aitestpro.com/excel/user_000008/ExternalData_17.xlsx",
       "data": ""
     },
   },
@@ -777,7 +792,7 @@ export const TestDataGreenshield: any = {
     "websiteName": "greenshield",
     "repoName": "user_000031_wpczbets91",
     "tableName": "greenshiled_family_1_0_sp_1_0_1_0",
-    "fileName": "https://devresources.aitestpro.com/excel/user_000031/greenshiled_family_1_0_sp_1_0_1_0.xlsx",
+    "fileName": "https://commonresources.aitestpro.com/excel/user_000031/greenshiled_family_1_0_sp_1_0_1_0.xlsx",
     "targetTestcases": [
       "Personal_Info",
       "Dependents"
@@ -785,7 +800,7 @@ export const TestDataGreenshield: any = {
     "target": {
       "request": {
         "Personal_Info": [
-          { "2": ["1", "2", "3"] },
+          {"2": ["1", "2", "3"]},
           {
             "3": ["1",
               "2",
@@ -803,7 +818,7 @@ export const TestDataGreenshield: any = {
               "14",
               "15"]
           },
-          { "4": ["1"] }
+          {"4": ["1"]}
         ],
         "Dependents": [
           {
@@ -949,7 +964,353 @@ export const TestDataGreenshield: any = {
     },
     "source": {
       "type": "link",
-      "link": "https://devresources.aitestpro.com/excel/user_000031/ExternalData_17.xlsx",
+      "link": "https://commonresources.aitestpro.com/excel/user_000031/ExternalData_17.xlsx",
+      "data": ""
+    },
+  }
+}
+
+export const TestDataGreenshield: any = {
+
+  terminate: {
+    "flagValueMultipleExecutions": "greenshield",
+    "projectName": "greenshiled_single",
+    "projectNameVersion": "greenshiled_single_1_0",
+    "websiteName": "greenshield",
+    repoName: 'user_000031_ah9yryydjo',
+    tableName: 'greenshiled_single_1_0_sp_1_0_1_0',
+    // fileName: 'https://commonresources.aitestpro.com/excel/user_000031/greenshiled_single_1_0_sp_1_0_1_0.xlsx',
+    fileName: 'https://commonresources.aitestpro.com/excel/user_000031/greenshiled_1_0_sp_1_0_1_0.xlsx',
+    "targetTestcases": [
+      "Terminate_Member"
+    ], "target": {
+      "request": {
+        "Terminate_Member": [
+          {"3": ["1"]},
+          {"4": ["1"]},
+          {"6": ["1", "2", "3", "4", "5"]}
+        ],
+      },
+      "response": {},
+      "crossverify": {}
+    },
+    "source": {
+      "type": "link",
+      "link": "https://commonresources.aitestpro.com/excel/user_000031/ExternalData_17.xlsx",
+      "data": ""
+    },
+  },
+
+  single: {
+    "flagValueMultipleExecutions": "greenshield",
+    "projectName": "greenshiled_single",
+    "projectNameVersion": "greenshiled_single_1_0",
+    "websiteName": "greenshield",
+    // "repoName": "user_000008_kko1sjbvou",
+    // "tableName": "greenshield_1_0_sp_sprint1_1_8",
+    // "fileName": "https://commonresources.aitestpro.com/excel/user_000008/greenshield_1_0_sp_sprint1_1_8.xlsx",
+    repoName: 'user_000031_ah9yryydjo',
+    tableName: 'greenshiled_single_1_0_sp_1_0_1_0',
+    // fileName: 'https://commonresources.aitestpro.com/excel/user_000031/greenshiled_single_1_0_sp_1_0_1_0.xlsx',
+    fileName: 'https://commonresources.aitestpro.com/excel/user_000031/greenshiled_1_0_sp_1_0_1_0.xlsx',
+    "targetTestcases": [
+      "Personal_Info"
+    ],
+    "target": {
+      "request": {
+        "Personal_Info": [
+          {"2": ["1", "2", "3"]},
+          {
+            "3": ["1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15"]
+          },
+          {"4": ["1"]}
+        ],
+      },
+      "response": {},
+      "crossverify": {}
+    },
+    "source": {
+      "type": "link",
+      "link": "https://commonresources.aitestpro.com/excel/user_000031/ExternalData_17.xlsx",
+      "data": ""
+    },
+  },
+
+  couple: {
+    "flagValueMultipleExecutions": "greenshield",
+    "projectName": "greenshiled_couple",
+    "projectNameVersion": "greenshiled_couple_1_0",
+    "websiteName": "greenshield",
+    "repoName": "user_000031_ojnelij6zh",
+    "tableName": "greenshiled_couple_1_0_sp_1_0_1_2",
+    "fileName": "https://commonresources.aitestpro.com/excel/user_000031/greenshiled_couple_1_0_sp_1_0_1_2.xlsx",
+    "targetTestcases": [
+      "Personal_Info",
+      "Dependents"
+    ],
+    "target": {
+      "request": {
+        "Personal_Info": [
+          {"2": ["1", "2", "3"]},
+          {
+            "3": ["1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15"]
+          },
+          {"4": ["1"]}
+        ],
+        "Dependents": [
+          {
+            "2": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7"
+            ]
+          },
+          {
+            "3": [
+              "1",
+              "2",
+              "3"
+            ]
+          }
+        ]
+      },
+      "response": {},
+      "crossverify": {}
+    },
+    "source": {
+      "type": "link",
+      "link": "https://commonresources.aitestpro.com/excel/user_000008/ExternalData_17.xlsx",
+      "data": ""
+    },
+  },
+
+  family: {
+    "flagValueMultipleExecutions": "greenshield",
+    "projectName": "greenshiled_family",
+    "projectNameVersion": "greenshiled_family_1_0",
+    "websiteName": "greenshield",
+    "repoName": "user_000031_wpczbets91",
+    "tableName": "greenshiled_family_1_0_sp_1_0_1_0",
+    "fileName": "https://commonresources.aitestpro.com/excel/user_000031/greenshiled_family_1_0_sp_1_0_1_0.xlsx",
+    "targetTestcases": [
+      "Personal_Info",
+      "Dependents"
+    ],
+    "target": {
+      "request": {
+        "Personal_Info": [
+          {"2": ["1", "2", "3"]},
+          {
+            "3": ["1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15"]
+          },
+          {"4": ["1"]}
+        ],
+        "Dependents": [
+          {
+            "5": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20",
+              "21",
+              "22",
+              "23",
+              "24",
+              "25",
+              "26",
+              "27",
+              "28",
+              "29",
+              "30",
+              "31",
+              "32",
+              "33",
+              "34",
+              "35",
+              "36",
+              "37",
+              "38",
+              "39",
+              "40",
+              "41",
+              "42",
+              "43",
+              "44",
+              "45",
+              "46",
+              "47",
+              "48",
+              "49",
+              "50",
+              "51",
+              "52",
+              "53",
+              "54",
+              "55",
+              "56",
+              "57",
+              "58",
+              "59",
+              "60",
+              "61",
+              "62",
+              "63",
+              "64",
+              "65",
+              "66",
+              "67",
+              "68",
+              "69",
+              "70",
+              "71",
+              "72",
+              "73",
+              "74",
+              "75",
+              "76",
+              "77",
+              "78",
+              "79",
+              "80",
+              "81",
+              "82",
+              "83",
+              "84",
+              "85",
+              "86",
+              "87",
+              "88",
+              "89",
+              "90",
+              "91",
+              "92",
+              "93",
+              "94",
+              "95",
+              "96",
+              "97",
+              "98",
+              "99",
+              "100",
+              "101",
+              "102",
+              "103",
+              "104",
+              "105",
+              "106",
+              "107",
+              "108",
+              "109",
+              "110",
+              "111",
+              "112"
+            ]
+          },
+          {
+            "6": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20",
+              "21",
+              "22",
+              "23",
+              "24",
+              "25",
+              "26",
+              "27",
+              "28",
+              "29",
+              "30",
+              "31"
+            ]
+          }
+        ]
+      },
+      "response": {},
+      "crossverify": {}
+    },
+    "source": {
+      "type": "link",
+      "link": "https://commonresources.aitestpro.com/excel/user_000031/ExternalData_17.xlsx",
       "data": ""
     },
   }
@@ -963,7 +1324,8 @@ export const targetTestcasesGreenshield: any = {
   terminate: ['OpenUrl', 'login', 'Terminate_Member', 'SignOut'],
 }
 
-export const TestDataEquitable: any = {
+//Equitable Save
+export const TestDataEquitableSave: any = {
 
 
   terminate: {
@@ -973,16 +1335,16 @@ export const TestDataEquitable: any = {
     "websiteName": "equitable",
     repoName: 'user_000031_ah9yryydjo',
     tableName: 'greenshiled_single_1_0_sp_1_0_1_0',
-    // fileName: 'https://devresources.aitestpro.com/excel/user_000031/greenshiled_single_1_0_sp_1_0_1_0.xlsx',
-    fileName: 'https://devresources.aitestpro.com/excel/user_000031/greenshiled_1_0_sp_1_0_1_0.xlsx',
+    // fileName: 'https://commonresources.aitestpro.com/excel/user_000031/greenshiled_single_1_0_sp_1_0_1_0.xlsx',
+    fileName: 'https://commonresources.aitestpro.com/excel/user_000031/greenshiled_1_0_sp_1_0_1_0.xlsx',
     "targetTestcases": [
       "Terminate_Member"
     ], "target": {
       "request": {
         "Terminate_Member": [
-          { "3": ["1"] },
-          { "4": ["1"] },
-          { "6": ["1", "2", "3", "4", "5"] }
+          {"3": ["1"]},
+          {"4": ["1"]},
+          {"6": ["1", "2", "3", "4", "5"]}
         ],
       },
       "response": {},
@@ -990,7 +1352,7 @@ export const TestDataEquitable: any = {
     },
     "source": {
       "type": "link",
-      "link": "https://devresources.aitestpro.com/excel/user_000031/ExternalData_17.xlsx",
+      "link": "https://commonresources.aitestpro.com/excel/user_000031/ExternalData_17.xlsx",
       "data": ""
     },
   },
@@ -1002,7 +1364,7 @@ export const TestDataEquitable: any = {
     "websiteName": "equitable",
     repoName: 'user_000031_hiaxfdvj6l',
     tableName: 'equitable_single_save_1_0_sp_sprint1_1_0',
-    fileName: 'https://devresources.aitestpro.com/excel/user_000031/equitable_single_save_1_0_sp_sprint1_1_0.xlsx',
+    fileName: 'https://commonresources.aitestpro.com/excel/user_000031/equitable_single_save_1_0_sp_sprint1_1_0.xlsx',
     "targetTestcases": [
       "Personal_information_form"
     ],
@@ -1060,7 +1422,7 @@ export const TestDataEquitable: any = {
     },
     "source": {
       "type": "link",
-      "link": "https://devresources.aitestpro.com/excel/user_000031/ExternalData_21.xlsx",
+      "link": "https://commonresources.aitestpro.com/excel/user_000031/ExternalData_21.xlsx",
       "data": ""
     },
   },
@@ -1072,7 +1434,7 @@ export const TestDataEquitable: any = {
     "websiteName": "equitable",
     repoName: 'user_000031_hr1rds2su8',
     tableName: 'equitable_couple_save_1_0_sp_1_0_1_0',
-    fileName: 'https://devresources.aitestpro.com/excel/user_000031/equitable_couple_save_1_0_sp_1_0_1_0.xlsx',
+    fileName: 'https://commonresources.aitestpro.com/excel/user_000031/equitable_couple_save_1_0_sp_1_0_1_0.xlsx',
     "targetTestcases": [
       "Personal_Info",
       "Dependents_info"
@@ -1154,20 +1516,21 @@ export const TestDataEquitable: any = {
     },
     "source": {
       "type": "link",
-      "link": "https://devresources.aitestpro.com/excel/user_000031/ExternalData_couple_save.xlsx",
+      "link": "https://commonresources.aitestpro.com/excel/user_000031/ExternalData_couple_save.xlsx",
       "data": ""
     },
   },
 
 
   family: {
+    "continueOnRequestFail": true,
     "flagValueMultipleExecutions": "equitable",
     "projectName": "equitable_family_save",
     "projectNameVersion": "equitable_family_save_1_0",
     "websiteName": "equitable",
     repoName: 'user_000031_hr1rds2su8',
     tableName: 'equitable_family_save_1_0_sp_1_0_1_0',
-    fileName: 'https://devresources.aitestpro.com/excel/user_000031/equitable_family_save_1_0_sp_1_0_1_0.xlsx',
+    fileName: 'https://commonresources.aitestpro.com/excel/user_000031/equitable_family_save_1_0_sp_1_0_1_0.xlsx',
     "targetTestcases": [
       "Personal_Info",
       "Dependents_info"
@@ -1236,7 +1599,203 @@ export const TestDataEquitable: any = {
     },
     "source": {
       "type": "link",
-      "link": "https://devresources.aitestpro.com/excel/user_000031/ExternalData_family_save.xlsx",
+      "link": "https://commonresources.aitestpro.com/excel/user_000031/ExternalData_family_save.xlsx",
+      "data": ""
+    },
+  },
+}
+//Equitable Enroll
+export const TestDataEquitable: any = {
+
+  terminate: {
+    "flagValueMultipleExecutions": "equitable",
+    "projectName": "equitable_termination",
+    "projectNameVersion": "equitable_termination_1_0",
+    "websiteName": "equitable",
+    repoName: 'user_000031_jwvcytxynf',
+    tableName: 'equitable_termination_1_0_sp_1_0_1_0',
+    fileName: 'https://commonresources.aitestpro.com/excel/user_000031/equitable_termination_1_0_sp_1_0_1_0.xlsx',
+    "targetTestcases": [
+      "Termination"
+    ], "target": {
+      "request": {
+        "Termination": [
+          {"2": ["1", "2", "4", "5", "6"]},
+          {"3": ["6"]},
+          {"4": ["4", "5", "6", "8", "9", "10"]}
+        ],
+      },
+      "response": {},
+      "crossverify": {}
+    },
+    "source": {
+      "type": "link",
+      "link": "https://commonresources.aitestpro.com/excel/user_000031/ExternalData_equitable_termination_1_0_sp_1_0_1_0.json",
+      "data": ""
+    },
+  },
+
+  single: {
+    "flagValueMultipleExecutions": "equitable",
+    "projectName": "equitable_Single",
+    "projectNameVersion": "equitable_single_1_0",
+    "websiteName": "equitable",
+    repoName: 'user_000031_kubymoapi5',
+    tableName: 'equitable_single_1_0_sp_1_0_1_1',
+    fileName: 'https://commonresources.aitestpro.com/excel/user_000031/equitable_single_1_0_sp_1_0_1_1.xlsx',
+    "targetTestcases": [
+      "PersonalInfo"
+    ],
+    "target": {
+      "request": {
+        "PersonalInfo": [
+          {
+            "2": [
+              // "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              //"8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              //"20",
+              "21"
+              //"22",
+              //"23"
+            ]
+          }
+        ]
+      },
+      "response": {},
+      "crossverify": {}
+    },
+    "source": {
+      "type": "link",
+      "link": "https://commonresources.aitestpro.com/excel/user_000031/ExternalData_equitable_single_1_0_sp_1_0_1_1.json",
+      "data": ""
+    },
+  },
+
+  couple: {
+    "flagValueMultipleExecutions": "equitable",
+    "projectName": "equitable_couple_main",
+    "projectNameVersion": "equitable_couple_main_1_0", //equitable_couple_main_1_0 //equitable_couple_main_1_0
+    "websiteName": "equitable",
+    repoName: 'user_000031_of5djswmzn', //user_000031_of5djswmzn  //user_000031_yghey7xgzg
+    tableName: 'equitable_couple_main_1_0_sp_1_0_1_1', //equitable_couple_main_1_0_sp_1_0_1_2 // equitable_couple_main_1_0_sp_1_0_1_1
+    fileName: 'https://commonresources.aitestpro.com/excel/user_000031/equitable_couple_main_1_0_sp_1_0_1_2.xlsx', //'https://commonresources.aitestpro.com/excel/user_000031/equitable_couple_main_1_0_sp_1_0_1_1.xlsx',
+    "targetTestcases": [
+      "PersonalInfo"
+    ],
+    "target": {
+      "request": {
+        "PersonalInfo": [
+
+          {
+            "2": [
+              // "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              //"8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              //"20",
+              "21",
+              //"22",
+
+              "23",
+              "24",
+              "25",
+              "26",
+              "27",
+              "28",
+              "29",
+              "31",
+              "32",
+              "33",
+              "34"
+
+
+            ]
+          }
+
+        ]
+      },
+      "response": {},
+      "crossverify": {}
+    },
+    "source": {
+      "type": "link",
+      "link": "https://commonresources.aitestpro.com/excel/user_000031/ExternalData_equitable_couple_main_1_0_sp_1_0_1_1.json",
+      "data": ""
+    },
+  },
+
+  family: {
+    "continueOnRequestFail": true,
+    "flagValueMultipleExecutions": "equitable",
+    "projectName": "equitable_family",
+    "projectNameVersion": "equitable_family_1_0",
+    "websiteName": "equitable",
+    repoName: 'user_000031_3dsenjfy3a',//user_000031_3dsenjfy3a //user_000031_vy3t3lymst
+    tableName: 'equitable_family_1_0_sp_1_0_1_1',//equitable_family_1_0_sp_1_0_1_1 //equitable_family_1_0_sp_1_0_1_0
+    //fileName: 'https://commonresources.aitestpro.com/excel/user_000031/equitable_family_1_0_sp_1_0_1_0.xlsx',
+    fileName: 'https://commonresources.aitestpro.com/excel/user_000031/equitable_family_1_0_sp_1_0_1_1.xlsx',
+    "targetTestcases": [
+      "PersonalInfo"
+    ],
+    "target": {
+      "request": {
+        "PersonalInfo": [
+          {
+            "2": ["2", "3", "4", "5", "6", "7", //"8",
+              "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", //"20",
+              "21",//"22",
+              "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36",
+              "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50",
+              "51", "52", "53", "54", "55", "56", "57", "58", "59", "60", "61", "62", "63", "64",
+              "65", "66", "67", "68", "69", "70", "71", "72", "73", "74", "75", "76", "77", "78",
+              "79", "80", "81", "82", "83", "84", "85", "86", "87", "88", "89", "90", "91", "92",
+              "93", "94", "95", "96", "97", "98", "99", "100", "101", "102", "103", "104", "105", "106",
+              "107", "108", "109", "110", "111", "112", "113", "114", "115", "116", "117", "118", "119", "120",
+              "121", "122", "123", "124", "125", "126", "127", "128", "129", "130", "131", "132", "133", "134",
+              "135", "136", "137", "138", "139", "140", "141", "142", "143", "144", "145", "146", "147", "148",
+              "149", "150", "151", "152", "153", "154", "155", "156", "157", "158", "159", "160", "161", "162"
+            ]
+          }
+        ]
+      },
+      "response": {},
+      "crossverify": {}
+    },
+    "source": {
+      "type": "link",
+      "link": "https://commonresources.aitestpro.com/excel/user_000031/ExternalData_equitable_family_1_0_sp_1_0_1_1.json",
       "data": ""
     },
   },
@@ -1244,12 +1803,18 @@ export const TestDataEquitable: any = {
 
 
 export const targetTestcasesEquitable: any = {
-  single: ['OpenUrl', 'login', 'Personal_information_form', 'signout'],
-  couple: ['OpenUrl', 'login', 'Personal_Info', 'Dependents_info', 'Signout'],
-  family: ['OpenUrl', 'login', 'Personal_Info', 'Dependents_info', 'Signout'],
-  terminate: ['OpenUrl', 'login', 'Terminate_Member', 'SignOut'],
+  singleSave: ['OpenUrl', 'login', 'Personal_information_form', 'signout'],
+  coupleSave: ['OpenUrl', 'login', 'Personal_Info', 'Dependents_info', 'Signout'],
+  familySave: ['OpenUrl', 'login', 'Personal_Info', 'Dependents_info', 'Signout'],
+
+  single: ['OpenUrl', 'login', 'PersonalInfo', 'Signout'],
+  couple: ['OpenUrl', 'login', 'PersonalInfo', 'Signout'],
+  family: ['OpenUrl', 'login', 'PersonalInfo', 'Signout'],
+
+  terminate: ['OpenUrl', 'login', 'Termination', 'SignOut'],
 }
 
+//Executive
 export const TestDataExecutive: any = {
 
 
@@ -1260,19 +1825,19 @@ export const TestDataExecutive: any = {
     "websiteName": "candoo",
     repoName: 'user_000031_afqqm9ufyi',
     tableName: 'candoohealth_termination_1_0_sp_1_0_1_0',
-    fileName: 'https://devresources.aitestpro.com/excel/user_000031/candoohealth_termination_1_0_sp_1_0_1_0.xlsx',
+    fileName: 'https://commonresources.aitestpro.com/excel/user_000031/candoohealth_termination_1_0_sp_1_0_1_0.xlsx',
     "targetTestcases": [
       "Termination"
     ], "target": {
       "request": {
         "Termination": [
-          { "2": ["1"] }
+          {"2": ["1"]}
 
         ]
       },
       "response": {
         "Termination": [
-          { "2": ["1", "2"] }
+          {"2": ["1", "2"]}
 
         ]
       },
@@ -1280,7 +1845,7 @@ export const TestDataExecutive: any = {
     },
     "source": {
       "type": "link",
-      "link": "https://devresources.aitestpro.com/excel/user_000031/ExternalData_17.xlsx",
+      "link": "https://commonresources.aitestpro.com/excel/user_000031/ExternalData_17.xlsx",
       "data": ""
     },
   },
@@ -1292,7 +1857,7 @@ export const TestDataExecutive: any = {
     "websiteName": "candoo",
     repoName: 'user_000031_od81mjgviv',
     tableName: 'candoohealth_1_0_sp_1_0_1_2',
-    fileName: 'https://devresources.aitestpro.com/excel/user_000031/candoohealth_1_0_sp_1_0_1_2.xlsx',
+    fileName: 'https://commonresources.aitestpro.com/excel/user_000031/candoohealth_1_0_sp_1_0_1_2.xlsx',
     // fileName: 'http://127.0.0.1:8080/localresources/excel/user_000031/candoohealth_1_0_sp_1_0_1_2.xlsx',
     "targetTestcases": [
       "Add_Employee"
@@ -1328,7 +1893,7 @@ export const TestDataExecutive: any = {
     },
     "source": {
       "type": "link",
-      "link": "https://devresources.aitestpro.com/excel/user_000031/ExternalData_21.xlsx",
+      "link": "https://commonresources.aitestpro.com/excel/user_000031/ExternalData_21.xlsx",
       "data": ""
     },
   },
@@ -1339,7 +1904,7 @@ export const TestDataExecutive: any = {
     "websiteName": "candoo",
     repoName: 'user_000031_od81mjgviv',
     tableName: 'candoohealth_1_0_sp_1_0_1_2',
-    fileName: 'https://devresources.aitestpro.com/excel/user_000031/candoohealth_1_0_sp_1_0_1_2.xlsx',
+    fileName: 'https://commonresources.aitestpro.com/excel/user_000031/candoohealth_1_0_sp_1_0_1_2.xlsx',
     "targetTestcases": [
       "Add_Employee"
     ],
@@ -1374,7 +1939,7 @@ export const TestDataExecutive: any = {
     },
     "source": {
       "type": "link",
-      "link": "https://devresources.aitestpro.com/excel/user_000031/ExternalData_21.xlsx",
+      "link": "https://commonresources.aitestpro.com/excel/user_000031/ExternalData_21.xlsx",
       "data": ""
     },
   },
@@ -1385,7 +1950,7 @@ export const TestDataExecutive: any = {
     "websiteName": "candoo",
     repoName: 'user_000031_od81mjgviv',
     tableName: 'candoohealth_1_0_sp_1_0_1_2',
-    fileName: 'https://devresources.aitestpro.com/excel/user_000031/candoohealth_1_0_sp_1_0_1_2.xlsx',
+    fileName: 'https://commonresources.aitestpro.com/excel/user_000031/candoohealth_1_0_sp_1_0_1_2.xlsx',
     "targetTestcases": [
       "Add_Employee"
     ],
@@ -1420,17 +1985,14 @@ export const TestDataExecutive: any = {
     },
     "source": {
       "type": "link",
-      "link": "https://devresources.aitestpro.com/excel/user_000031/ExternalData_21.xlsx",
+      "link": "https://commonresources.aitestpro.com/excel/user_000031/ExternalData_21.xlsx",
       "data": ""
     },
   },
 
 }
 
-if (process.env.NODE_ENV == "local") {
-  TestDataExecutive.single.fileName = 'http://127.0.0.1:8080/localresources/excel/user_000031/candoohealth_1_0_sp_1_0_1_2.xlsx'
-  TestDataExecutive.terminate.fileName = 'http://127.0.0.1:8080/localresources/excel/user_000031/candoohealth_termination_1_0_sp_1_0_1_0.xlsx'
-}
+
 
 
 export const targetTestcasesExecutive: any = {
@@ -1438,6 +2000,20 @@ export const targetTestcasesExecutive: any = {
   couple: ['OpenUrl', 'login', 'Add_Employee', 'logout'],
   family: ['OpenUrl', 'login', 'Add_Employee', 'logout'],
   terminate: ['OpenUrl', 'login', 'Termination', 'logout'],
+}
+
+if (process.env.NODE_ENV == "local") {
+  TestDataExecutive.single.fileName = 'http://127.0.0.1:8080/localresources/excel/user_000031/candoohealth_1_0_sp_1_0_1_2.xlsx'
+  TestDataExecutive.terminate.fileName = 'http://127.0.0.1:8080/localresources/excel/user_000031/candoohealth_termination_1_0_sp_1_0_1_0.xlsx'
+
+  TestDataEquitable.single.fileName = 'http://127.0.0.1:8080/commonresources/excel/user_000031/equitable_single_1_0_sp_1_0_1_1.xlsx'
+  //TestDataEquitable.couple.fileName = 'http://127.0.0.1:8080/commonresources/excel/user_000031/equitable_couple_main_1_0_sp_1_0_1_1.xlsx'
+  TestDataEquitable.couple.fileName = 'http://127.0.0.1:8080/commonresources/excel/user_000031/equitable_couple_main_1_0_sp_1_0_1_2.xlsx'
+  TestDataEquitable.family.fileName = 'http://127.0.0.1:8080/commonresources/excel/user_000031/equitable_family_1_0_sp_1_0_1_1.xlsx'
+  TestDataEquitable.terminate.fileName = 'http://127.0.0.1:8080/commonresources/excel/user_000031/equitable_termination_1_0_sp_1_0_1_0.xlsx'
+
+  TestDataGreenshield.couple.fileName = 'http://127.0.0.1:8080/commonresources/excel/user_000031/greenshiled_couple_1_0_sp_1_0_1_2.xlsx'
+  TestDataGreenshield.family.fileName = 'http://127.0.0.1:8080/commonresources/excel/user_000031/greenshiled_family_1_0_sp_1_0_1_0.xlsx'
 }
 
 
@@ -1486,11 +2062,17 @@ export const REPORTING_ID: any = {
 export const INSURANCE_SERVICES: any = {
   GREENSHIELD: {
     name: 'Green Shield',
-    policy: 'BFLX 41000'
+    policy: 'BFLX 41000',
+    fullName: 'The GroupBenefitz Platform Inc.',
+    carrier: '0',
+    issueNo: '01'
   },
   EQUITABLE: {
     name: 'Equitable',
-    policy: '814458'
+    policy: '814458',
+    fullName: 'The GroupBenefitz Platform Inc.',
+    carrier: '29',
+    issueNo: '01'
   },
 
 }
@@ -1519,9 +2101,10 @@ export const PAYMENT_METHOD: any = {
   CREDIT_CARD: 'CREDIT_CARD',
   ACH: 'ACH',
   PAD: 'PAD',
+  INVOICE: 'INVOICE'
 }
 
-export const PAYMENT_METHOD_LIST: any = ['CREDIT_CARD', 'ACH', 'PAD']
+export const PAYMENT_METHOD_LIST: any = [PAYMENT_METHOD.CREDIT_CARD, PAYMENT_METHOD.ACH, PAYMENT_METHOD.PAD, PAYMENT_METHOD.INVOICE]
 
 //ach //pad
 export const ACH = {
@@ -1554,4 +2137,12 @@ export const ACH_PAYMENT_STATUS_LIST: any = ['SCHEDULED', 'PENDING', 'PAID', 'FA
 
 export const PAD_CLIENT_ID = process.env.PAD_CLIENT_ID || "4626a003fcfdea860329c0aa0c34efb46b72b1ae8b6c606b3732d1fb85980338"
 export const PAD_CLIENT_SECRET = process.env.PAD_CLIENT_SECRET || "MzIxQHNldHliYWVkSQ=="
+export const BROKER_LICENSE_COVERAGE = {
+  LIFE_A_S: 'LIFE_ACCIDENT_AND_SICKNESS',
+  A_S: 'ACCIDENT_AND_SICKNESS',
+  LIFE: 'LIFE'
+}
+
+export const BROKER_LICENSE_COVERAGE_LIST: any = [BROKER_LICENSE_COVERAGE.LIFE_A_S, BROKER_LICENSE_COVERAGE.A_S, BROKER_LICENSE_COVERAGE.LIFE]
+
 export const MAINAPI_DOMAIN = process.env.MAINAPI || "https://testapi.groupbenefitz.aitestpro.com"

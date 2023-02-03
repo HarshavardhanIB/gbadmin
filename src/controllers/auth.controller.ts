@@ -43,6 +43,7 @@ import { JWTService } from '../services/jwt.service'
 import { Users } from '../models';
 import { email } from '../configurations';
 import { AuthService } from '../services';
+import {AUTH} from '../paths'
 @model()
 export class NewUserRequest extends Admin {
   @property({
@@ -121,7 +122,7 @@ export class AuthController {
     private request: Request,
     @service(AuthService) public service: AuthService,
   ) { }
-  @post('/auth/login', {
+  @post(AUTH.LOGIN, {
     responses: {
       '200': {
         description: 'Token',
@@ -152,7 +153,7 @@ export class AuthController {
     return { token };
   }
   @authenticate('jwt')
-  @get('/user/whoAmI', {
+  @get(AUTH.WHOAMI, {
     responses: {
       '200': {
         description: 'Return current user',
@@ -173,7 +174,7 @@ export class AuthController {
     console.log(currentUserProfile);
     return currentUserProfile[securityId];
   }
-  @post('/auth/signup', {
+  @post(AUTH.SIGNUP, {
     responses: {
       '200': {
         description: 'User',
@@ -238,7 +239,7 @@ export class AuthController {
     }
     return res;
   }
-  @post('/auth/signin')
+  @post(AUTH.SIGNIN)
   async userLogin(@requestBody(CredentialsRequestBody) credentials: Credentials,): Promise<any> {
     let response: any;
     console.log(credentials);
@@ -333,7 +334,7 @@ export class AuthController {
     // return response;
   }
   // @get('/auth/forgotPassword/{mailid}')
-  @post('/auth/forgotpassword')
+  @post(AUTH.FORGOTPASSWORD)
   async forgotPassword(@requestBody({
     content: {
       'application/json': { schema: forgotmail },
@@ -349,7 +350,7 @@ export class AuthController {
       let id = activeStatus.id;
       let HTMLcontentFile = (process.env.APP_URL ?? "https://devresources.aitestpro.com/apps/temp") + "/gb_user_activation.html?key=" + activeStatus.activation;
 
-      let inActiveUser = activeStatus.block;
+      let inActiveUser = activeStatus.block?? true;
       // const active_buffer = Buffer.from(activeStatus.block);
       // const active_boolean = Boolean(active_buffer.readInt8());
       let userNewPassword = await generateRandomPassword();
@@ -380,7 +381,7 @@ export class AuthController {
     }
     return response;
   }
-  @get('/auth/userActivation/{key}')
+  @get(AUTH.USER_ACTIVATION)
   async activeuser(@param.path.string('key') key: string): Promise<any> {
     console.log(key);
     let response: any;
@@ -401,7 +402,7 @@ export class AuthController {
     return response;
   }
   @authenticate('jwt')
-  @post('/user/changePassword')
+  @post(AUTH.CHANGE_PASSWORD)
   async chnagePasswords(@requestBody(
     {
       content: {
@@ -457,7 +458,7 @@ export class AuthController {
     }
     return response;
   }
-  @get('/auth/app')
+  @get(AUTH.APP)
   async app(): Promise<any> {
     let data: any = { "name": constants.name, "version": constants.version, "NodeVersion": process.versions.node, "NpmVersion": constants.npm_version };
     let responseData =
@@ -468,7 +469,7 @@ export class AuthController {
     };
     return responseData;
   }
-  @get('/userIp')
+  @get(AUTH.IP)
   async ip(): Promise<any> {
     let req = this.request;
     let headers = req.headers;
@@ -485,6 +486,5 @@ export class AuthController {
     };
     return responseData;
   }
-
 }
 
