@@ -1,6 +1,7 @@
 import * as nodemailer from 'nodemailer';
 import dotenv from "dotenv";
 import { nextTick } from 'process';
+import * as config from '../configurations';
 dotenv.config();
 export async function mail(from: string, to: string, subject: string, html: string, text: string, attachments: any) {
     try {
@@ -12,8 +13,8 @@ export async function mail(from: string, to: string, subject: string, html: stri
             port: 587,
             secureConnection: false,
             auth: {
-                user: process.env.EMAIL_ID,
-                pass: process.env.EMAIL_PASS
+                user: config.email.auth.user,
+                pass: config.email.auth.pass
             },
             tls: {
                 ciphers: 'SSLv3',
@@ -22,8 +23,9 @@ export async function mail(from: string, to: string, subject: string, html: stri
             requireTLS: true
         };
         const mailTransport = nodemailer.createTransport(transportOptions);
+        console.log(transportOptions)
         await mailTransport.sendMail({
-            from:process.env.EMAIL_ID,
+            from:config.email.auth.user,
             to,
             replyTo: from,
             subject,

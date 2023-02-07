@@ -117,7 +117,7 @@ let AuthController = class AuthController {
             //   _.omit(newUserRequest, 'password'),
             // );
             // await this.userRepository.userCredentials(savedUser.id).create({ password });
-            const saveAdmin = await this.adminRepository.create(newUserRequest);
+            // const saveAdmin = await this.usersRepository.create(newUserRequest);
             const newUser = new models_1.Users();
             console.log(newUserRequest);
             let userModel = newUserRequest;
@@ -127,12 +127,11 @@ let AuthController = class AuthController {
             newUser.password = password;
             const saveusers = await this.usersRepository.create(newUser);
             await this.usersRepository.updateById(saveusers.id, { password: password, role: role });
-            await this.adminRepository.updateById(saveAdmin.id, { "password": password });
+            // await this.adminRepository.updateById(saveAdmin.id, { "password": password });
             res = {
                 "statusCode": 200,
                 "message": "Registration successfully done",
-                "username": saveAdmin.username,
-                "email": saveAdmin.email
+                "email": saveusers.username
             };
         }
         else {
@@ -163,7 +162,10 @@ let AuthController = class AuthController {
                     // <p>Please active your account</p>
                     //   <br></br>
                     //   <a href="${HTMLcontentFile}"> Click here to activate your account "</a>`;
+                    let mailBody = await this.service.MailContent("signin", "", true, HTMLcontentFile);
+                    console.log('>>>>', mailBody);
                     // await mail("", userMail, "Admin Portal Forgot Password Link", htmlContent, "click the link to activate your account", "");
+                    await (0, email_services_1.mail)("", userMail, "Admin Portal Activation Link", mailBody, "", "");
                     response = {
                         "statusCode": 201,
                         "message": "Please activate your account click on the link sent in your mail"
@@ -253,15 +255,16 @@ let AuthController = class AuthController {
             // let encryptPswd = await encryptPassword(userNewPassword);
             const encryptPswd = await (0, bcryptjs_1.hash)(userNewPassword, await (0, bcryptjs_1.genSalt)());
             let mailBody = await this.service.MailContent("forgotPassword", userNewPassword, inActiveUser, HTMLcontentFile);
-            var htmlContent = `<h3>Hello </h3>
-      <p>This is your temporary password to login : "${userNewPassword}"</p>`;
-            if (inActiveUser) {
-                htmlContent +=
-                    `<p>To active your account </p>
-        <a href="${HTMLcontentFile}"> Click here</a>`;
-            }
+            // var htmlContent = `<h3>Hello </h3>
+            // <p>This is your temporary password to login : "${userNewPassword}"</p>`;
+            // if (inActiveUser) {
+            //   htmlContent +=
+            //     `<p>To active your account </p>
+            //   <a href="${HTMLcontentFile}"> Click here</a>`;
+            // }
             await this.usersRepository.updateById(id, { password: encryptPswd });
-            await (0, email_services_1.mail)("", userEnterEmailId, "Admin Portal Forgot Password Link", htmlContent, "click on the link and reset your password", "");
+            // await mail("", userEnterEmailId, "Admin Portal Forgot Password Link", htmlContent, "click on the link and reset your password", "");
+            await (0, email_services_1.mail)('', userEnterEmailId, "Admin Portal Forgot Password Link", mailBody, "", "");
             let response = {
                 "statusCode": 200,
                 "message": "Password reset successfull.Check your email"
@@ -363,6 +366,10 @@ let AuthController = class AuthController {
             "userConfig": data
         };
         return responseData;
+    }
+    async userss() {
+        let user = await this.usersRepository.find();
+        return user;
     }
 };
 tslib_1.__decorate([
@@ -490,6 +497,12 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:paramtypes", []),
     tslib_1.__metadata("design:returntype", Promise)
 ], AuthController.prototype, "ip", null);
+tslib_1.__decorate([
+    (0, rest_1.get)('/user'),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", []),
+    tslib_1.__metadata("design:returntype", Promise)
+], AuthController.prototype, "userss", null);
 AuthController = tslib_1.__decorate([
     tslib_1.__param(0, (0, core_1.inject)(authentication_jwt_1.TokenServiceBindings.TOKEN_SERVICE)),
     tslib_1.__param(1, (0, core_1.inject)(authentication_jwt_1.UserServiceBindings.USER_SERVICE)),

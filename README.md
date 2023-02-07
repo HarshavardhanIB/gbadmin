@@ -1,7 +1,9 @@
 #CHANGE LOG
 1.0.0.0 - RELEASE(v...)
 -----------------------------------------------------------------
+0.4.7
 
+changes in maiul config in mail service reading the mail username and password in config
 
 0.4.6
 

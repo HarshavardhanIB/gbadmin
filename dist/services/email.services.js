@@ -4,6 +4,7 @@ exports.mail = void 0;
 const tslib_1 = require("tslib");
 const nodemailer = tslib_1.__importStar(require("nodemailer"));
 const dotenv_1 = tslib_1.__importDefault(require("dotenv"));
+const config = tslib_1.__importStar(require("../configurations"));
 dotenv_1.default.config();
 async function mail(from, to, subject, html, text, attachments) {
     try {
@@ -15,8 +16,8 @@ async function mail(from, to, subject, html, text, attachments) {
             port: 587,
             secureConnection: false,
             auth: {
-                user: process.env.EMAIL_ID,
-                pass: process.env.EMAIL_PASS
+                user: config.email.auth.user,
+                pass: config.email.auth.pass
             },
             tls: {
                 ciphers: 'SSLv3',
@@ -25,8 +26,9 @@ async function mail(from, to, subject, html, text, attachments) {
             requireTLS: true
         };
         const mailTransport = nodemailer.createTransport(transportOptions);
+        console.log(transportOptions);
         await mailTransport.sendMail({
-            from: process.env.EMAIL_ID,
+            from: config.email.auth.user,
             to,
             replyTo: from,
             subject,

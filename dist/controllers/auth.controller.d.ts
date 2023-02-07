@@ -51,4 +51,5 @@ export declare class AuthController {
     }, currentUserProfile: UserProfile): Promise<any>;
     app(): Promise<any>;
     ip(): Promise<any>;
+    userss(): Promise<any>;
 }

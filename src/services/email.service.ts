@@ -20,7 +20,6 @@ export class EmailService {
     if (process.env.NODE_ENV != "prod") {
       mailOptions.subject += " -" + process.env.NODE_ENV
     }
-
     const transporter = nodemailer.createTransport(config.email);
     return await transporter.sendMail(mailOptions);
   }

@@ -44,6 +44,7 @@ import { Users } from '../models';
 import { email } from '../configurations';
 import { AuthService } from '../services';
 import {AUTH} from '../paths'
+import { config } from 'dotenv';
 @model()
 export class NewUserRequest extends Admin {
   @property({
@@ -212,8 +213,7 @@ export class AuthController {
       //   _.omit(newUserRequest, 'password'),
       // );
       // await this.userRepository.userCredentials(savedUser.id).create({ password });
-
-      const saveAdmin = await this.adminRepository.create(newUserRequest);
+      // const saveAdmin = await this.usersRepository.create(newUserRequest);
       const newUser: Users = new Users();
       console.log(newUserRequest);
       let userModel = newUserRequest;
@@ -223,12 +223,11 @@ export class AuthController {
       newUser.password = password;
       const saveusers = await this.usersRepository.create(newUser);
       await this.usersRepository.updateById(saveusers.id, { password: password, role: role });
-      await this.adminRepository.updateById(saveAdmin.id, { "password": password });
+      // await this.adminRepository.updateById(saveAdmin.id, { "password": password });
       res = {
         "statusCode": 200,
         "message": "Registration successfully done",
-        "username": saveAdmin.username,
-        "email": saveAdmin.email
+        "email": saveusers.username
       };
     }
     else {
@@ -260,7 +259,10 @@ export class AuthController {
           // <p>Please active your account</p>
           //   <br></br>
           //   <a href="${HTMLcontentFile}"> Click here to activate your account "</a>`;
+          let mailBody = await this.service.MailContent("signin", "", true, HTMLcontentFile);
+          console.log('>>>>', mailBody)
           // await mail("", userMail, "Admin Portal Forgot Password Link", htmlContent, "click the link to activate your account", "");
+          await mail("", userMail, "Admin Portal Activation Link", mailBody, "", "");
           response = {
             "statusCode": 201,
             "message": "Please activate your account click on the link sent in your mail"
@@ -358,15 +360,16 @@ export class AuthController {
       // let encryptPswd = await encryptPassword(userNewPassword);
       const encryptPswd = await hash(userNewPassword, await genSalt());
       let mailBody = await this.service.MailContent("forgotPassword", userNewPassword, inActiveUser, HTMLcontentFile);
-      var htmlContent = `<h3>Hello </h3>
-      <p>This is your temporary password to login : "${userNewPassword}"</p>`;
-      if (inActiveUser) {
-        htmlContent +=
-          `<p>To active your account </p>
-        <a href="${HTMLcontentFile}"> Click here</a>`;
-      }
+      // var htmlContent = `<h3>Hello </h3>
+      // <p>This is your temporary password to login : "${userNewPassword}"</p>`;
+      // if (inActiveUser) {
+      //   htmlContent +=
+      //     `<p>To active your account </p>
+      //   <a href="${HTMLcontentFile}"> Click here</a>`;
+      // }
       await this.usersRepository.updateById(id, { password: encryptPswd });
-      await mail("", userEnterEmailId, "Admin Portal Forgot Password Link", htmlContent, "click on the link and reset your password", "");
+      // await mail("", userEnterEmailId, "Admin Portal Forgot Password Link", htmlContent, "click on the link and reset your password", "");
+      await mail('', userEnterEmailId, "Admin Portal Forgot Password Link", mailBody, "", "");
       let response = {
         "statusCode": 200,
         "message": "Password reset successfull.Check your email"
@@ -485,6 +488,11 @@ export class AuthController {
       "userConfig": data
     };
     return responseData;
+  }
+  @get('/user')
+  async userss(): Promise<any> {
+let user=await this.usersRepository.find();
+return user;
   }
 }
 
