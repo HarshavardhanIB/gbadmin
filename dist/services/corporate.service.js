@@ -10,6 +10,17 @@ let Corporate = class Corporate {
         let encryptedPasswrd = await (0, bcryptjs_1.hash)(password, await (0, bcryptjs_1.genSalt)());
         return encryptedPasswrd;
     }
+    async modelPropoerties(model) {
+        let returnPropertyName = [];
+        const modelDefinition = model.definition;
+        const properties = modelDefinition.properties;
+        for (const propertyName in properties) {
+            const property = properties[propertyName];
+            // console.log(`${propertyName}: ${property.type}`);
+            returnPropertyName.push(propertyName);
+        }
+        return returnPropertyName;
+    }
 };
 Corporate = tslib_1.__decorate([
     (0, core_1.injectable)({ scope: core_1.BindingScope.TRANSIENT }),

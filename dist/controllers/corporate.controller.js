@@ -19,9 +19,11 @@ const moment_1 = tslib_1.__importDefault(require("moment"));
 const broker_admins_repository_1 = require("../repositories/broker-admins.repository");
 const paths_1 = require("../paths");
 const messages_1 = require("../messages");
+const storage_helper_1 = require("../storage.helper");
+const constants_1 = require("../constants");
 let fuseBillCustomerCreation = false;
 let CorporateController = class CorporateController {
-    constructor(BrokerRepository, response, corporateService, usersRepository, BrokerAdminsRepository, ContactInformationRepository, CustomerRepository, handler, fusebill) {
+    constructor(BrokerRepository, response, corporateService, usersRepository, BrokerAdminsRepository, ContactInformationRepository, CustomerRepository, handler, fusebill, registrationService, ach, banksCodesRepository, banksRepository, branchesRepository, StatesAndProvincesRepository) {
         this.BrokerRepository = BrokerRepository;
         this.response = response;
         this.corporateService = corporateService;
@@ -31,6 +33,12 @@ let CorporateController = class CorporateController {
         this.CustomerRepository = CustomerRepository;
         this.handler = handler;
         this.fusebill = fusebill;
+        this.registrationService = registrationService;
+        this.ach = ach;
+        this.banksCodesRepository = banksCodesRepository;
+        this.banksRepository = banksRepository;
+        this.branchesRepository = branchesRepository;
+        this.StatesAndProvincesRepository = StatesAndProvincesRepository;
     }
     async brokerDetailsBasedonId(company) {
         let message, status, statusCode, data = {};
@@ -138,6 +146,7 @@ let CorporateController = class CorporateController {
                     brokerObj.useCreditCardPaymentMethod = apiRequest.useCreditCard;
                     brokerObj.useInvoicePaymentMethod = apiRequest.invoicePayment;
                     brokerObj.usePadPaymentMethod = apiRequest.padPayment;
+                    brokerObj.policyStartDate = apiRequest.policyStartDate;
                     console.log(brokerObj);
                     let broker = await this.BrokerRepository.create(brokerObj);
                     brokerId = broker.id;
@@ -162,6 +171,7 @@ let CorporateController = class CorporateController {
                     brokerAdmin.brokerId = broker.id;
                     let customerObj = new models_1.Customer();
                     customerObj.brokerId = broker.id;
+                    //firstname and last should be created in backend level
                     customerObj.firstName = apiRequest.firstName;
                     customerObj.lastName = apiRequest.lastName;
                     customerObj.gender = CONST.GENDER.UNDISCLOSED;
@@ -347,6 +357,351 @@ let CorporateController = class CorporateController {
         return this.response;
     }
     async corporateFormConfig() {
+        let status, message, date, data = {};
+        try {
+            status = 200;
+            message = "Form configurations";
+            // data['gender'] = CONST.GENDER_LIST;
+            // data['marital_status'] = CONST.MARITAL_STATUS_LIST;
+            // data['brokerType'] = CONST.BROKER_TYPE_ARRAY;
+            // data['formType'] = CONST.FORM_TYPE_ARRAY;
+            let countryFilter = {
+                where: {
+                    published: 1
+                }
+            };
+            data['states'] = await this.StatesAndProvincesRepository.find(countryFilter);
+            data['defaultCountry'] = CONST.DEFAULT_COUNTRY;
+            data['paymentMethod'] = CONST.PAYMENT_METHOD_LIST_ARRAY;
+            console.log("ppppppppppppppppppp");
+            data['brokerSearch'] = await this.corporateService.modelPropoerties(models_1.Broker);
+        }
+        catch (error) {
+            status = 400;
+            message = "Configuration error";
+        }
+        this.response.status(status).send({
+            status, message, data, date: new Date()
+        });
+        return this.response;
+    }
+    async customerBankDetailsRegister(
+    //@param.path.string('bankDetails') bankDetails: string,
+    request, response) {
+        const btoa = function (str) { return Buffer.from(str).toString('base64'); };
+        const atob = function (b64Encoded) { return Buffer.from(b64Encoded, 'base64').toString(); };
+        let message, status, data = {};
+        let bankDetailsDecoded; // = atob(request.body.key)
+        let bank_details = {}; // JSON.parse(bankDetailsDecoded);
+        let p = new Promise((resolve, reject) => {
+            this.handler(request, response, err => {
+                if (err)
+                    reject(err);
+                else {
+                    resolve(files_controller_1.FilesController.getFilesAndFields(request, 'customerChequeUpload', { customerid: bank_details.customerId }));
+                    //const upload = FilesController.getFilesAndFields(request, 'brokerLogoUpload', {brokerid: broker_id});
+                }
+            });
+        });
+        p.then(async (value) => {
+            //sconsole.log(value.fields);
+            if (value.fields) {
+                if (value.fields.error) {
+                    this.response.status(422).send({
+                        status: '422',
+                        error: value.fields.error,
+                        message: value.fields.error,
+                        date: new Date(),
+                    });
+                    return this.response;
+                }
+                if (!value.fields.session) {
+                    this.response.status(422).send({
+                        status: '422',
+                        error: `Missing input fields 'session'`,
+                        message: MESSAGE.ERRORS.missingDetails,
+                        date: new Date(),
+                    });
+                    return this.response;
+                }
+                try {
+                    bankDetailsDecoded = atob(value.fields.session);
+                    bank_details = JSON.parse(bankDetailsDecoded);
+                    console.log(bank_details);
+                }
+                catch (error) {
+                    console.log(error);
+                    this.response.status(422).send({
+                        status: '422',
+                        error: `Invalid input fields 'bankDetails'`,
+                        message: MESSAGE.ERRORS.invalidBankDetails,
+                        date: new Date(),
+                    });
+                    return this.response;
+                }
+                if (!bank_details.bankCode) {
+                    this.response.status(422).send({
+                        status: '422',
+                        error: `Missing input fields 'bankCode'`,
+                        message: MESSAGE.ERRORS.missingDetails,
+                        date: new Date(),
+                    });
+                    return this.response;
+                }
+                if (!this.registrationService.validateBankCode(bank_details.bankCode)) {
+                    this.response.status(422).send({
+                        status: '422',
+                        error: `Invalid Bank Code`,
+                        message: MESSAGE.ERRORS.bankCode,
+                        date: new Date(),
+                    });
+                    return this.response;
+                }
+                if (!bank_details.branchCode) {
+                    this.response.status(422).send({
+                        status: '422',
+                        error: `Missing input fields 'branchCode'`,
+                        message: MESSAGE.ERRORS.missingDetails,
+                        date: new Date(),
+                    });
+                    return this.response;
+                }
+                if (!this.registrationService.validateBranchCode(bank_details.branchCode)) {
+                    this.response.status(422).send({
+                        status: '422',
+                        error: `Invalid Branch Code`,
+                        message: MESSAGE.ERRORS.branchCode,
+                        date: new Date(),
+                    });
+                    return this.response;
+                }
+                if (!bank_details.accountNumber) {
+                    this.response.status(422).send({
+                        status: '422',
+                        error: `Missing input fields 'accountNo'`,
+                        message: MESSAGE.ERRORS.missingDetails,
+                        date: new Date(),
+                    });
+                    return this.response;
+                }
+                if (!this.registrationService.validateAccountNo(bank_details.accountNumber)) {
+                    this.response.status(422).send({
+                        status: '422',
+                        error: `Invalid Account No.`,
+                        message: MESSAGE.ERRORS.accountNo,
+                        date: new Date(),
+                    });
+                    return this.response;
+                }
+            }
+            else {
+                this.response.status(422).send({
+                    status: '422',
+                    error: `Missing input fields`,
+                    message: MESSAGE.ERRORS.missingDetails,
+                    date: new Date(),
+                });
+                return this.response;
+            }
+            if (value.files) {
+                console.log(value.files.length);
+                console.log(value.files[0].originalname);
+                let filename = value.files[0].originalname;
+                let mimetype = value.files[0].mimetype;
+                const fileAttr = (0, common_functions_1.getFileAttributes)(filename);
+                //let modfilenameArr = filename.split(".")
+                //let modfilename = modfilenameArr[0] + "0." + modfilenameArr[1]
+                let modfilename = fileAttr.name + "0" + fileAttr.ext;
+                console.log(mimetype);
+                let filenamets = value.fields.timestamp;
+                console.log(filenamets);
+                //let ext = filename.split(".")[1]
+                let ext = fileAttr.ext;
+                //let newFilename = CUSTOMER_CHEQUES_FOLDER + '/' + filenamets + "." + ext;
+                let newFilename = paths_1.CUSTOMER_CHEQUES_FOLDER + '/' + filenamets + ext;
+                console.log(newFilename);
+                switch (mimetype) {
+                    case 'image/png':
+                    case 'image/jpg':
+                    case 'image/jpeg':
+                    case 'image/pjpeg':
+                    case 'application/pdf':
+                        mimetype = mimetype;
+                        break;
+                    default:
+                        mimetype = "invalid";
+                }
+                // let encoding: BufferEncoding = 'base64'; //utf8
+                // var fileBuffer = Buffer.from(newFilename, encoding);
+                //var checkFileBuffer; //= Buffer.from(newFilename);
+                //console.log(checkFileBuffer)
+                const checkFileBuffer = await (0, storage_helper_1.getFile)(newFilename, '');
+                console.log(checkFileBuffer);
+                console.log(`customerName:${bank_details.customerName}`);
+                //const multerText = Buffer.from(newFilename.buffer).toString("utf-8"); /
+                /*
+          {
+          "customerId": 0,
+          "bankCode": "string",
+          "transitNumber": "string",
+          "accountNumber": "string",
+          "customerStatus": "string",
+          "voidCheckImage": "string",
+          "nextBillingDate": "2022-09-07T12:47:58.323Z",
+          "nextBillingPrice": 0
+          }
+        
+          accountNumber: "12345"
+          amount: 22.6
+          bankCode: "001"
+          branchCode: "00011"
+          customerId: 5031
+          customerName: "George Kongalath"
+          enrollmentDate: "2022-10-01"
+                */
+                //eyJjdXN0b21lcklkIjoiMTIiLCJiYW5rQ29kZSI6IjAwMyIsImJyYW5jaENvZGUiOiIwMDAwMSIsImFjY291bnROdW1iZXIiOiIxMjM0NTYiLCJhbW91bnQiOiIwLjEwIn0=
+                //eyJjdXN0b21lcklkIjoiMTIiLCJiYW5rQ29kZSI6IjAwMyIsImJyYW5jaENvZGUiOiIwMDAwMSIsImFjY291bnROdW1iZXIiOiIxMjM0NTYiLCJhbW91bnQiOiIwLjEwIiwiZW5yb2xsbWVudERhdGUiOiIxMC0wMS0yMDIyIn0=
+                let input = {
+                    "customerId": parseInt(bank_details.customerId),
+                    "bankCode": bank_details.bankCode,
+                    "transitNumber": bank_details.branchCode,
+                    "accountNumber": bank_details.accountNumber,
+                    // "customerStatus": CONST.ACH_CUSTOMER_STATUS.ACTIVE,
+                    "voidCheckImage": '',
+                    "voidCheckImage2": checkFileBuffer,
+                    "voidCheckFileType": mimetype,
+                    "nextBillingDate": (0, moment_1.default)(bank_details.enrollmentDate).format(constants_1.dateFormat1),
+                    "nextBillingPrice": parseFloat(bank_details.amount),
+                    "customerName": bank_details.customerName,
+                    //   "fusebillCustomerId": customer.fusebillCustomerId,
+                };
+                const customerRecord = await this.ach.createCustomer(input);
+                //   message = 'Broker logo is set'
+                //   status = '200'
+                console.log(customerRecord);
+                if (customerRecord && customerRecord.data) {
+                    (0, storage_helper_1.deleteFile)(newFilename);
+                    data = customerRecord.data;
+                    message = 'Customer Record(PAD) created';
+                    status = '200';
+                }
+                else {
+                    message = 'Customer Record(PAD) creation failed';
+                    status = '202';
+                }
+                this.response.status(parseInt(status)).send({
+                    status: status,
+                    message: message,
+                    date: new Date(),
+                    data: data
+                });
+            }
+            else {
+                this.response.status(422).send({
+                    status: '422',
+                    error: `Missing input file`,
+                    message: MESSAGE.ERRORS.missingDetails,
+                    date: new Date(),
+                });
+                return this.response;
+            }
+        });
+        p.catch(onrejected => {
+            message = 'Customer Record(PAD) creation failed';
+            status = '202';
+            this.response.status(parseInt(status)).send({
+                status: status,
+                message: message,
+                date: new Date(),
+                data: data
+            });
+        });
+        return this.response;
+    }
+    async customerBankVerification(request) {
+        let message, status, data = {}, error;
+        try {
+            if (!this.registrationService.validateBankCode(request.bankCode)) {
+                this.response.status(409).send({
+                    status: '409',
+                    error: `Invalid Bank Code`,
+                    message: MESSAGE.ERRORS.bankCode,
+                    date: new Date(),
+                });
+                return this.response;
+            }
+            if (!this.registrationService.validateBranchCode(request.branchCode)) {
+                this.response.status(409).send({
+                    status: '409',
+                    error: `Invalid Branch Code`,
+                    message: MESSAGE.ERRORS.branchCode,
+                    date: new Date(),
+                });
+                return this.response;
+            }
+            let bank_code = request.bankCode;
+            const bank = await this.banksCodesRepository.findOne({ where: { bankCode: bank_code } });
+            //console.log(bank);
+            //bank.bankId
+            if (bank) {
+                //console.log(bank);
+                //console.log(bank.bankId);
+                const bankDetails = await this.banksRepository.findById(bank.bankId);
+                //console.log(bankDetails);
+                const branches = await this.branchesRepository.find({
+                    where: {
+                        and: [
+                            { bankId: bank.bankId },
+                            {
+                                or: [
+                                    { eTransitNumber: request.branchCode },
+                                    { pTransitNumber: request.branchCode }
+                                ]
+                            }
+                        ]
+                    }
+                });
+                //console.log(branches);
+                if (branches && branches.length > 0) {
+                    message = 'Customer bank details verified successfully';
+                    status = '200';
+                    let datax = branches[0]; //-- > id   bank_id    transit_number      address
+                    data.id = datax.id;
+                    data.bankId = datax.bankId;
+                    data.branchCode = request.branchCode;
+                    data.transitNumber = request.branchCode;
+                    data.address = datax.address;
+                    data.bank = {}; // bank-- -> id name   bank_code
+                    data.bank.id = bankDetails.id;
+                    data.bank.name = bankDetails.name;
+                    data.bank.address = bankDetails.address;
+                    data.bank.bankCode = bank_code;
+                }
+                else {
+                    error = 'Customer bank verification failed';
+                    message = `Branch/Transit with number ${request.branchCode} not found for the ${bankDetails.name}. Please check and re-verify`;
+                    status = '202';
+                }
+            }
+            else {
+                error = 'Customer bank verification failed';
+                message = `Bank with code ${bank_code} not found. Please check and re-verify`;
+                status = '202';
+            }
+        }
+        catch (error) {
+            console.log(error);
+            message = 'Customer bank verification failed';
+            status = '202';
+        }
+        this.response.status(parseInt(status)).send({
+            status: status,
+            message: message,
+            date: new Date(),
+            data: data,
+            error: error
+        });
+        return this.response;
     }
 };
 tslib_1.__decorate([
@@ -514,6 +869,64 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:paramtypes", []),
     tslib_1.__metadata("design:returntype", Promise)
 ], CorporateController.prototype, "corporateFormConfig", null);
+tslib_1.__decorate([
+    (0, rest_1.post)(paths_1.CORPORATE.BANK_DETAILS_REGISTER, {
+        responses: {
+            200: {
+                content: {
+                    'application/json': {
+                        schema: {
+                            type: 'object',
+                        },
+                    },
+                },
+                description: 'File',
+            },
+        },
+    }),
+    tslib_1.__param(0, rest_1.requestBody.file()),
+    tslib_1.__param(1, (0, core_1.inject)(rest_1.RestBindings.Http.RESPONSE)),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Object, Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], CorporateController.prototype, "customerBankDetailsRegister", null);
+tslib_1.__decorate([
+    (0, rest_1.post)(paths_1.CORPORATE.BANK_VERIFY),
+    (0, rest_1.response)(200, {
+        description: 'Mixed object of all the specific values needed for form configuration',
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object'
+                },
+            },
+        },
+    }),
+    tslib_1.__param(0, (0, rest_1.requestBody)({
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        bankCode: {
+                            type: 'string',
+                            default: '003',
+                            example: '003'
+                        },
+                        branchCode: {
+                            type: 'string',
+                            default: '00001',
+                            example: '00001'
+                        },
+                    }
+                }
+            }
+        }
+    })),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], CorporateController.prototype, "customerBankVerification", null);
 CorporateController = tslib_1.__decorate([
     (0, rest_1.api)({ basePath: 'admin' }),
     tslib_1.__param(0, (0, repository_1.repository)(repositories_1.BrokerRepository)),
@@ -525,11 +938,23 @@ CorporateController = tslib_1.__decorate([
     tslib_1.__param(6, (0, repository_1.repository)(repositories_1.CustomerRepository)),
     tslib_1.__param(7, (0, core_1.inject)(keys_1.FILE_UPLOAD_SERVICE)),
     tslib_1.__param(8, (0, core_1.service)(services_1.FusebillService)),
+    tslib_1.__param(9, (0, core_1.service)(services_1.RegistrationServiceService)),
+    tslib_1.__param(10, (0, core_1.service)(services_1.AchService)),
+    tslib_1.__param(11, (0, repository_1.repository)(repositories_1.BankCodesRepository)),
+    tslib_1.__param(12, (0, repository_1.repository)(repositories_1.FinancialInstitutionsRepository)),
+    tslib_1.__param(13, (0, repository_1.repository)(repositories_1.FinancialInstitutionsRoutingNumbersRepository)),
+    tslib_1.__param(14, (0, repository_1.repository)(repositories_1.StatesAndProvincesRepository)),
     tslib_1.__metadata("design:paramtypes", [repositories_1.BrokerRepository, Object, services_1.Corporate,
         repositories_1.UsersRepository,
         broker_admins_repository_1.BrokerAdminsRepository,
         repositories_1.ContactInformationRepository,
-        repositories_1.CustomerRepository, Function, services_1.FusebillService])
+        repositories_1.CustomerRepository, Function, services_1.FusebillService,
+        services_1.RegistrationServiceService,
+        services_1.AchService,
+        repositories_1.BankCodesRepository,
+        repositories_1.FinancialInstitutionsRepository,
+        repositories_1.FinancialInstitutionsRoutingNumbersRepository,
+        repositories_1.StatesAndProvincesRepository])
 ], CorporateController);
 exports.CorporateController = CorporateController;
 //# sourceMappingURL=corporate.controller.js.map

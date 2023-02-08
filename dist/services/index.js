@@ -28,4 +28,5 @@ tslib_1.__exportStar(require("./ach.service"), exports);
 tslib_1.__exportStar(require("./candoo-health-provisioning.service"), exports);
 tslib_1.__exportStar(require("./pdf.service"), exports);
 tslib_1.__exportStar(require("./executable.service"), exports);
+tslib_1.__exportStar(require("./registration-service.service"), exports);
 //# sourceMappingURL=index.js.map

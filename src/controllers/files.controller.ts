@@ -315,7 +315,9 @@ export class FilesController {
     }
     else if (method == "corporateUpload") {
       for (let file of files) {
-
+        console.log("**********************************************************");
+        console.log(file)
+        console.log("**********************************************************");
         var allowedMimes = ['image/jpg', 'image/jpeg', 'image/pjpeg', 'image/png', 'application/pdf'];
         if (allowedMimes.includes(file.mimetype)) {
 

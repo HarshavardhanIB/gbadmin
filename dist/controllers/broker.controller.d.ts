@@ -46,7 +46,6 @@ export declare class BrokerController {
     }): Promise<Response<any, Record<string, any>>>;
     brokerUpdate(request: Request, response: Response): Promise<Response>;
     formeConfig(): Promise<Response>;
-    planId(apiRequest: any): Promise<any>;
     planlevels(apiRequest: any): Promise<any>;
     broker_create_form_new(brokerId: number, apiRequest: any): Promise<Response>;
     broker_create_form_new_with_salesTrackingCode(brokerIdOrName: any, idOrName: boolean, trackingCode: number, apiRequest: any): Promise<Response>;
@@ -60,4 +59,5 @@ export declare class BrokerController {
     customerDetailsBasedOnBrokerIdandFormId(brokerid: number, customerId: number, formId: number): Promise<any>;
     search(apiRequest: any): Promise<any>;
     broker_registration(request: Request, response: Response): Promise<Response>;
+    app(): Promise<any>;
 }

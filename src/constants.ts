@@ -3,7 +3,8 @@ import { SERVER_FILES_PATH } from './paths';
 // import {TERMS_AND_CONDITIONS} from './terms_and_conditions';
 
 export const WELCOME = 'Welcome to GroupBenefitz';
-
+export const dateFormat1 = "YYYY-MM-DD HH:MM:SS";
+export const dateFormat2 = "YYYY-MM-DD";
 export const USER_ROLE: any = {
   CUSTOMER: 'CUSTOMER',
   CORPORATE_ADMINISTRATOR: 'CORPORATE_ADMIN',
@@ -2117,7 +2118,7 @@ export const PAYMENT_METHOD: any = {
 }
 
 export const PAYMENT_METHOD_LIST: any = [PAYMENT_METHOD.CREDIT_CARD, PAYMENT_METHOD.ACH, PAYMENT_METHOD.PAD, PAYMENT_METHOD.INVOICE]
-
+export const PAYMENT_METHOD_LIST_ARRAY= [{'name':'Credit Card','key':'CC','value':PAYMENT_METHOD.CREDIT_CARD},{'name':'Pre-Authorised Debit','key':'PAD','value':PAYMENT_METHOD.PAD},{'name':'Invoice Monthly','key':'INVOICE','value':PAYMENT_METHOD.INVOICE}]
 //ach //pad
 export const ACH = {
   "server": process.env.PADSERVER || process.env.ACHSERVER || 'http://127.0.0.1:3001'

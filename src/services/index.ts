@@ -32,3 +32,4 @@ export * from './ach.service';
 export * from './candoo-health-provisioning.service';
 export * from './pdf.service';
 export * from './executable.service';
+export * from './registration-service.service';

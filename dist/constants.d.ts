@@ -1,4 +1,6 @@
 export declare const WELCOME = "Welcome to GroupBenefitz";
+export declare const dateFormat1 = "YYYY-MM-DD HH:MM:SS";
+export declare const dateFormat2 = "YYYY-MM-DD";
 export declare const USER_ROLE: any;
 export declare const CONTACT_TYPE: any;
 export declare const ADDRESS_TYPE: any;
@@ -142,6 +144,11 @@ export declare const INSURANCE_SERVICES: any;
 export declare const REGEX: any;
 export declare const PAYMENT_METHOD: any;
 export declare const PAYMENT_METHOD_LIST: any;
+export declare const PAYMENT_METHOD_LIST_ARRAY: {
+    name: string;
+    key: string;
+    value: any;
+}[];
 export declare const ACH: {
     server: string;
 };

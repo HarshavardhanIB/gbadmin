@@ -107,30 +107,10 @@ let customerController = class customerController {
     async allCustmerDetails(id) {
         let finalResultsArray = [];
         let finalObjforCustmr;
-        let customers = await this.CustomerRepository.findById(id, { include: [{ relation: "customerRelativeRelation" }, { relation: 'customerPlans' }, { relation: 'customerSignup' }, { relation: 'contactInformations' }, { relation: 'customerPlanOptionsValues' }] });
+        let customers = await this.CustomerRepository.findById(id, { include: [{ relation: "customerRelatives" }, { relation: 'customerPlans' }, { relation: 'customerSignup' }, { relation: 'contactInformations' }, { relation: 'customerPlanOptionsValues' }] });
         console.log(">>>>>>><<<<<<<<<", customers);
         let contactInfo = [];
         let userid = customers.userId;
-        // let contactInfoObj = await this.CustomerContactInfoRepository.find({ where: { customerId: id } });
-        // for (let j = 0; j < contactInfoObj.length; j++) {
-        //   let contcatId = contactInfoObj[j].contactId;
-        //   let contactInfoRes = await this.ContactInformationRepository.find({ where: { id: contcatId } });
-        //   for (let j = 0; j < contactInfoRes.length; j++) {
-        //     contactInfo.push(contactInfoRes[j]);
-        //   }
-        // }
-        // let customerPlansObj = await this.CustomerPlansRepository.find({ where: { customerId: id } });
-        // let custmerPlanOpt = await this.CustomerPlanOptionsValuesRepository.find({ where: { customerId: id } });
-        // let custmrRelatives = await this.CustomerRelativesRepository.find({ where: { customerId: id } });
-        // let signupdetails: any = await this.CustomerSignupRepository.findOne({ where: { customerId: id } });
-        // var tfHours = signupdetails?.working_20hours[0];
-        // delete signupdetails['working_20hours'];
-        // if (tfHours == 1) {
-        //   signupdetails['working_20hours'] = true
-        // }
-        // else {
-        //   signupdetails['working_20hours'] = false;
-        // }
         if (!customers) {
             let response = {
                 "statusCode": 201,

@@ -34,6 +34,8 @@ export declare const CORPORATE: {
     SIGNUP: string;
     LOGO: string;
     FORMCONFIG: string;
+    BANK_DETAILS_REGISTER: string;
+    BANK_VERIFY: string;
 };
 export declare const BROKER: {
     COUNT: string;
@@ -62,6 +64,7 @@ export declare const BROKER: {
     BROKER_FORM_CUSTOMER_DETAILS: string;
     SEARCH: string;
     REGISTRATION: string;
+    APP: string;
 };
 export declare const AUTH: {
     LOGIN: string;

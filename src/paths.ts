@@ -63,7 +63,9 @@ export const FUSEBILL_API_BASE_PATH = API_BASE_PATH + "fusebill/"
 export const CORPORATE={
     SIGNUP:'/corporate/signup',
     LOGO:'/corporate/{company}/logo',
-    FORMCONFIG:'/formConfig'
+    FORMCONFIG:'/formConfig',
+    BANK_DETAILS_REGISTER:'/bankDetails/register',
+    BANK_VERIFY:'/bank/verify'
 }
 // broker paths
 export const BROKER={
@@ -74,17 +76,17 @@ export const BROKER={
     CUSTOMERLIST:'/admin/broker/{brokerId}/customerlist',
     LOGO:'/broker/{brokerid}/logo',
     FORM:'/broker/form/{formId}',
-    BROKER_FORM:'/broker/{brokerid}/brokerForm/',
-    MODIFY_FORM:'/broker/form/{formid}/modify',
+    BROKER_FORM:'/broker/{brokerId}/brokerForm',
+    MODIFY_FORM:'/broker/form/{formId}/modify',
     UPDATE_CONTACTINFO:'/broker/{brokerId}/updateContactInfo',
-    UPDATE_LICENSE:'/broker/updateLicenseState/{brokerId}',
-    UPDATE_EOI:'/broker/updateLicenceEO/{brokerId}',
-    CHANGE_EMAIL:'/broker/changeEmailId/{brokerId}',
+    UPDATE_LICENSE:'/broker/{brokerId}/updateLicenseState',
+    UPDATE_EOI:'/broker/{brokerId}/updateLicenceEO',
+    CHANGE_EMAIL:'/broker/{brokerId}/changeEmailId',
     FORM_CONFIG:'/broker/formConfig',
-    PLAN_LEVELS:'/broker/plans/planlevels',
+    PLAN_LEVELS:'/broker/availablePlans',
     CREATE_FORM:'/broker/{brokerId}/createForm',
     CREATE_FORM_WITH_SALESTRACKING_CODE:'/broker/{brokerIdOrName}/createForm/{trackingCode}',
-    FORM_DETAILS:'/broker/{formId}/formDetails',
+    FORM_DETAILS:'/broker/form/{formId}/Details',
     BROKER_DETAILS:'/broker/{brokerId}/details',
     BROKER_FORMS:'/broker/{brokerid}/forms',
     BROKER_FORM_DETAILS:'/broker/{brokerid}/form/{formId}/details',
@@ -93,6 +95,7 @@ export const BROKER={
     BROKER_FORM_CUSTOMER_DETAILS:'/broker/{brokerid}/form/{formId}/customer/{customerId}/details',
     SEARCH:'/broker/search',
     REGISTRATION:'/broker/registration',
+    APP:'/app',
 }
 //AUTH 
 export const AUTH={
@@ -100,7 +103,7 @@ export const AUTH={
     WHOAMI:'/user/whoAmI',
     SIGNUP:'/auth/signup',
     SIGNIN:'/auth/signin',
-    FORGOTPASSWORD:'/auth/forgotPassword/{mailid}',
+    FORGOTPASSWORD:'/auth/forgotPassword',
     USER_ACTIVATION:'/auth/userActivation/{key}',
     CHANGE_PASSWORD:'/user/changePassword',
     APP:'/auth/app',
