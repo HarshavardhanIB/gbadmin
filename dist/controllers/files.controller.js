@@ -280,20 +280,40 @@ let FilesController = class FilesController {
                     return { files: null, fields: { error: 'Invalid file type. Only jpg, png image files are allowed.' } };
                 }
                 console.log(paths_1.TEMP_UPLOADS_FOLDER + '/' + file.originalname);
-                try {
-                    let filename = file.originalname.split(".")[0].trim().replaceAll(" ", '');
-                    console.log(filename);
-                    let ext = file.originalname.split(".")[1];
-                    // let newFilename = CUSTOMER_CHEQUES_FOLDER + '/' + filename + "." + ext;
-                    // let newFilenameBuffer = CUSTOMER_CHEQUES_FOLDER + '/' + filename + ".txt";
-                    // console.log(newFilename);
-                    // fs.rename(TEMP_UPLOADS_FOLDER + '/' + file.originalname, CUSTOMER_CHEQUES_FOLDER + '/' + filename + "." + ext, function (res) {
-                    fs_1.default.rename(paths_1.TEMP_UPLOADS_FOLDER + '/' + file.originalname, paths_1.BROKERIMG_RESOURCES_FOLDER + '/' + filename + "." + ext, function (res) {
-                        console.log(res);
-                    });
+                if (file.fieldname == "logo") {
+                    try {
+                        let filename = file.originalname.split(".")[0].trim().replaceAll(" ", '');
+                        console.log(filename);
+                        let ext = file.originalname.split(".")[1];
+                        // let newFilename = CUSTOMER_CHEQUES_FOLDER + '/' + filename + "." + ext;
+                        // let newFilenameBuffer = CUSTOMER_CHEQUES_FOLDER + '/' + filename + ".txt";
+                        // console.log(newFilename);
+                        // fs.rename(TEMP_UPLOADS_FOLDER + '/' + file.originalname, CUSTOMER_CHEQUES_FOLDER + '/' + filename + "." + ext, function (res) {
+                        fs_1.default.rename(paths_1.TEMP_UPLOADS_FOLDER + '/' + file.originalname, paths_1.BROKERIMG_RESOURCES_FOLDER + '/' + filename + "." + ext, function (res) {
+                            console.log(res);
+                        });
+                    }
+                    catch (error) {
+                        console.log(error);
+                    }
                 }
-                catch (error) {
-                    console.log(error);
+                else if (file.fieldname == "voidCheck") {
+                    try {
+                        // let filename = uploadedFields.timestamp
+                        let filename = file.originalname.split(".")[0].trim().replaceAll(" ", '');
+                        console.log(filename);
+                        let ext = file.originalname.split(".")[1];
+                        let newFilename = paths_1.CUSTOMER_CHEQUES_FOLDER + '/' + filename + "." + ext;
+                        // let newFilenameBuffer = CUSTOMER_CHEQUES_FOLDER + '/' + filename + ".txt";
+                        console.log(newFilename);
+                        fs_1.default.rename(paths_1.TEMP_UPLOADS_FOLDER + '/' + file.originalname, paths_1.CUSTOMER_CHEQUES_FOLDER + '/' + filename + "." + ext, function (res) {
+                            console.log("void check");
+                            console.log(res);
+                        });
+                    }
+                    catch (error) {
+                        console.log(error);
+                    }
                 }
             }
             return { files, fields: request.body };

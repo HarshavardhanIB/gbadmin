@@ -36,6 +36,7 @@ export declare const CORPORATE: {
     FORMCONFIG: string;
     BANK_DETAILS_REGISTER: string;
     BANK_VERIFY: string;
+    PLANS: string;
 };
 export declare const BROKER: {
     COUNT: string;

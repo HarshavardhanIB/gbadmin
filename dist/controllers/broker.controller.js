@@ -699,7 +699,7 @@ let BrokerController = class BrokerController {
         });
         return this.response;
     }
-    async updateEO(brokerId, BrokerEoInsurance) {
+    async updateEOI(brokerId, BrokerEoInsurance) {
         let status, message, data = {};
         console.log(BrokerEoInsurance);
         let brokerEOI = await this.BrokerEoInsuranceRepository.find({ where: { brokerId: brokerId } });
@@ -1917,7 +1917,7 @@ let BrokerController = class BrokerController {
     async search(apiRequest) {
         let status, message, data;
         try {
-            let filter = { where: { and: [] }, fields: { policyStartDate: true, name: true, brokerType: true, logo: true, userId: true, contactId: true }, limit: apiRequest.count };
+            let filter = { where: { and: [] }, fields: { policyStartDate: true, name: true, brokerType: true, logo: true, userId: true, contactId: true, id: true }, limit: apiRequest.count };
             let searchArray = apiRequest.searchArray;
             for (const seatObj of searchArray) {
                 let searchterm = seatObj.searchterm;
@@ -1957,7 +1957,7 @@ let BrokerController = class BrokerController {
             let customers = await this.BrokerRepository.find(filter);
             if (customers.length > 0) {
                 status = 200;
-                message = "Customer details";
+                message = "Broker details";
                 data = customers;
             }
             else {
@@ -2118,43 +2118,6 @@ let BrokerController = class BrokerController {
                     let brokerLicenses = new models_1.BrokerLicensedStatesAndProvinces();
                     brokerLicenses.brokerId = brokerId || 0;
                     let brokerLicensedProvinces = [];
-                    // if (apiRequest.license) {
-                    //   apiRequest.license = JSON.parse(apiRequest.license)
-                    //   brokerLicenses.expiryDate = apiRequest.license.expiry_date
-                    //   brokerLicenses.reminderEmail = apiRequest.license.reminder_email
-                    //   if (apiRequest.license.provinces_ids && apiRequest.license.provinces_ids.length > 0) {
-                    //     brokerLicensedProvinces = apiRequest.license.provinces_ids
-                    //   } else if (apiRequest.license.provinces_names && apiRequest.license.provinces_names.length > 0) {
-                    //     let provinces = await this.StatesAndProvincesRepository.find({
-                    //       where: {
-                    //         or: [
-                    //           { shortName: { inq: apiRequest.license.provinces_names } },
-                    //           { name: { inq: apiRequest.license.provinces_names } }
-                    //         ]
-                    //       }
-                    //     })
-                    //     console.log(provinces);
-                    //     for (const province of provinces) {
-                    //       brokerLicensedProvinces.push(province.id);
-                    //     }
-                    //   }
-                    //   let licenceNums = apiRequest.license.licence_nums;
-                    //   // for (const brokerLicensedProvince of brokerLicensedProvinces) {
-                    //   if (licenceNums.length == brokerLicensedProvinces.length) {
-                    //     for (let i = 0; i < brokerLicensedProvinces.length; i++) {
-                    //       // brokerLicenses.stateId = brokerLicensedProvince;
-                    //       brokerLicenses.stateId = brokerLicensedProvinces[i];
-                    //       brokerLicenses.licenseNumber = licenceNums[i];
-                    //       console.log(`before push`)
-                    //       console.log(brokerLicenses);
-                    //       brokerLicensesArray.push(brokerLicenses)
-                    //       await this.BrokerLicensedStatesAndProvincesRepository.create(brokerLicenses);
-                    //     }
-                    //   }
-                    //   console.log(`brokerLicensesArray: ${brokerLicensesArray.length}`)
-                    //   // if (brokerLicensesArray.length > 0)
-                    //   //   await this.brokerLicensedProvincesRepo.create(brokerLicensesArray);
-                    // }
                     if (apiRequest.licenses) {
                         apiRequest.licenses = JSON.parse(apiRequest.licenses);
                         let brokerLicenses = new models_1.BrokerLicensedStatesAndProvinces();
@@ -2356,6 +2319,7 @@ let BrokerController = class BrokerController {
                     message = 'Broker registration failed';
                     status = '202';
                     statusCode = 202;
+                    await this.BrokerAdminsRepository.deleteAll({ and: [{ brokerId: brokerId }, { userId: userId }] });
                     await this.BrokerLicensedStatesAndProvincesRepository.deleteAll({ brokerId: brokerId });
                     // await this.BrokerSignupFormsPlansRepository.deleteAll({ brokerId: brokerId });
                     await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formId: signupFormId });
@@ -2586,7 +2550,7 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:type", Function),
     tslib_1.__metadata("design:paramtypes", [Number, Object]),
     tslib_1.__metadata("design:returntype", Promise)
-], BrokerController.prototype, "updateEO", null);
+], BrokerController.prototype, "updateEOI", null);
 tslib_1.__decorate([
     (0, rest_1.del)(paths_2.BROKER.BROKERID),
     (0, rest_1.response)(200, {

@@ -1,6 +1,10 @@
 #CHANGE LOG
 1.0.0.0 - RELEASE(v...)
 -----------------------------------------------------------------
+0.4.8
+
+added model properties funcytion in corporate services and change the app details service auth controller to broker controller
+
 0.4.7
 
 changes in maiul config in mail service reading the mail username and password in config

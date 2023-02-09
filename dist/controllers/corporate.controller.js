@@ -22,8 +22,9 @@ const messages_1 = require("../messages");
 const storage_helper_1 = require("../storage.helper");
 const constants_1 = require("../constants");
 let fuseBillCustomerCreation = false;
+let fiseBill = 0;
 let CorporateController = class CorporateController {
-    constructor(BrokerRepository, response, corporateService, usersRepository, BrokerAdminsRepository, ContactInformationRepository, CustomerRepository, handler, fusebill, registrationService, ach, banksCodesRepository, banksRepository, branchesRepository, StatesAndProvincesRepository) {
+    constructor(BrokerRepository, response, corporateService, usersRepository, BrokerAdminsRepository, ContactInformationRepository, CustomerRepository, handler, fusebill, registrationService, ach, banksCodesRepository, banksRepository, branchesRepository, StatesAndProvincesRepository, InsurancePlansRepository, PlansAvailabilityRepository) {
         this.BrokerRepository = BrokerRepository;
         this.response = response;
         this.corporateService = corporateService;
@@ -39,6 +40,8 @@ let CorporateController = class CorporateController {
         this.banksRepository = banksRepository;
         this.branchesRepository = branchesRepository;
         this.StatesAndProvincesRepository = StatesAndProvincesRepository;
+        this.InsurancePlansRepository = InsurancePlansRepository;
+        this.PlansAvailabilityRepository = PlansAvailabilityRepository;
     }
     async brokerDetailsBasedonId(company) {
         let message, status, statusCode, data = {};
@@ -178,7 +181,7 @@ let CorporateController = class CorporateController {
                     customerObj.companyName = apiRequest.corporationName;
                     customerObj.isCorporateAccount = true;
                     customerObj.registrationDate = (0, moment_1.default)().format('YYYY-MM-DD');
-                    customerObj.userId = groupAdminsUsers[0];
+                    customerObj.userId = CorporateUser.id;
                     let customer = await this.CustomerRepository.create(customerObj);
                     customerId = customer.id;
                     var fusebillCustomer = {};
@@ -218,6 +221,7 @@ let CorporateController = class CorporateController {
                         }
                     }
                     else {
+                        fiseBill = fiseBill + 1;
                         fusebillCustomer = {
                             firstName: 'Admin',
                             middleName: null,
@@ -274,7 +278,7 @@ let CorporateController = class CorporateController {
                             createdTimestamp: '2023-02-01T11:36:15.9442038Z',
                             requiresProjectedInvoiceGeneration: false,
                             requiresFinancialCalendarGeneration: false,
-                            id: 11673101,
+                            id: 11673101 + fiseBill,
                             uri: 'https://secure.fusebill.com/v1/customers/11673101'
                         };
                     }
@@ -282,7 +286,7 @@ let CorporateController = class CorporateController {
                     //activationg fuse bill customer id
                     // bank details and void check service 
                     data.push(customer);
-                    for (const user of groupAdmins) {
+                    for (const user of groupAdminsUsers) {
                         console.log(user);
                         brokerAdmin.userId = user;
                         console.log(brokerAdmin);
@@ -334,11 +338,11 @@ let CorporateController = class CorporateController {
                         message: messages_1.CORPORATE_MSG.REGISTRATION_FAIL,
                         date: new Date(),
                     });
+                    await this.CustomerRepository.deleteById(customerId);
                     for (let groupAdminUser of groupAdminsUsers) {
                         await this.usersRepository.deleteById(groupAdminUser);
                     }
                     await this.ContactInformationRepository.deleteById(contId);
-                    await this.CustomerRepository.deleteById(customerId);
                     await this.BrokerRepository.deleteById(brokerId);
                     return this.response;
                 }
@@ -703,6 +707,22 @@ let CorporateController = class CorporateController {
         });
         return this.response;
     }
+    async plans(stateId) {
+        try {
+            let message, status, data = {};
+            let withFilter;
+            let withOutFilter;
+            let plans = await this.PlansAvailabilityRepository.find({ where: { stateId: stateId }, include: [{ relation: 'plan', scope: { where: { published: {
+                                    "type": "Buffer",
+                                    "data": [1]
+                                } }, fields: { name: true } } }, { relation: 'state' }] });
+            console.log(plans);
+            return plans;
+        }
+        catch (error) {
+            console.log(error);
+        }
+    }
 };
 tslib_1.__decorate([
     (0, rest_1.get)(paths_1.CORPORATE.LOGO),
@@ -745,6 +765,10 @@ tslib_1.__decorate([
                         phoneNum: { type: 'number', default: 9999999999, },
                         policyStartDate: { type: 'string', default: new Date().toISOString().slice(0, 10) },
                         logo: {
+                            type: 'string',
+                            format: 'binary'
+                        },
+                        voidCheck: {
                             type: 'string',
                             format: 'binary'
                         },
@@ -927,6 +951,23 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:paramtypes", [Object]),
     tslib_1.__metadata("design:returntype", Promise)
 ], CorporateController.prototype, "customerBankVerification", null);
+tslib_1.__decorate([
+    (0, rest_1.get)(paths_1.CORPORATE.PLANS),
+    (0, rest_1.response)(200, {
+        description: 'Mixed object of all the specific values needed for form configuration',
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object'
+                },
+            },
+        },
+    }),
+    tslib_1.__param(0, rest_1.param.path.number('stateId')),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Number]),
+    tslib_1.__metadata("design:returntype", Promise)
+], CorporateController.prototype, "plans", null);
 CorporateController = tslib_1.__decorate([
     (0, rest_1.api)({ basePath: 'admin' }),
     tslib_1.__param(0, (0, repository_1.repository)(repositories_1.BrokerRepository)),
@@ -944,6 +985,8 @@ CorporateController = tslib_1.__decorate([
     tslib_1.__param(12, (0, repository_1.repository)(repositories_1.FinancialInstitutionsRepository)),
     tslib_1.__param(13, (0, repository_1.repository)(repositories_1.FinancialInstitutionsRoutingNumbersRepository)),
     tslib_1.__param(14, (0, repository_1.repository)(repositories_1.StatesAndProvincesRepository)),
+    tslib_1.__param(15, (0, repository_1.repository)(repositories_1.InsurancePlansRepository)),
+    tslib_1.__param(16, (0, repository_1.repository)(repositories_1.PlansAvailabilityRepository)),
     tslib_1.__metadata("design:paramtypes", [repositories_1.BrokerRepository, Object, services_1.Corporate,
         repositories_1.UsersRepository,
         broker_admins_repository_1.BrokerAdminsRepository,
@@ -954,7 +997,9 @@ CorporateController = tslib_1.__decorate([
         repositories_1.BankCodesRepository,
         repositories_1.FinancialInstitutionsRepository,
         repositories_1.FinancialInstitutionsRoutingNumbersRepository,
-        repositories_1.StatesAndProvincesRepository])
+        repositories_1.StatesAndProvincesRepository,
+        repositories_1.InsurancePlansRepository,
+        repositories_1.PlansAvailabilityRepository])
 ], CorporateController);
 exports.CorporateController = CorporateController;
 //# sourceMappingURL=corporate.controller.js.map

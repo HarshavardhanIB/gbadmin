@@ -1,13 +1,13 @@
 // Uncomment these imports to begin using these cool features!
 // import {inject} from '@loopback/core';
-import { inject, service } from '@loopback/core';
+import { DefaultConfigurationResolver, inject, service } from '@loopback/core';
 import { repository } from '@loopback/repository';
 import { api, get, param, post, Request, requestBody, response, Response, RestBindings } from '@loopback/rest';
 import { request } from 'http';
 import { nextTick } from 'process';
-import { Broker, BrokerAdmins, ContactInformation, Customer, Users } from '../models';
+import { Broker, BrokerAdmins, ContactInformation, Customer, InsurancePlans, Users } from '../models';
 import * as CONST from '../constants'
-import { BankCodesRepository, BrokerRepository, ContactInformationRepository, CustomerRepository, FinancialInstitutionsRepository, FinancialInstitutionsRoutingNumbersRepository, StatesAndProvincesRepository, UsersRepository, } from '../repositories'
+import { BankCodesRepository, BrokerRepository, ContactInformationRepository, CustomerRepository, FinancialInstitutionsRepository, FinancialInstitutionsRoutingNumbersRepository, InsurancePlansRepository, PlansAvailabilityRepository, StatesAndProvincesRepository, UsersRepository, } from '../repositories'
 import { AchService, Corporate, FusebillService, mail, RegistrationServiceService } from '../services';
 import { FILE_UPLOAD_SERVICE } from '../keys';
 import { FileUploadHandler } from "../types";
@@ -22,8 +22,10 @@ import { BROKERPATH_STRING,CORPORATE, CUSTOMER_CHEQUES_FOLDER } from '../paths';
 import {CORPORATE_MSG} from '../messages'
 import { deleteFile, getFile } from '../storage.helper';
 import { dateFormat1 } from '../constants';
+import { AnyTxtRecord } from 'dns';
+import { ErrorValue } from 'exceljs';
 let fuseBillCustomerCreation = false;
-
+let fiseBill=0;
 @api({basePath:'admin'})
 export class CorporateController {
   constructor(
@@ -47,6 +49,8 @@ export class CorporateController {
     @repository(FinancialInstitutionsRepository)public banksRepository:FinancialInstitutionsRepository,
     @repository(FinancialInstitutionsRoutingNumbersRepository)public branchesRepository :FinancialInstitutionsRoutingNumbersRepository,
     @repository(StatesAndProvincesRepository)public StatesAndProvincesRepository:StatesAndProvincesRepository,
+    @repository(InsurancePlansRepository)public InsurancePlansRepository:InsurancePlansRepository,
+    @repository(PlansAvailabilityRepository)public PlansAvailabilityRepository:PlansAvailabilityRepository,
     ) { }
 
   @get(CORPORATE.LOGO)
@@ -108,6 +112,10 @@ export class CorporateController {
             phoneNum: { type: 'number', default: 9999999999, },
             policyStartDate: { type: 'string', default: new Date().toISOString().slice(0, 10) },
             logo: {
+              type: 'string',
+              format: 'binary'
+            },
+            voidCheck:{
               type: 'string',
               format: 'binary'
             },
@@ -327,7 +335,7 @@ export class CorporateController {
           customerObj.companyName = apiRequest.corporationName;
           customerObj.isCorporateAccount = true;
           customerObj.registrationDate = moment().format('YYYY-MM-DD');
-          customerObj.userId = groupAdminsUsers[0];
+          customerObj.userId = CorporateUser.id;
           let customer: any = await this.CustomerRepository.create(customerObj);
           customerId = customer.id;
           var fusebillCustomer: any = {};
@@ -368,6 +376,7 @@ export class CorporateController {
             }
           }
           else {
+            fiseBill=fiseBill+1;
             fusebillCustomer = {
               firstName: 'Admin',
               middleName: null,
@@ -424,15 +433,17 @@ export class CorporateController {
               createdTimestamp: '2023-02-01T11:36:15.9442038Z',
               requiresProjectedInvoiceGeneration: false,
               requiresFinancialCalendarGeneration: false,
-              id: 11673101,
+              id: 11673101 + fiseBill,
               uri: 'https://secure.fusebill.com/v1/customers/11673101'
             };
           }
-          await this.CustomerRepository.updateById(customerId, { fusebillCustomerId: fusebillCustomer.id })
+          
+          await this.CustomerRepository.updateById(customerId, { fusebillCustomerId: fusebillCustomer.id  })
           //activationg fuse bill customer id
           // bank details and void check service 
           data.push(customer);
-          for (const user of groupAdmins) {
+          
+          for (const user of groupAdminsUsers) {
             console.log(user);
             brokerAdmin.userId = user;
             console.log(brokerAdmin)
@@ -483,11 +494,12 @@ export class CorporateController {
             message: CORPORATE_MSG.REGISTRATION_FAIL,
             date: new Date(),
           });
+          await this.CustomerRepository.deleteById(customerId);
           for (let groupAdminUser of groupAdminsUsers) {
             await this.usersRepository.deleteById(groupAdminUser);
           }
           await this.ContactInformationRepository.deleteById(contId);
-          await this.CustomerRepository.deleteById(customerId);
+          
           await this.BrokerRepository.deleteById(brokerId);
           return this.response;
         }
@@ -567,8 +579,6 @@ export class CorporateController {
     const btoa = function (str: string) {return Buffer.from(str).toString('base64');}
     const atob = function (b64Encoded: string) {return Buffer.from(b64Encoded, 'base64').toString()}
     let message: string, status: string, data: any = {};
-
-
     let bankDetailsDecoded;// = atob(request.body.key)
     let bank_details: any = {};// JSON.parse(bankDetailsDecoded);
 
@@ -829,8 +839,6 @@ export class CorporateController {
         data: data
       });
     })
-
-
     return this.response;
   }
   @post(CORPORATE.BANK_VERIFY)
@@ -966,5 +974,30 @@ export class CorporateController {
       error: error
     });
     return this.response;
+  }
+  @get(CORPORATE.PLANS)
+  @response(200, {
+    description: 'Mixed object of all the specific values needed for form configuration',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object'
+        },
+      },
+    },
+  })
+  async plans(@param.path.number('stateId')stateId:number){
+   try{ let message,status,data:any={};
+    let withFilter:any;
+    let withOutFilter:any;
+    let plans=await this.PlansAvailabilityRepository.find({where:{stateId:stateId},include:[{relation:'plan',scope:{where:{published:{
+      "type": "Buffer",
+      "data": [1]
+    }},fields:{name:true}}},{relation:'state'}]})
+    console.log(plans);
+    return plans;}
+    catch(error){
+      console.log(error)
+    }
   }
 } 

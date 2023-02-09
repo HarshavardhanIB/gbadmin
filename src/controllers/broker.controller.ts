@@ -339,16 +339,12 @@ export class BrokerController {
       files = uploadedFiles.map(mapper);
     } else {
       for (const filename in uploadedFiles) {
-
         // console.log(`filename`);
         // let originalname = filename;
         // console.log(originalname)
         // originalname = originalname.replace(/[\])}[{(]/g, '').replace(/ /g, '')
         // console.log(originalname)
-
         files.push(...uploadedFiles[filename].map(mapper));
-
-
       }
     }
   }
@@ -1127,7 +1123,7 @@ export class BrokerController {
       }
     }
   })
-  async updateEO(@param.path.number('brokerId') brokerId: number, @requestBody({
+  async updateEOI(@param.path.number('brokerId') brokerId: number, @requestBody({
     content: {
       'application/json': {
         schema: getModelSchemaRef(BrokerEoInsurance, {
@@ -2889,7 +2885,7 @@ export class BrokerController {
   }) apiRequest: any): Promise<any> {
     let status, message, data: any;
     try {
-      let filter: any = { where: { and: [] }, fields: { policyStartDate: true, name: true, brokerType: true, logo: true, userId: true, contactId: true }, limit: apiRequest.count };
+      let filter: any = { where: { and: [] }, fields: { policyStartDate: true, name: true, brokerType: true, logo: true, userId: true, contactId: true ,id:true}, limit: apiRequest.count };
       let searchArray = apiRequest.searchArray;
       for (const seatObj of searchArray) {
         let searchterm = seatObj.searchterm;
@@ -2930,7 +2926,7 @@ export class BrokerController {
       let customers: any = await this.BrokerRepository.find(filter);
       if (customers.length > 0) {
         status = 200;
-        message = "Customer details"
+        message = "Broker details"
         data = customers;
       }
       else {
@@ -3304,49 +3300,7 @@ export class BrokerController {
           let brokerLicensesArray: BrokerLicensedStatesAndProvinces[] = [];
           let brokerLicenses: BrokerLicensedStatesAndProvinces = new BrokerLicensedStatesAndProvinces();
           brokerLicenses.brokerId = brokerId || 0;
-
-
           let brokerLicensedProvinces = [];
-          // if (apiRequest.license) {
-          //   apiRequest.license = JSON.parse(apiRequest.license)
-          //   brokerLicenses.expiryDate = apiRequest.license.expiry_date
-          //   brokerLicenses.reminderEmail = apiRequest.license.reminder_email
-
-          //   if (apiRequest.license.provinces_ids && apiRequest.license.provinces_ids.length > 0) {
-          //     brokerLicensedProvinces = apiRequest.license.provinces_ids
-          //   } else if (apiRequest.license.provinces_names && apiRequest.license.provinces_names.length > 0) {
-          //     let provinces = await this.StatesAndProvincesRepository.find({
-          //       where: {
-          //         or: [
-          //           { shortName: { inq: apiRequest.license.provinces_names } },
-          //           { name: { inq: apiRequest.license.provinces_names } }
-          //         ]
-          //       }
-          //     })
-
-          //     console.log(provinces);
-
-          //     for (const province of provinces) {
-          //       brokerLicensedProvinces.push(province.id);
-          //     }
-          //   }
-          //   let licenceNums = apiRequest.license.licence_nums;
-          //   // for (const brokerLicensedProvince of brokerLicensedProvinces) {
-          //   if (licenceNums.length == brokerLicensedProvinces.length) {
-          //     for (let i = 0; i < brokerLicensedProvinces.length; i++) {
-          //       // brokerLicenses.stateId = brokerLicensedProvince;
-          //       brokerLicenses.stateId = brokerLicensedProvinces[i];
-          //       brokerLicenses.licenseNumber = licenceNums[i];
-          //       console.log(`before push`)
-          //       console.log(brokerLicenses);
-          //       brokerLicensesArray.push(brokerLicenses)
-          //       await this.BrokerLicensedStatesAndProvincesRepository.create(brokerLicenses);
-          //     }
-          //   }
-          //   console.log(`brokerLicensesArray: ${brokerLicensesArray.length}`)
-          //   // if (brokerLicensesArray.length > 0)
-          //   //   await this.brokerLicensedProvincesRepo.create(brokerLicensesArray);
-          // }
           if (apiRequest.licenses) {
             apiRequest.licenses = JSON.parse(apiRequest.licenses);
             let brokerLicenses: BrokerLicensedStatesAndProvinces = new BrokerLicensedStatesAndProvinces();
@@ -3567,6 +3521,7 @@ export class BrokerController {
           message = 'Broker registration failed'
           status = '202';
           statusCode = 202
+          await this.BrokerAdminsRepository.deleteAll({and:[{brokerId:brokerId},{userId:userId}]});
           await this.BrokerLicensedStatesAndProvincesRepository.deleteAll({ brokerId: brokerId })
           // await this.BrokerSignupFormsPlansRepository.deleteAll({ brokerId: brokerId });
           await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formId: signupFormId });
@@ -3574,7 +3529,7 @@ export class BrokerController {
           await this.ContactInformationRepository.deleteById(contId);
           await this.BrokerLicensedStatesAndProvincesRepository.deleteAll({ brokerId: brokerId });
           await this.UsersRepository.deleteById(userId);
-          await this.SignupFormsRepository.deleteAll({ brokerId: brokerId });
+          await this.SignupFormsRepository.deleteAll({ brokerId: brokerId });         
           await this.BrokerRepository.deleteById(brokerId);
         }
 

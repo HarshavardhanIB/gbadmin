@@ -4,7 +4,7 @@ import {juggler} from '@loopback/repository';
 const config = {
   name: 'groupBenefitz',
   connector: 'mysql',
-  url: process.env.DB_URL || 'mysql://root:Sql@2022@localhost:3306/group_benefitz',
+  url: process.env.DB_URL || '',
   host: process.env.DB_HOST || 'localhost',
   port: process.env.DB_PORT || '3306',
   user: process.env.DB_USERNAME || 'root',

@@ -65,7 +65,8 @@ export const CORPORATE={
     LOGO:'/corporate/{company}/logo',
     FORMCONFIG:'/formConfig',
     BANK_DETAILS_REGISTER:'/bankDetails/register',
-    BANK_VERIFY:'/bank/verify'
+    BANK_VERIFY:'/bank/verify',
+    PLANS:'/plans/{stateId}'
 }
 // broker paths
 export const BROKER={

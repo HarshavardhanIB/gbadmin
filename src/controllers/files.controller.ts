@@ -332,21 +332,42 @@ export class FilesController {
           return { files: null, fields: { error: 'Invalid file type. Only jpg, png image files are allowed.' } };
         }
         console.log(TEMP_UPLOADS_FOLDER + '/' + file.originalname);
-        try {
-          let filename = file.originalname.split(".")[0].trim().replaceAll(" ", '');
-          console.log(filename)
-          let ext = file.originalname.split(".")[1]
-          // let newFilename = CUSTOMER_CHEQUES_FOLDER + '/' + filename + "." + ext;
-          // let newFilenameBuffer = CUSTOMER_CHEQUES_FOLDER + '/' + filename + ".txt";
-          // console.log(newFilename);
-          // fs.rename(TEMP_UPLOADS_FOLDER + '/' + file.originalname, CUSTOMER_CHEQUES_FOLDER + '/' + filename + "." + ext, function (res) {
-          fs.rename(TEMP_UPLOADS_FOLDER + '/' + file.originalname, BROKERIMG_RESOURCES_FOLDER + '/' + filename + "." + ext, function (res) {
-            console.log(res);
-          })
-
-        } catch (error) {
-          console.log(error);
+        if(file.fieldname=="logo"){
+          try {
+            let filename = file.originalname.split(".")[0].trim().replaceAll(" ", '');
+            console.log(filename)
+            let ext = file.originalname.split(".")[1]
+            // let newFilename = CUSTOMER_CHEQUES_FOLDER + '/' + filename + "." + ext;
+            // let newFilenameBuffer = CUSTOMER_CHEQUES_FOLDER + '/' + filename + ".txt";
+            // console.log(newFilename);
+            // fs.rename(TEMP_UPLOADS_FOLDER + '/' + file.originalname, CUSTOMER_CHEQUES_FOLDER + '/' + filename + "." + ext, function (res) {
+            fs.rename(TEMP_UPLOADS_FOLDER + '/' + file.originalname, BROKERIMG_RESOURCES_FOLDER + '/' + filename + "." + ext, function (res) {
+              console.log(res);
+            })
+  
+          } catch (error) {
+            console.log(error);
+          }
         }
+        else if(file.fieldname=="voidCheck"){
+          try {
+            // let filename = uploadedFields.timestamp
+            let filename = file.originalname.split(".")[0].trim().replaceAll(" ", '');
+            console.log(filename)
+            let ext = file.originalname.split(".")[1]
+            let newFilename = CUSTOMER_CHEQUES_FOLDER + '/' + filename + "." + ext;
+            // let newFilenameBuffer = CUSTOMER_CHEQUES_FOLDER + '/' + filename + ".txt";
+            console.log(newFilename);
+            fs.rename(TEMP_UPLOADS_FOLDER + '/' + file.originalname, CUSTOMER_CHEQUES_FOLDER + '/' + filename + "." + ext, function (res) {
+              console.log("void check");
+              console.log(res);
+            })
+  
+          } catch (error) {
+            console.log(error);
+          }
+        }
+        
       }
       return { files, fields: request.body };
     }

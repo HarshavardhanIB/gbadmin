@@ -39,7 +39,7 @@ export declare class BrokerController {
     formConfig(formLink?: string, lang?: string): Promise<Response>;
     updateContact(id: number, ContactInformation: Omit<ContactInformation, 'id'>): Promise<any>;
     updateLiceceState(brokerId: number, requestBody: any): Promise<any>;
-    updateEO(brokerId: number, BrokerEoInsurance: Omit<BrokerEoInsurance, 'id'>): Promise<any>;
+    updateEOI(brokerId: number, BrokerEoInsurance: Omit<BrokerEoInsurance, 'id'>): Promise<any>;
     deleteBroker(brokerId: number): Promise<Response<any, Record<string, any>>>;
     emailChange(brokerId: number, requestBody: {
         newMailid: string;
