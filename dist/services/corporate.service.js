@@ -38,9 +38,7 @@ let Corporate = class Corporate {
         }
         return returnPropertyName;
     }
-    async customerBankDetailsRegister(session, filenamets, ext, mimetype) {
-        const btoa = function (str) { return Buffer.from(str).toString('base64'); };
-        const atob = function (b64Encoded) { return Buffer.from(b64Encoded, 'base64').toString(); };
+    async customerBankDetailsRegister(session, filenamets, ext, mimetype, customerName) {
         let message, status, data = {};
         let bankDetailsDecoded; // = atob(request.body.key)
         let bank_details = {}; // JSON.parse(bankDetailsDecoded);
@@ -74,7 +72,7 @@ let Corporate = class Corporate {
         console.log(newFilename);
         const checkFileBuffer = await (0, storage_helper_1.getFile)(newFilename, '');
         console.log(checkFileBuffer);
-        console.log(`customerName:${bank_details.customerName}`);
+        // console.log(`customerName:${bank_details.customerName}`)
         //const multerText = Buffer.from(newFilename.buffer).toString("utf-8"); /
         /*
   {
@@ -109,7 +107,7 @@ let Corporate = class Corporate {
             "voidCheckFileType": mimetype,
             "nextBillingDate": (0, moment_1.default)(bank_details.enrollmentDate).format(constants_1.dateFormat1),
             "nextBillingPrice": parseFloat(bank_details.amount),
-            "customerName": bank_details.customerName,
+            "customerName": customerName,
             //   "fusebillCustomerId": customer.fusebillCustomerId,
         };
         const customerRecord = await this.ach.createCustomer(input);
@@ -143,4 +141,6 @@ Corporate = tslib_1.__decorate([
         repositories_1.StatesAndProvincesRepository])
 ], Corporate);
 exports.Corporate = Corporate;
+const btoa = function (str) { return Buffer.from(str).toString('base64'); };
+const atob = function (b64Encoded) { return Buffer.from(b64Encoded, 'base64').toString(); };
 //# sourceMappingURL=corporate.service.js.map

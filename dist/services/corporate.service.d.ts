@@ -13,5 +13,5 @@ export declare class Corporate {
     constructor(/* Add @inject to inject parameters */ handler: FileUploadHandler, registrationService: RegistrationServiceService, ach: AchService, banksCodesRepository: BankCodesRepository, banksRepository: FinancialInstitutionsRepository, branchesRepository: FinancialInstitutionsRoutingNumbersRepository, StatesAndProvincesRepository: StatesAndProvincesRepository);
     encryptPswrd(password: string): Promise<string>;
     modelPropoerties(model: any): Promise<any>;
-    customerBankDetailsRegister(session: any, filenamets: any, ext: any, mimetype: any): Promise<any>;
+    customerBankDetailsRegister(session: any, filenamets: any, ext: any, mimetype: any, customerName: any): Promise<any>;
 }

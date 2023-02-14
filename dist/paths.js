@@ -50,7 +50,7 @@ exports.CORPORATE = {
     FORMCONFIG: '/formConfig',
     BANK_DETAILS_REGISTER: '/bankDetails/register',
     BANK_VERIFY: '/bank/verify',
-    PLANS: '/plans/{stateId}'
+    PLANS: '/corporate/validation'
 };
 // broker paths
 exports.BROKER = {

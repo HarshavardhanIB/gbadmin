@@ -41,8 +41,8 @@ if (require.main === module) {
       gracePeriodForClose: 5000, // 5 seconds
       openApiSpec: {
         // useful when used with OpenAPI-to-GraphQL to locate your application
-        servers: [{url: process.env.BASE_URL}],
-        setServersFromRequest: true,
+        servers: [{url: process.env.API_SERVER_URL}],
+        setServersFromRequest: false,
       },
     },
   };

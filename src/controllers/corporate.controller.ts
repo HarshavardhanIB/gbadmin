@@ -5,9 +5,9 @@ import { repository } from '@loopback/repository';
 import { api, get, param, post, Request, requestBody, response, Response, RestBindings } from '@loopback/rest';
 import { request } from 'http';
 import { nextTick } from 'process';
-import { Broker, BrokerAdmins, ContactInformation, Customer, InsurancePlans, Users } from '../models';
+import { Broker, BrokerAdmins, ContactInformation, Customer, InsurancePlans, SignupForms, Users } from '../models';
 import * as CONST from '../constants'
-import { BankCodesRepository, BrokerRepository, ContactInformationRepository, CustomerRepository, FinancialInstitutionsRepository, FinancialInstitutionsRoutingNumbersRepository, InsurancePlansRepository, PlansAvailabilityRepository, StatesAndProvincesRepository, UsersRepository, } from '../repositories'
+import { BankCodesRepository, BrokerRepository, ContactInformationRepository, CustomerRepository, FinancialInstitutionsRepository, FinancialInstitutionsRoutingNumbersRepository, InsurancePackagesRepository, InsurancePlansRepository, PlanLevelRepository, PlansAvailabilityRepository, SignupFormsRepository, StatesAndProvincesRepository, UsersRepository, } from '../repositories'
 import { AchService, Corporate, FusebillService, mail, RegistrationServiceService } from '../services';
 import { FILE_UPLOAD_SERVICE } from '../keys';
 import { FileUploadHandler } from "../types";
@@ -15,18 +15,18 @@ import { FilesController } from './files.controller';
 import { values } from 'lodash';
 import * as MESSAGE from '../messages'
 import * as PATHS from '../paths';
-import { encryptPassword, generateRandomPassword, getActivationCode, getFileAttributes } from '../common-functions';
+import { encryptPassword, generateFormLink, generateRandomPassword, getActivationCode, getFileAttributes } from '../common-functions';
 import moment from 'moment';
 import { BrokerAdminsRepository } from '../repositories/broker-admins.repository';
-import { BROKERPATH_STRING,CORPORATE, CUSTOMER_CHEQUES_FOLDER } from '../paths';
-import {CORPORATE_MSG} from '../messages'
+import { BROKERPATH_STRING, CORPORATE, CUSTOMER_CHEQUES_FOLDER } from '../paths';
+import { CORPORATE_MSG } from '../messages'
 import { deleteFile, getFile } from '../storage.helper';
 import { dateFormat1 } from '../constants';
 import { AnyTxtRecord } from 'dns';
 import { ErrorValue } from 'exceljs';
 let fuseBillCustomerCreation = false;
-let fiseBill=0;
-@api({basePath:'admin'})
+let fiseBill = 0;
+@api({ basePath: 'admin' })
 export class CorporateController {
   constructor(
     @repository(BrokerRepository)
@@ -43,15 +43,18 @@ export class CorporateController {
     public CustomerRepository: CustomerRepository,
     @inject(FILE_UPLOAD_SERVICE) public handler: FileUploadHandler,
     @service(FusebillService) public fusebill: FusebillService,
-    @service(RegistrationServiceService) public registrationService:RegistrationServiceService,
-    @service(AchService) public ach :AchService,
-    @repository(BankCodesRepository) public banksCodesRepository:BankCodesRepository,
-    @repository(FinancialInstitutionsRepository)public banksRepository:FinancialInstitutionsRepository,
-    @repository(FinancialInstitutionsRoutingNumbersRepository)public branchesRepository :FinancialInstitutionsRoutingNumbersRepository,
-    @repository(StatesAndProvincesRepository)public StatesAndProvincesRepository:StatesAndProvincesRepository,
-    @repository(InsurancePlansRepository)public InsurancePlansRepository:InsurancePlansRepository,
-    @repository(PlansAvailabilityRepository)public PlansAvailabilityRepository:PlansAvailabilityRepository,
-    ) { }
+    @service(RegistrationServiceService) public registrationService: RegistrationServiceService,
+    @service(AchService) public ach: AchService,
+    @repository(BankCodesRepository) public banksCodesRepository: BankCodesRepository,
+    @repository(FinancialInstitutionsRepository) public banksRepository: FinancialInstitutionsRepository,
+    @repository(FinancialInstitutionsRoutingNumbersRepository) public branchesRepository: FinancialInstitutionsRoutingNumbersRepository,
+    @repository(StatesAndProvincesRepository) public StatesAndProvincesRepository: StatesAndProvincesRepository,
+    @repository(InsurancePlansRepository) public InsurancePlansRepository: InsurancePlansRepository,
+    @repository(PlansAvailabilityRepository) public PlansAvailabilityRepository: PlansAvailabilityRepository,
+    @repository(InsurancePackagesRepository) public insurancePackages: InsurancePackagesRepository,
+    @repository(SignupFormsRepository) public SignupFormsRepository: SignupFormsRepository,
+    @repository(PlanLevelRepository) public PlanLevelRepository:PlanLevelRepository,
+  ) { }
 
   @get(CORPORATE.LOGO)
   async brokerDetailsBasedonId(@param.path.string('company') company: string): Promise<Response> {
@@ -115,7 +118,7 @@ export class CorporateController {
               type: 'string',
               format: 'binary'
             },
-            voidCheck:{
+            voidCheck: {
               type: 'string',
               format: 'binary'
             },
@@ -134,12 +137,6 @@ export class CorporateController {
             waitingPeriod: {
               type: 'number',
               default: '0',
-            },
-
-            paymentMethod: {
-              type: 'string',
-              default: 'credit',
-              enum: CONST.PAYMENT_METHOD_LIST,
             },
             useCreditCard: {
               type: 'boolean',
@@ -163,6 +160,10 @@ export class CorporateController {
                   accountNum: { type: 'number', default: '0' }
                 }
               }
+            },
+            session:{
+              type:'string',
+              default:'eyJiYW5rQ29kZSI6IjAwMyIsImJyYW5jaENvZGUiOiIwMDAwMSIsImJhbmtOYW1lIjoiUm95YWwgQmFuayBvZiBDYW5hZGEiLCJhY2NvdW50TnVtYmVyIjoiMTIzNDUiLCJhbW91bnQiOm51bGwsImVucm9sbG1lbnREYXRlIjpudWxsLCJmaWxlIjp7fX0='
             },
 
             setupWallet: {
@@ -225,7 +226,7 @@ export class CorporateController {
   request: Request,
     @inject(RestBindings.Http.RESPONSE) response: Response,
   ): Promise<any> {
-    let message: string, status: string, statusCode: number, data: any = [];
+    let message: string, status: string, statusCode: number, data: any = []; let data1: any = {}
     let groupAdminsUsers: any = [];
     let brokerId: any;
     let customerId: any;
@@ -249,6 +250,43 @@ export class CorporateController {
           date: new Date(),
         });
       }
+      if (!this.registrationService.validateName(value.fields.firstName)) {
+        this.response.status(422).send({
+          status: '422',
+          error: `Invalid Firstname`,
+          message: MESSAGE.ERRORS.firstName,
+          date: new Date(),
+        });
+        return this.response;
+      }
+      if (!this.registrationService.validateName(value.fields.lastName)) {
+        this.response.status(422).send({
+          status: '422',
+          error: `Invalid Lastname`,
+          message: MESSAGE.ERRORS.lastName,
+          date: new Date(),
+        });
+        return this.response;
+      }      //email     
+      if (!this.registrationService.validateEmail(value.fields.email)) {
+        this.response.status(422).send({
+          status: '422',
+          error: `Invalid Email`,
+          message: MESSAGE.ERRORS.email,
+          date: new Date(),
+        });
+        return this.response;
+      }      //phone      //dob      
+      // const cdob = this.registrationService.validateCustomerDOB(apiRequest.dob)     
+      //  if (!cdob.validation) {     
+      //    this.response.status(422).send({      
+      //     status: '422',  
+      //         error: cdob.error, 
+      //          message: cdob.message,  
+      //         date: new Date(),  
+      //       });       
+      //  return this.response; 
+      //      }
       if (value.fields) {
         if (value.fields.error) {
           this.response.status(422).send({
@@ -288,7 +326,8 @@ export class CorporateController {
           corporateUserObj.registrationDate = moment().format('YYYY-MM-DD');
           let CorporateUser = await this.usersRepository.create(corporateUserObj);
           groupAdminsUsers.push(CorporateUser.id);
-          data.push({ "contactOInfo": contactInfo });
+          data1['contactOInfo'] = contactInfo;
+          // data.push({ "contactOInfo": contactInfo });
           let brokerObj: Broker = new Broker();
           brokerObj.name = apiRequest.corporationName;
           brokerObj.brokerType = 'CORPORATE';
@@ -302,12 +341,13 @@ export class CorporateController {
           brokerObj.waitTime = apiRequest.waitTime;
           brokerObj.useCreditCardPaymentMethod = apiRequest.useCreditCard;
           brokerObj.useInvoicePaymentMethod = apiRequest.invoicePayment;
-          brokerObj.usePadPaymentMethod = apiRequest.padPayment;  
-          brokerObj.policyStartDate=apiRequest.policyStartDate        
+          brokerObj.usePadPaymentMethod = apiRequest.padPayment;
+          brokerObj.policyStartDate = apiRequest.policyStartDate
           console.log(brokerObj);
           let broker: any = await this.BrokerRepository.create(brokerObj);
           brokerId = broker.id;
-          data.push({ "broker": broker });
+          data1['broker'] = broker;
+          // data.push({ "broker": broker });
           console.log(apiRequest.gropupAdmin);
           let groupAdmins: any = JSON.parse(apiRequest.gropupAdmin);
           let groupAdminsArray: any = [];
@@ -323,7 +363,8 @@ export class CorporateController {
             groupAdminsArray.push(groupAdminsUser)
             groupAdminsUsers.push(groupAdminsUser.id);
           }
-          data.push({ "groupAdmins": groupAdminsArray });
+          data1['groupAdminstrators'] = groupAdminsArray
+          // data.push({ "groupAdmins": groupAdminsArray });
           let brokerAdmin: BrokerAdmins = new BrokerAdmins();
           brokerAdmin.brokerId = broker.id;
           let customerObj: Customer = new Customer();
@@ -341,11 +382,11 @@ export class CorporateController {
           var fusebillCustomer: any = {};
           if (fuseBillCustomerCreation) {
             const fusebillData: any = {}
-            fusebillData.firstName = customer.firstName;
-            fusebillData.lastName = customer.lastName;
+            fusebillData.firstName = customer.id;
+            fusebillData.lastName = 'CORPORATE';
             fusebillData.companyName = apiRequest.corporationName;
             fusebillData.primaryEmail = apiRequest.email;
-            fusebillData.primaryPhone = apiRequest.phoneNum;
+            fusebillData.primaryPhone = apiRequest.phoneNum;//phone num is not mandatory
             fusebillData.reference = customer.id;
             //fusebillData.companyName=apiRequest.company_name;     
             fusebillData.currency = apiRequest.currency || 'CAD';// || ' 
@@ -376,7 +417,7 @@ export class CorporateController {
             }
           }
           else {
-            fiseBill=fiseBill+1;
+            fiseBill = fiseBill + 1;
             fusebillCustomer = {
               firstName: 'Admin',
               middleName: null,
@@ -437,54 +478,104 @@ export class CorporateController {
               uri: 'https://secure.fusebill.com/v1/customers/11673101'
             };
           }
-          
-          await this.CustomerRepository.updateById(customerId, { fusebillCustomerId: fusebillCustomer.id  })
+          await this.CustomerRepository.updateById(customerId, { fusebillCustomerId: fusebillCustomer.id })
           //activationg fuse bill customer id
           // bank details and void check service 
-          data.push(customer);
-          
+          // data.push(customer);
+          data1['customer'] = customer;
           for (const user of groupAdminsUsers) {
             console.log(user);
             brokerAdmin.userId = user;
             console.log(brokerAdmin)
             await this.BrokerAdminsRepository.create(brokerAdmin);
           }
+          let signupFormData: SignupForms = new SignupForms();
+          signupFormData.brokerId = brokerId;
+          let link = await generateFormLink(broker.userId || 0)
+          signupFormData.link = await this.checkAndGenerateNewFormLink(link, CorporateUser.id || 0)
+          let aliasLink = "/" + broker.name?.toLowerCase().split(" ")[0]
+          signupFormData.alias = aliasLink
+          signupFormData.name = CONST.signupForm.name;
+          signupFormData.description = CONST.signupForm.description
+          signupFormData.title = CONST.signupForm.title
+          signupFormData.formType = CONST.signupForm.formType
+          signupFormData.keywords = CONST.signupForm.keywords
+          signupFormData.inelligibilityPeriod = CONST.signupForm.ineligibilityPeriod
+          signupFormData.published = CONST.signupForm.published
+          signupFormData.requireDentalHealthCoverage = true
+          signupFormData.requireSpouseEmail = false
+          signupFormData.warnRequiredDependantMedicalExam = false
+          signupFormData.useCreditCardPaymentMethod = true
+          signupFormData.usePadPaymentMethod = true
+          signupFormData.isDemoForm = false
+          const signupForm = await this.SignupFormsRepository.create(signupFormData);
+          data1['signupForm'] = signupForm
           // await mail("", groupAdmins[0].email, "", "", "", "")
           if (value.files) {
             console.log(value.files);
             console.log(`Logo -${value.files.length}`)
 
             if (value.files.length > 0) {
-              console.log(value.files[0].originalname)
-              console.log(`file.originalname`);
-              let originalname = value.files[0].originalname;
-              console.log(originalname)
-              originalname = originalname.replace(/[\])}[{(]/g, '').replace(/ /g, '')
-              console.log(originalname)
-              let filename = originalname
-              let modfilenameArr = filename.split(".")
-              let modfilename = modfilenameArr[0] + "0." + modfilenameArr[1]
-              // const broker = await this.BrokerRepository.findById(brokerId);
-              if (broker) {
-                await this.BrokerRepository.updateById(broker.id, {
-                  logo: BROKERPATH_STRING + filename,
-                  link: BROKERPATH_STRING + modfilename
-                })
-              } else {
-                console.log('no broker with given id');
-                message = 'No broker found'
-                status = '202'
+              for (let file of value.files) {
+                if (file.fieldname == "logo") {
+                  console.log(file.originalname)
+                  console.log(`file.originalname`);
+                  let originalname = file.originalname;
+                  console.log(originalname)
+                  originalname = originalname.replace(/[\])}[{(]/g, '').replace(/ /g, '')
+                  console.log(originalname)
+                  let filename = originalname
+                  // let modfilenameArr = filename.split(".")
+                  // let modfilename = modfilenameArr[0] + "0." + modfilenameArr[1]
+                  const fileAttr = getFileAttributes(filename)
+                  let modfilename = fileAttr.name + "0" + fileAttr.ext
+                  // const broker = await this.BrokerRepository.findById(brokerId);
+                  if (broker) {
+                    await this.BrokerRepository.updateById(broker.id, {
+                      logo: BROKERPATH_STRING + filename,
+                      link: BROKERPATH_STRING + modfilename
+                    })
+                  } else {
+                    console.log('no broker with given id');
+                    message = 'No broker found'
+                    status = '202'
+                  }
+                }
+                else if (file.fieldname == "voidCheck") {
+                  let filename = file.originalname
+                  let mimetype = file.mimetype
+                  switch (mimetype) {
+                    case 'image/png':
+                    case 'image/jpg':
+                    case 'image/jpeg':
+                    case 'image/pjpeg':
+                    case 'application/pdf':
+                      mimetype = mimetype;
+                      break;
+                    default:
+                      mimetype = "invalid"
+                  }
+                  const fileAttr = getFileAttributes(filename)
+
+                  let modfilename = fileAttr.name + "0" + fileAttr.ext
+
+                  console.log(mimetype);
+                  let filenamets = value.fields.timestamp
+                  console.log(filenamets)
+                  //let ext = filename.split(".")[1]
+                  let ext = fileAttr.ext
+                  let bankDetails = await this.corporateService.customerBankDetailsRegister(value.fields.bankDetails, filenamets, ext, mimetype, customer.firstName);
+                }
               }
             } else {
               console.log(`No logo needed`)
             }
-
           }
           this.response.status(200).send({
             status: '200',
             message: CORPORATE_MSG.REGISTRATION_SUCCESS,
             date: new Date(),
-            data: data
+            data: data1
           });
         } catch (error) {
           console.log(error);
@@ -499,7 +590,7 @@ export class CorporateController {
             await this.usersRepository.deleteById(groupAdminUser);
           }
           await this.ContactInformationRepository.deleteById(contId);
-          
+
           await this.BrokerRepository.deleteById(brokerId);
           return this.response;
         }
@@ -527,35 +618,35 @@ export class CorporateController {
       }
     }
   })
-  async corporateFormConfig(){
-      let status, message, date, data: any = {};
-      try {
-        status = 200;
-        message = "Form configurations"
-        // data['gender'] = CONST.GENDER_LIST;
-        // data['marital_status'] = CONST.MARITAL_STATUS_LIST;
-        // data['brokerType'] = CONST.BROKER_TYPE_ARRAY;
-        // data['formType'] = CONST.FORM_TYPE_ARRAY;
-        let countryFilter = {  
-          where: {  
-            published: 1  
-          }  
+  async corporateFormConfig() {
+    let status, message, date, data: any = {};
+    try {
+      status = 200;
+      message = "Form configurations"
+      // data['gender'] = CONST.GENDER_LIST;
+      // data['marital_status'] = CONST.MARITAL_STATUS_LIST;
+      // data['brokerType'] = CONST.BROKER_TYPE_ARRAY;
+      // data['formType'] = CONST.FORM_TYPE_ARRAY;
+      let countryFilter = {
+        where: {
+          published: 1
         }
-        data['states'] = await this.StatesAndProvincesRepository.find(countryFilter);
-        data['defaultCountry'] = CONST.DEFAULT_COUNTRY;
-        data['paymentMethod']=CONST.PAYMENT_METHOD_LIST_ARRAY;
-        console.log("ppppppppppppppppppp")
-        data['brokerSearch']=await this.corporateService.modelPropoerties(Broker);
-    
-      } catch (error) {
-        status = 400;
-        message = "Configuration error"
       }
-      this.response.status(status).send({
-        status, message, data, date: new Date()
-      })
-      return this.response;
-  } 
+      data['states'] = await this.StatesAndProvincesRepository.find(countryFilter);
+      data['defaultCountry'] = CONST.DEFAULT_COUNTRY;
+      data['paymentMethod'] = CONST.PAYMENT_METHOD_LIST_ARRAY;
+      console.log("ppppppppppppppppppp")
+      data['brokerSearch'] = await this.corporateService.modelPropoerties(Broker);
+
+    } catch (error) {
+      status = 400;
+      message = "Configuration error"
+    }
+    this.response.status(status).send({
+      status, message, data, date: new Date()
+    })
+    return this.response;
+  }
   @post(CORPORATE.BANK_DETAILS_REGISTER, {
     responses: {
       200: {
@@ -576,8 +667,8 @@ export class CorporateController {
     request: Request,
     @inject(RestBindings.Http.RESPONSE) response: Response,
   ): Promise<Response> {
-    const btoa = function (str: string) {return Buffer.from(str).toString('base64');}
-    const atob = function (b64Encoded: string) {return Buffer.from(b64Encoded, 'base64').toString()}
+    const btoa = function (str: string) { return Buffer.from(str).toString('base64'); }
+    const atob = function (b64Encoded: string) { return Buffer.from(b64Encoded, 'base64').toString() }
     let message: string, status: string, data: any = {};
     let bankDetailsDecoded;// = atob(request.body.key)
     let bank_details: any = {};// JSON.parse(bankDetailsDecoded);
@@ -586,7 +677,7 @@ export class CorporateController {
       this.handler(request, response, err => {
         if (err) reject(err);
         else {
-          resolve(FilesController.getFilesAndFields(request, 'customerChequeUpload', {customerid: bank_details.customerId}));
+          resolve(FilesController.getFilesAndFields(request, 'customerChequeUpload', { customerid: bank_details.customerId }));
           //const upload = FilesController.getFilesAndFields(request, 'brokerLogoUpload', {brokerid: broker_id});
         }
       });
@@ -791,7 +882,7 @@ export class CorporateController {
           "nextBillingDate": moment(bank_details.enrollmentDate).format(dateFormat1),
           "nextBillingPrice": parseFloat(bank_details.amount),
           "customerName": bank_details.customerName,
-          //   "fusebillCustomerId": customer.fusebillCustomerId,
+          //   "fusebillCustomerId": customer.fusebillCustomerId,
 
         }
         const customerRecord = await this.ach.createCustomer(input)
@@ -828,7 +919,6 @@ export class CorporateController {
         return this.response;
       }
     })
-
     p.catch(onrejected => {
       message = 'Customer Record(PAD) creation failed'
       status = '202'
@@ -901,7 +991,7 @@ export class CorporateController {
 
       let bank_code = request.bankCode
 
-      const bank = await this.banksCodesRepository.findOne({where: {bankCode: bank_code}})
+      const bank = await this.banksCodesRepository.findOne({ where: { bankCode: bank_code } })
       //console.log(bank);
       //bank.bankId
       if (bank) {
@@ -916,11 +1006,11 @@ export class CorporateController {
         const branches = await this.branchesRepository.find({
           where: {
             and: [
-              {bankId: bank.bankId},
+              { bankId: bank.bankId },
               {
                 or: [
-                  {eTransitNumber: request.branchCode},
-                  {pTransitNumber: request.branchCode}
+                  { eTransitNumber: request.branchCode },
+                  { pTransitNumber: request.branchCode }
                 ]
               }
             ]
@@ -986,18 +1076,98 @@ export class CorporateController {
       },
     },
   })
-  async plans(@param.path.number('stateId')stateId:number){
-   try{ let message,status,data:any={};
-    let withFilter:any;
-    let withOutFilter:any;
-    let plans=await this.PlansAvailabilityRepository.find({where:{stateId:stateId},include:[{relation:'plan',scope:{where:{published:{
-      "type": "Buffer",
-      "data": [1]
-    }},fields:{name:true}}},{relation:'state'}]})
-    console.log(plans);
-    return plans;}
-    catch(error){
+  async validatePlans() {
+    let message, status, data: any = {}, final: any = {};
+    try {
+      let packageFilter: any = {
+        order: 'ordering ASC',
+        where: {
+          published: true
+        },
+      }
+      const packages: any = await this.insurancePackages.find(packageFilter)
+      const packagesArray: any = []
+      for (const pckg of packages) {
+        const packageObject: any = {}
+        packageObject["description"] = pckg.description
+        packageObject["id"] = pckg.id
+        packageObject["logo"] = pckg.logo
+        packageObject["name"] = pckg.name
+        packageObject["published"] = pckg.published
+        packageObject["ordering"] = pckg.ordering
+        packageObject["allowMultiple"] = pckg.allowMultiple
+        packageObject["applyFilters"] = pckg.applyFilters
+        packageObject["optIn"] = pckg.optIn
+        let plansLevelFilter: any = {
+          order: 'ordering ASC',
+          where: {
+            "published": true,
+            "requirePlanLevel": null
+          }
+        }
+        const planLevels = await this.insurancePackages.planGroups(pckg.id).find(plansLevelFilter);
+        let groups: any = [];
+        let subGroups: any = [];
+         
+        const parentIds = Array.from(new Set(planLevels.map(planLevels => planLevels.parentId)));     
+      
+        for(const parentId of parentIds){         
+          if(parentId!= null){
+            const parentDetailsObj:any={};
+            const parentDetails=await this.PlanLevelRepository.findById(parentId);
+            const subGroups=await this.PlanLevelRepository.find({where:{parentId:parentId}}); 
+            parentDetailsObj.id=parentDetails.id;
+            parentDetailsObj.name=parentDetails.name;
+            parentDetailsObj.subGroups=subGroups;
+            parentDetails['subGroups']=subGroups;
+            console.log(parentDetails);
+            groups.push(parentDetailsObj);
+          }          
+        }             
+        for (const pl of planLevels) {
+          if (pl.parentId == undefined || pl.parentId == null) {
+            const parentDetailsObj:any={};
+            parentDetailsObj.id=pl.id;
+            parentDetailsObj.name=pl.name;
+            parentDetailsObj.subGroups=[pl];
+            groups.push(parentDetailsObj)           
+          }
+        }
+        // for (const pl of planLevels) {
+        //   groupsArray.push(pl);                 
+        // }
+
+        packageObject["groups"] = groups//planLevels
+        //console.log("-->" + packageObject.groups.length)
+        if (groups.length > 0)
+          packagesArray.push(packageObject);
+      }
+      data.packages = packagesArray;//packages;
+    }
+    catch (error) {
       console.log(error)
     }
+    return data;
+  }
+  async checkAndGenerateNewFormLink(formLink: string, userid: number) {
+
+    let linkExists = await this.SignupFormsRepository.findOne({ where: { link: formLink } })
+
+    if (linkExists) {
+
+      console.log(`linkExists: ${linkExists.id}`)
+
+      let link = await generateFormLink(userid)
+
+      const newlink: string = await this.checkAndGenerateNewFormLink(link, userid)
+
+      return newlink;
+
+    } else {
+
+      return formLink;
+
+    }
+
   }
 } 

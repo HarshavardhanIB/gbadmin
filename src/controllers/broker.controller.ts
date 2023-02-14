@@ -3493,6 +3493,9 @@ export class BrokerController {
 
               // const broker = await this.BrokerRepository.findById(brokerId);
               if (broker) {
+                let url = process.env.MAINAPI + `/api/customer/broker/${brokerId}/logo`;
+                let pathImg = BROKERIMG_RESOURCES_FOLDER + "/" + filename;
+                const fetchStatus = await this.http.fetchMultipartFormdata(url, pathImg);
                 await this.BrokerRepository.updateById(brokerId, {
                   logo: BROKERPATH_STRING + filename,
                   link: BROKERPATH_STRING + modfilename
@@ -3515,6 +3518,7 @@ export class BrokerController {
           message = 'Broker registration successful';
           status = '200';
           statusCode = 200;
+          
 
         } catch (error) {
           console.error(error);

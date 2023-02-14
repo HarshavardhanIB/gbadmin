@@ -42,7 +42,7 @@ export class Corporate {
     return returnPropertyName;
   }
  
-  async customerBankDetailsRegister(session:any,filenamets:any,ext:any,mimetype:any): Promise<any> {
+  async customerBankDetailsRegister(session:any,filenamets:any,ext:any,mimetype:any,customerName:any): Promise<any> {
     
     let message: string, status: string, data: any = {};
     let bankDetailsDecoded;// = atob(request.body.key)
@@ -80,7 +80,7 @@ export class Corporate {
         console.log(newFilename)
         const checkFileBuffer = await getFile(newFilename, '');
         console.log(checkFileBuffer)
-        console.log(`customerName:${bank_details.customerName}`)
+        // console.log(`customerName:${bank_details.customerName}`)
         //const multerText = Buffer.from(newFilename.buffer).toString("utf-8"); /
 
         /*
@@ -120,7 +120,7 @@ export class Corporate {
           "voidCheckFileType": mimetype,
           "nextBillingDate": moment(bank_details.enrollmentDate).format(dateFormat1),
           "nextBillingPrice": parseFloat(bank_details.amount),
-          "customerName": bank_details.customerName,
+          "customerName": customerName,
           //   "fusebillCustomerId": customer.fusebillCustomerId,
         }
         const customerRecord = await this.ach.createCustomer(input)

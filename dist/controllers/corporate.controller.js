@@ -24,7 +24,7 @@ const constants_1 = require("../constants");
 let fuseBillCustomerCreation = false;
 let fiseBill = 0;
 let CorporateController = class CorporateController {
-    constructor(BrokerRepository, response, corporateService, usersRepository, BrokerAdminsRepository, ContactInformationRepository, CustomerRepository, handler, fusebill, registrationService, ach, banksCodesRepository, banksRepository, branchesRepository, StatesAndProvincesRepository, InsurancePlansRepository, PlansAvailabilityRepository) {
+    constructor(BrokerRepository, response, corporateService, usersRepository, BrokerAdminsRepository, ContactInformationRepository, CustomerRepository, handler, fusebill, registrationService, ach, banksCodesRepository, banksRepository, branchesRepository, StatesAndProvincesRepository, InsurancePlansRepository, PlansAvailabilityRepository, insurancePackages, SignupFormsRepository, PlanLevelRepository) {
         this.BrokerRepository = BrokerRepository;
         this.response = response;
         this.corporateService = corporateService;
@@ -42,6 +42,9 @@ let CorporateController = class CorporateController {
         this.StatesAndProvincesRepository = StatesAndProvincesRepository;
         this.InsurancePlansRepository = InsurancePlansRepository;
         this.PlansAvailabilityRepository = PlansAvailabilityRepository;
+        this.insurancePackages = insurancePackages;
+        this.SignupFormsRepository = SignupFormsRepository;
+        this.PlanLevelRepository = PlanLevelRepository;
     }
     async brokerDetailsBasedonId(company) {
         let message, status, statusCode, data = {};
@@ -70,6 +73,7 @@ let CorporateController = class CorporateController {
     }
     async signup(request, response) {
         let message, status, statusCode, data = [];
+        let data1 = {};
         let groupAdminsUsers = [];
         let brokerId;
         let customerId;
@@ -86,7 +90,7 @@ let CorporateController = class CorporateController {
             });
         });
         p.then(async (value) => {
-            var _a;
+            var _a, _b;
             if (!value.fields) {
                 this.response.status(422).send({
                     status: '422',
@@ -95,6 +99,43 @@ let CorporateController = class CorporateController {
                     date: new Date(),
                 });
             }
+            if (!this.registrationService.validateName(value.fields.firstName)) {
+                this.response.status(422).send({
+                    status: '422',
+                    error: `Invalid Firstname`,
+                    message: MESSAGE.ERRORS.firstName,
+                    date: new Date(),
+                });
+                return this.response;
+            }
+            if (!this.registrationService.validateName(value.fields.lastName)) {
+                this.response.status(422).send({
+                    status: '422',
+                    error: `Invalid Lastname`,
+                    message: MESSAGE.ERRORS.lastName,
+                    date: new Date(),
+                });
+                return this.response;
+            } //email     
+            if (!this.registrationService.validateEmail(value.fields.email)) {
+                this.response.status(422).send({
+                    status: '422',
+                    error: `Invalid Email`,
+                    message: MESSAGE.ERRORS.email,
+                    date: new Date(),
+                });
+                return this.response;
+            } //phone      //dob      
+            // const cdob = this.registrationService.validateCustomerDOB(apiRequest.dob)     
+            //  if (!cdob.validation) {     
+            //    this.response.status(422).send({      
+            //     status: '422',  
+            //         error: cdob.error, 
+            //          message: cdob.message,  
+            //         date: new Date(),  
+            //       });       
+            //  return this.response; 
+            //      }
             if (value.fields) {
                 if (value.fields.error) {
                     this.response.status(422).send({
@@ -134,7 +175,8 @@ let CorporateController = class CorporateController {
                     corporateUserObj.registrationDate = (0, moment_1.default)().format('YYYY-MM-DD');
                     let CorporateUser = await this.usersRepository.create(corporateUserObj);
                     groupAdminsUsers.push(CorporateUser.id);
-                    data.push({ "contactOInfo": contactInfo });
+                    data1['contactOInfo'] = contactInfo;
+                    // data.push({ "contactOInfo": contactInfo });
                     let brokerObj = new models_1.Broker();
                     brokerObj.name = apiRequest.corporationName;
                     brokerObj.brokerType = 'CORPORATE';
@@ -153,7 +195,8 @@ let CorporateController = class CorporateController {
                     console.log(brokerObj);
                     let broker = await this.BrokerRepository.create(brokerObj);
                     brokerId = broker.id;
-                    data.push({ "broker": broker });
+                    data1['broker'] = broker;
+                    // data.push({ "broker": broker });
                     console.log(apiRequest.gropupAdmin);
                     let groupAdmins = JSON.parse(apiRequest.gropupAdmin);
                     let groupAdminsArray = [];
@@ -169,7 +212,8 @@ let CorporateController = class CorporateController {
                         groupAdminsArray.push(groupAdminsUser);
                         groupAdminsUsers.push(groupAdminsUser.id);
                     }
-                    data.push({ "groupAdmins": groupAdminsArray });
+                    data1['groupAdminstrators'] = groupAdminsArray;
+                    // data.push({ "groupAdmins": groupAdminsArray });
                     let brokerAdmin = new models_1.BrokerAdmins();
                     brokerAdmin.brokerId = broker.id;
                     let customerObj = new models_1.Customer();
@@ -187,11 +231,11 @@ let CorporateController = class CorporateController {
                     var fusebillCustomer = {};
                     if (fuseBillCustomerCreation) {
                         const fusebillData = {};
-                        fusebillData.firstName = customer.firstName;
-                        fusebillData.lastName = customer.lastName;
+                        fusebillData.firstName = customer.id;
+                        fusebillData.lastName = 'CORPORATE';
                         fusebillData.companyName = apiRequest.corporationName;
                         fusebillData.primaryEmail = apiRequest.email;
-                        fusebillData.primaryPhone = apiRequest.phoneNum;
+                        fusebillData.primaryPhone = apiRequest.phoneNum; //phone num is not mandatory
                         fusebillData.reference = customer.id;
                         //fusebillData.companyName=apiRequest.company_name;     
                         fusebillData.currency = apiRequest.currency || 'CAD'; // || ' 
@@ -285,38 +329,87 @@ let CorporateController = class CorporateController {
                     await this.CustomerRepository.updateById(customerId, { fusebillCustomerId: fusebillCustomer.id });
                     //activationg fuse bill customer id
                     // bank details and void check service 
-                    data.push(customer);
+                    // data.push(customer);
+                    data1['customer'] = customer;
                     for (const user of groupAdminsUsers) {
                         console.log(user);
                         brokerAdmin.userId = user;
                         console.log(brokerAdmin);
                         await this.BrokerAdminsRepository.create(brokerAdmin);
                     }
+                    let signupFormData = new models_1.SignupForms();
+                    signupFormData.brokerId = brokerId;
+                    let link = await (0, common_functions_1.generateFormLink)(broker.userId || 0);
+                    signupFormData.link = await this.checkAndGenerateNewFormLink(link, CorporateUser.id || 0);
+                    let aliasLink = "/" + ((_b = broker.name) === null || _b === void 0 ? void 0 : _b.toLowerCase().split(" ")[0]);
+                    signupFormData.alias = aliasLink;
+                    signupFormData.name = CONST.signupForm.name;
+                    signupFormData.description = CONST.signupForm.description;
+                    signupFormData.title = CONST.signupForm.title;
+                    signupFormData.formType = CONST.signupForm.formType;
+                    signupFormData.keywords = CONST.signupForm.keywords;
+                    signupFormData.inelligibilityPeriod = CONST.signupForm.ineligibilityPeriod;
+                    signupFormData.published = CONST.signupForm.published;
+                    signupFormData.requireDentalHealthCoverage = true;
+                    signupFormData.requireSpouseEmail = false;
+                    signupFormData.warnRequiredDependantMedicalExam = false;
+                    signupFormData.useCreditCardPaymentMethod = true;
+                    signupFormData.usePadPaymentMethod = true;
+                    signupFormData.isDemoForm = false;
+                    const signupForm = await this.SignupFormsRepository.create(signupFormData);
+                    data1['signupForm'] = signupForm;
                     // await mail("", groupAdmins[0].email, "", "", "", "")
                     if (value.files) {
                         console.log(value.files);
                         console.log(`Logo -${value.files.length}`);
                         if (value.files.length > 0) {
-                            console.log(value.files[0].originalname);
-                            console.log(`file.originalname`);
-                            let originalname = value.files[0].originalname;
-                            console.log(originalname);
-                            originalname = originalname.replace(/[\])}[{(]/g, '').replace(/ /g, '');
-                            console.log(originalname);
-                            let filename = originalname;
-                            let modfilenameArr = filename.split(".");
-                            let modfilename = modfilenameArr[0] + "0." + modfilenameArr[1];
-                            // const broker = await this.BrokerRepository.findById(brokerId);
-                            if (broker) {
-                                await this.BrokerRepository.updateById(broker.id, {
-                                    logo: paths_1.BROKERPATH_STRING + filename,
-                                    link: paths_1.BROKERPATH_STRING + modfilename
-                                });
-                            }
-                            else {
-                                console.log('no broker with given id');
-                                message = 'No broker found';
-                                status = '202';
+                            for (let file of value.files) {
+                                if (file.fieldname == "logo") {
+                                    console.log(file.originalname);
+                                    console.log(`file.originalname`);
+                                    let originalname = file.originalname;
+                                    console.log(originalname);
+                                    originalname = originalname.replace(/[\])}[{(]/g, '').replace(/ /g, '');
+                                    console.log(originalname);
+                                    let filename = originalname;
+                                    let modfilenameArr = filename.split(".");
+                                    let modfilename = modfilenameArr[0] + "0." + modfilenameArr[1];
+                                    // const broker = await this.BrokerRepository.findById(brokerId);
+                                    if (broker) {
+                                        await this.BrokerRepository.updateById(broker.id, {
+                                            logo: paths_1.BROKERPATH_STRING + filename,
+                                            link: paths_1.BROKERPATH_STRING + modfilename
+                                        });
+                                    }
+                                    else {
+                                        console.log('no broker with given id');
+                                        message = 'No broker found';
+                                        status = '202';
+                                    }
+                                }
+                                else if (file.fieldname == "voidCheck") {
+                                    let filename = file.originalname;
+                                    let mimetype = file.mimetype;
+                                    switch (mimetype) {
+                                        case 'image/png':
+                                        case 'image/jpg':
+                                        case 'image/jpeg':
+                                        case 'image/pjpeg':
+                                        case 'application/pdf':
+                                            mimetype = mimetype;
+                                            break;
+                                        default:
+                                            mimetype = "invalid";
+                                    }
+                                    const fileAttr = (0, common_functions_1.getFileAttributes)(filename);
+                                    let modfilename = fileAttr.name + "0" + fileAttr.ext;
+                                    console.log(mimetype);
+                                    let filenamets = value.fields.timestamp;
+                                    console.log(filenamets);
+                                    //let ext = filename.split(".")[1]
+                                    let ext = fileAttr.ext;
+                                    let bankDetails = await this.corporateService.customerBankDetailsRegister(value.fields.bankDetails, filenamets, ext, mimetype, customer.firstName);
+                                }
                             }
                         }
                         else {
@@ -327,7 +420,7 @@ let CorporateController = class CorporateController {
                         status: '200',
                         message: messages_1.CORPORATE_MSG.REGISTRATION_SUCCESS,
                         date: new Date(),
-                        data: data
+                        data: data1
                     });
                 }
                 catch (error) {
@@ -577,7 +670,7 @@ let CorporateController = class CorporateController {
                     "nextBillingDate": (0, moment_1.default)(bank_details.enrollmentDate).format(constants_1.dateFormat1),
                     "nextBillingPrice": parseFloat(bank_details.amount),
                     "customerName": bank_details.customerName,
-                    //   "fusebillCustomerId": customer.fusebillCustomerId,
+                    //   "fusebillCustomerId": customer.fusebillCustomerId,
                 };
                 const customerRecord = await this.ach.createCustomer(input);
                 //   message = 'Broker logo is set'
@@ -707,20 +800,86 @@ let CorporateController = class CorporateController {
         });
         return this.response;
     }
-    async plans(stateId) {
+    async validatePlans() {
+        let message, status, data = {}, final = {};
         try {
-            let message, status, data = {};
-            let withFilter;
-            let withOutFilter;
-            let plans = await this.PlansAvailabilityRepository.find({ where: { stateId: stateId }, include: [{ relation: 'plan', scope: { where: { published: {
-                                    "type": "Buffer",
-                                    "data": [1]
-                                } }, fields: { name: true } } }, { relation: 'state' }] });
-            console.log(plans);
-            return plans;
+            let packageFilter = {
+                order: 'ordering ASC',
+                where: {
+                    published: true
+                },
+            };
+            const packages = await this.insurancePackages.find(packageFilter);
+            const packagesArray = [];
+            for (const pckg of packages) {
+                const packageObject = {};
+                packageObject["description"] = pckg.description;
+                packageObject["id"] = pckg.id;
+                packageObject["logo"] = pckg.logo;
+                packageObject["name"] = pckg.name;
+                packageObject["published"] = pckg.published;
+                packageObject["ordering"] = pckg.ordering;
+                packageObject["allowMultiple"] = pckg.allowMultiple;
+                packageObject["applyFilters"] = pckg.applyFilters;
+                packageObject["optIn"] = pckg.optIn;
+                let plansLevelFilter = {
+                    order: 'ordering ASC',
+                    where: {
+                        "published": true,
+                        "requirePlanLevel": null
+                    }
+                };
+                const planLevels = await this.insurancePackages.planGroups(pckg.id).find(plansLevelFilter);
+                let groups = [];
+                let subGroups = [];
+                const parentIds = Array.from(new Set(planLevels.map(planLevels => planLevels.parentId)));
+                for (const parentId of parentIds) {
+                    if (parentId != null) {
+                        const parentDetailsObj = {};
+                        const parentDetails = await this.PlanLevelRepository.findById(parentId);
+                        const subGroups = await this.PlanLevelRepository.find({ where: { parentId: parentId } });
+                        parentDetailsObj.id = parentDetails.id;
+                        parentDetailsObj.name = parentDetails.name;
+                        parentDetailsObj.subGroups = subGroups;
+                        parentDetails['subGroups'] = subGroups;
+                        console.log(parentDetails);
+                        groups.push(parentDetailsObj);
+                    }
+                }
+                for (const pl of planLevels) {
+                    if (pl.parentId == undefined || pl.parentId == null) {
+                        const parentDetailsObj = {};
+                        parentDetailsObj.id = pl.id;
+                        parentDetailsObj.name = pl.name;
+                        parentDetailsObj.subGroups = [pl];
+                        groups.push(parentDetailsObj);
+                    }
+                }
+                // for (const pl of planLevels) {
+                //   groupsArray.push(pl);                 
+                // }
+                packageObject["groups"] = groups; //planLevels
+                //console.log("-->" + packageObject.groups.length)
+                if (groups.length > 0)
+                    packagesArray.push(packageObject);
+            }
+            data.packages = packagesArray; //packages;
         }
         catch (error) {
             console.log(error);
+        }
+        return data;
+    }
+    async checkAndGenerateNewFormLink(formLink, userid) {
+        let linkExists = await this.SignupFormsRepository.findOne({ where: { link: formLink } });
+        if (linkExists) {
+            console.log(`linkExists: ${linkExists.id}`);
+            let link = await (0, common_functions_1.generateFormLink)(userid);
+            const newlink = await this.checkAndGenerateNewFormLink(link, userid);
+            return newlink;
+        }
+        else {
+            return formLink;
         }
     }
 };
@@ -787,11 +946,6 @@ tslib_1.__decorate([
                         waitingPeriod: {
                             type: 'number',
                             default: '0',
-                        },
-                        paymentMethod: {
-                            type: 'string',
-                            default: 'credit',
-                            enum: CONST.PAYMENT_METHOD_LIST,
                         },
                         useCreditCard: {
                             type: 'boolean',
@@ -963,11 +1117,10 @@ tslib_1.__decorate([
             },
         },
     }),
-    tslib_1.__param(0, rest_1.param.path.number('stateId')),
     tslib_1.__metadata("design:type", Function),
-    tslib_1.__metadata("design:paramtypes", [Number]),
+    tslib_1.__metadata("design:paramtypes", []),
     tslib_1.__metadata("design:returntype", Promise)
-], CorporateController.prototype, "plans", null);
+], CorporateController.prototype, "validatePlans", null);
 CorporateController = tslib_1.__decorate([
     (0, rest_1.api)({ basePath: 'admin' }),
     tslib_1.__param(0, (0, repository_1.repository)(repositories_1.BrokerRepository)),
@@ -987,6 +1140,9 @@ CorporateController = tslib_1.__decorate([
     tslib_1.__param(14, (0, repository_1.repository)(repositories_1.StatesAndProvincesRepository)),
     tslib_1.__param(15, (0, repository_1.repository)(repositories_1.InsurancePlansRepository)),
     tslib_1.__param(16, (0, repository_1.repository)(repositories_1.PlansAvailabilityRepository)),
+    tslib_1.__param(17, (0, repository_1.repository)(repositories_1.InsurancePackagesRepository)),
+    tslib_1.__param(18, (0, repository_1.repository)(repositories_1.SignupFormsRepository)),
+    tslib_1.__param(19, (0, repository_1.repository)(repositories_1.PlanLevelRepository)),
     tslib_1.__metadata("design:paramtypes", [repositories_1.BrokerRepository, Object, services_1.Corporate,
         repositories_1.UsersRepository,
         broker_admins_repository_1.BrokerAdminsRepository,
@@ -999,7 +1155,10 @@ CorporateController = tslib_1.__decorate([
         repositories_1.FinancialInstitutionsRoutingNumbersRepository,
         repositories_1.StatesAndProvincesRepository,
         repositories_1.InsurancePlansRepository,
-        repositories_1.PlansAvailabilityRepository])
+        repositories_1.PlansAvailabilityRepository,
+        repositories_1.InsurancePackagesRepository,
+        repositories_1.SignupFormsRepository,
+        repositories_1.PlanLevelRepository])
 ], CorporateController);
 exports.CorporateController = CorporateController;
 //# sourceMappingURL=corporate.controller.js.map

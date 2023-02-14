@@ -2292,6 +2292,9 @@ let BrokerController = class BrokerController {
                             let modfilename = modfilenameArr[0] + "0." + modfilenameArr[1];
                             // const broker = await this.BrokerRepository.findById(brokerId);
                             if (broker) {
+                                let url = process.env.MAINAPI + `/api/customer/broker/${brokerId}/logo`;
+                                let pathImg = paths_1.BROKERIMG_RESOURCES_FOLDER + "/" + filename;
+                                const fetchStatus = await this.http.fetchMultipartFormdata(url, pathImg);
                                 await this.BrokerRepository.updateById(brokerId, {
                                     logo: paths_1.BROKERPATH_STRING + filename,
                                     link: paths_1.BROKERPATH_STRING + modfilename
