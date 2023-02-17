@@ -155,6 +155,44 @@ let ExcelService = class ExcelService {
         // style.font = font;
         return style;
     }
+    async excelToJson(filepath, type) {
+        let workbook = new excel.Workbook();
+        workbook = await workbook.xlsx.readFile(filepath);
+        let ws = workbook.worksheets;
+        let workbookJsondata = {};
+        for (let i = 0; i < ws.length; i++) {
+            let worksheet = workbook.worksheets[i];
+            let sheetName = worksheet.name;
+            let data = await this.sheetData(worksheet, type);
+            workbookJsondata[sheetName] = data;
+        }
+        // fs.writeFileSync("./input.json", JSON.stringify(jsondata));
+        return workbookJsondata;
+    }
+    async sheetData(worksheet, type) {
+        let arryObj = [];
+        let headers = worksheet.getRow(1).values;
+        for (let row = 2; row < worksheet.rowCount; row++) {
+            let obj = {};
+            if (worksheet.getRow(row).values.length != 0) {
+                let employeeId = worksheet.getRow(row).getCell(1).value != null ? worksheet.getRow(row).getCell(1).value : '';
+                let firstName = worksheet.getRow(row).getCell(2).value != null ? worksheet.getRow(row).getCell(1).value : '';
+                let lastName = worksheet.getRow(row).getCell(3).value != null ? worksheet.getRow(row).getCell(1).value : '';
+                let emailId = worksheet.getRow(row).getCell(4).value != null ? worksheet.getRow(row).getCell(1).value : '';
+                let occupation = worksheet.getRow(row).getCell(5).value != null ? worksheet.getRow(row).getCell(1).value : '';
+                let dateOfHire = worksheet.getRow(row).getCell(6).value != null ? worksheet.getRow(row).getCell(1).value : '';
+                let sex = worksheet.getRow(row).getCell(7).value != null ? worksheet.getRow(row).getCell(1).value : '';
+                let residentIn = worksheet.getRow(row).getCell(8).value != null ? worksheet.getRow(row).getCell(1).value : '';
+                let familyStatus = worksheet.getRow(row).getCell(9).value != null ? worksheet.getRow(row).getCell(1).value : '';
+                let phoneNum = worksheet.getRow(row).getCell(10).value != null ? worksheet.getRow(row).getCell(1).value : '';
+                let tier = worksheet.getRow(row).getCell(11).value != null ? worksheet.getRow(row).getCell(1).value : '';
+                let walletLimit = worksheet.getRow(row).getCell(12).value != null ? worksheet.getRow(row).getCell(1).value : '';
+                obj = { employeeId, firstName, lastName, emailId, occupation, dateOfHire, sex, residentIn, familyStatus, phoneNum, tier, walletLimit };
+                arryObj.push(obj);
+            }
+        }
+        return arryObj;
+    }
 };
 ExcelService = tslib_1.__decorate([
     (0, core_1.injectable)({ scope: core_1.BindingScope.TRANSIENT }),

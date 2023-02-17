@@ -16,4 +16,6 @@ export declare class ExcelService {
   * @param minimalWidth
   */
     autoWidth: (worksheet: any, minimalWidth?: number) => void;
+    excelToJson(filepath: string, type: string): Promise<any>;
+    sheetData(worksheet: excel.Worksheet, type: any): Promise<any>;
 }

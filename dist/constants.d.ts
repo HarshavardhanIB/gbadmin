@@ -2,6 +2,9 @@ export declare const WELCOME = "Welcome to GroupBenefitz";
 export declare const dateFormat1 = "YYYY-MM-DD HH:MM:SS";
 export declare const dateFormat2 = "YYYY-MM-DD";
 export declare const USER_ROLE: any;
+export declare const TIER: {
+    general: string;
+};
 export declare const CONTACT_TYPE: any;
 export declare const ADDRESS_TYPE: any;
 export declare const RELATIONSHIP_TYPE: any;
@@ -44,6 +47,7 @@ export declare const EXECUTIVE_CARE_COMPLETE_PLAN_LEVELS: number[];
 export declare const GREENSHEILD_REGISTRATION_STATUS: any;
 export declare const EQUITABLE_REGISTRATION_STATUS: any;
 export declare const LOGGING_SOURCE: any;
+export declare const SPENDING_LIMIT = 1000;
 export declare const MONTH: number;
 export declare const HIRING_DATE_LIMIT: number;
 export declare const HIRING_DATE_INELIGIBILITY_PERIOD_NO = 90;
@@ -97,6 +101,11 @@ export declare const DEFAULT_FORM: {
 };
 export declare const DEFAULT_LANGAUGE = "en";
 export declare const httpStatus: any;
+export declare const TIER_TYPE: {
+    DEF: string;
+    LOS: string;
+    AI: string;
+};
 export declare const GB_DEV: string;
 export declare const GB_SUPPORT: string;
 export declare const GB_ADMIN: string;

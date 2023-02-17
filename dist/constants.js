@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PRODUCT_TYPE_ARRAY = exports.LICENSE_COVERAGE = exports.FORM_TYPE_ARRAY = exports.SIGNUP_FORM = exports.DEFAULT_COUNTRY = exports.VALIDATIONS = exports.HIRING_DATE_INELIGIBILITY_PERIOD_DURATION = exports.HIRING_DATE_INELIGIBILITY_PERIOD_NO = exports.HIRING_DATE_LIMIT = exports.MONTH = exports.LOGGING_SOURCE = exports.EQUITABLE_REGISTRATION_STATUS = exports.GREENSHEILD_REGISTRATION_STATUS = exports.EXECUTIVE_CARE_COMPLETE_PLAN_LEVELS = exports.EXECUTIVE_HEALTH_PLAN_LEVELS = exports.EXECUTIVE_PACKAGES = exports.EXECUTIVE_PACKAGE_ID = exports.HIGHCOST_DRUGS_PLAN_LEVELS = exports.HIGHCOST_DRUGS_PACKAGES = exports.HIGHCOST_DRUGS_PACKAGE_ID = exports.OPTIN_PLAN_LEVELS = exports.OPTIN_PACKAGES = exports.EQUITABLE_PLAN_LEVELS = exports.EQUITABLE_PACKAGES = exports.GREENSHEILD_PLAN_LEVELS = exports.GREENSHEILD_PACKAGES = exports.HEALTH_DENTAL_PACKAGES = exports.HEALTH_DENTAL_PACKAGE_ID = exports.NODATA = exports.NONE = exports.PARTIAL = exports.MAX = exports.MIN = exports.LICENCE = exports.EOI = exports.STATUS = exports.GENDER_LIST = exports.GENDER = exports.PLAN_COVERAGE_LIST = exports.PLAN_COVERAGE = exports.MARITAL_STATUS_LIST = exports.MARITAL_STATUS = exports.MARITAL_STATUS_OLD = exports.RELATIONSHIP_TYPE = exports.ADDRESS_TYPE = exports.CONTACT_TYPE = exports.USER_ROLE = exports.dateFormat2 = exports.dateFormat1 = exports.WELCOME = void 0;
-exports.ACH_PAYMENT_STATUS = exports.ACH_CUSTOMER_STATUS_LIST = exports.ACH_CUSTOMER_STATUS = exports.ACHserviceEndpoints = exports.PAD = exports.ACH = exports.PAYMENT_METHOD_LIST_ARRAY = exports.PAYMENT_METHOD_LIST = exports.PAYMENT_METHOD = exports.REGEX = exports.INSURANCE_SERVICES = exports.REPORTING_ID = exports.REPORTING_TYPE = exports.signupFormExec = exports.signupForm = exports.broker = exports.targetTestcasesExecutive = exports.TestDataExecutive = exports.targetTestcasesEquitable = exports.TestDataEquitable = exports.TestDataEquitableSave = exports.targetTestcasesGreenshield = exports.TestDataGreenshield = exports.TestDataGreenshield_BCK = exports.commonExecutionData = exports.serviceEndpoints = exports.aitp = exports.userCreds = exports.PAYMENTSUCCESS_MAIL_SUBJECT_CUSTOMER = exports.PAYMENTSUCCESS_MAIL_SUBJECT_BROKER = exports.PAYMENTFAIL_MAIL_SUBJECT_CUSTOMER = exports.PAYMENTFAIL_MAIL_SUBJECT_BROKER = exports.CUSTOMERREGISTRAION_MAIL_SUBJECT_CUSTOMER = exports.CUSTOMERREGISTRAION_MAIL_SUBJECT_BROKER = exports.CUSTOMERREGISTRAION_MAIL_SUBJECT_SYSADMIN = exports.CUSTOMER_CANCEL_REPORT_MAIL_SUBJECT_BROKER = exports.CUSTOMER_CANCEL_REPORT_MAIL_SUBJECT_SYSADMIN = exports.CUSTOMER_UPDATE_REPORT_MAIL_SUBJECT_BROKER = exports.CUSTOMER_UPDATE_REPORT_MAIL_SUBJECT_SYSADMIN = exports.CUSTOMER_ENROLL_REPORT_MAIL_SUBJECT_BROKER = exports.CUSTOMER_ENROLL_REPORT_MAIL_SUBJECT_SYSADMIN = exports.GB_ADMIN = exports.GB_SUPPORT = exports.GB_DEV = exports.httpStatus = exports.DEFAULT_LANGAUGE = exports.DEFAULT_FORM = exports.DEFAULT_FORM_ID = exports.BROKER_TYPE_ARRAY = exports.BROKER = void 0;
-exports.MAINAPI_DOMAIN = exports.BROKER_LICENSE_COVERAGE_LIST = exports.BROKER_LICENSE_COVERAGE = exports.PAD_CLIENT_SECRET = exports.PAD_CLIENT_ID = exports.ACH_PAYMENT_STATUS_LIST = void 0;
+exports.FORM_TYPE_ARRAY = exports.SIGNUP_FORM = exports.DEFAULT_COUNTRY = exports.VALIDATIONS = exports.HIRING_DATE_INELIGIBILITY_PERIOD_DURATION = exports.HIRING_DATE_INELIGIBILITY_PERIOD_NO = exports.HIRING_DATE_LIMIT = exports.MONTH = exports.SPENDING_LIMIT = exports.LOGGING_SOURCE = exports.EQUITABLE_REGISTRATION_STATUS = exports.GREENSHEILD_REGISTRATION_STATUS = exports.EXECUTIVE_CARE_COMPLETE_PLAN_LEVELS = exports.EXECUTIVE_HEALTH_PLAN_LEVELS = exports.EXECUTIVE_PACKAGES = exports.EXECUTIVE_PACKAGE_ID = exports.HIGHCOST_DRUGS_PLAN_LEVELS = exports.HIGHCOST_DRUGS_PACKAGES = exports.HIGHCOST_DRUGS_PACKAGE_ID = exports.OPTIN_PLAN_LEVELS = exports.OPTIN_PACKAGES = exports.EQUITABLE_PLAN_LEVELS = exports.EQUITABLE_PACKAGES = exports.GREENSHEILD_PLAN_LEVELS = exports.GREENSHEILD_PACKAGES = exports.HEALTH_DENTAL_PACKAGES = exports.HEALTH_DENTAL_PACKAGE_ID = exports.NODATA = exports.NONE = exports.PARTIAL = exports.MAX = exports.MIN = exports.LICENCE = exports.EOI = exports.STATUS = exports.GENDER_LIST = exports.GENDER = exports.PLAN_COVERAGE_LIST = exports.PLAN_COVERAGE = exports.MARITAL_STATUS_LIST = exports.MARITAL_STATUS = exports.MARITAL_STATUS_OLD = exports.RELATIONSHIP_TYPE = exports.ADDRESS_TYPE = exports.CONTACT_TYPE = exports.TIER = exports.USER_ROLE = exports.dateFormat2 = exports.dateFormat1 = exports.WELCOME = void 0;
+exports.ACHserviceEndpoints = exports.PAD = exports.ACH = exports.PAYMENT_METHOD_LIST_ARRAY = exports.PAYMENT_METHOD_LIST = exports.PAYMENT_METHOD = exports.REGEX = exports.INSURANCE_SERVICES = exports.REPORTING_ID = exports.REPORTING_TYPE = exports.signupFormExec = exports.signupForm = exports.broker = exports.targetTestcasesExecutive = exports.TestDataExecutive = exports.targetTestcasesEquitable = exports.TestDataEquitable = exports.TestDataEquitableSave = exports.targetTestcasesGreenshield = exports.TestDataGreenshield = exports.TestDataGreenshield_BCK = exports.commonExecutionData = exports.serviceEndpoints = exports.aitp = exports.userCreds = exports.PAYMENTSUCCESS_MAIL_SUBJECT_CUSTOMER = exports.PAYMENTSUCCESS_MAIL_SUBJECT_BROKER = exports.PAYMENTFAIL_MAIL_SUBJECT_CUSTOMER = exports.PAYMENTFAIL_MAIL_SUBJECT_BROKER = exports.CUSTOMERREGISTRAION_MAIL_SUBJECT_CUSTOMER = exports.CUSTOMERREGISTRAION_MAIL_SUBJECT_BROKER = exports.CUSTOMERREGISTRAION_MAIL_SUBJECT_SYSADMIN = exports.CUSTOMER_CANCEL_REPORT_MAIL_SUBJECT_BROKER = exports.CUSTOMER_CANCEL_REPORT_MAIL_SUBJECT_SYSADMIN = exports.CUSTOMER_UPDATE_REPORT_MAIL_SUBJECT_BROKER = exports.CUSTOMER_UPDATE_REPORT_MAIL_SUBJECT_SYSADMIN = exports.CUSTOMER_ENROLL_REPORT_MAIL_SUBJECT_BROKER = exports.CUSTOMER_ENROLL_REPORT_MAIL_SUBJECT_SYSADMIN = exports.GB_ADMIN = exports.GB_SUPPORT = exports.GB_DEV = exports.TIER_TYPE = exports.httpStatus = exports.DEFAULT_LANGAUGE = exports.DEFAULT_FORM = exports.DEFAULT_FORM_ID = exports.BROKER_TYPE_ARRAY = exports.BROKER = exports.PRODUCT_TYPE_ARRAY = exports.LICENSE_COVERAGE = void 0;
+exports.MAINAPI_DOMAIN = exports.BROKER_LICENSE_COVERAGE_LIST = exports.BROKER_LICENSE_COVERAGE = exports.PAD_CLIENT_SECRET = exports.PAD_CLIENT_ID = exports.ACH_PAYMENT_STATUS_LIST = exports.ACH_PAYMENT_STATUS = exports.ACH_CUSTOMER_STATUS_LIST = exports.ACH_CUSTOMER_STATUS = void 0;
 // import {DISCLOSURE} from './disclosure_agreement';
 const paths_1 = require("./paths");
 // import {TERMS_AND_CONDITIONS} from './terms_and_conditions';
@@ -16,6 +16,9 @@ exports.USER_ROLE = {
     BROKER: 'BROKER',
     AGENT: 'AGENT',
     ADMINISTRATOR: 'ADMINISTRATOR'
+};
+exports.TIER = {
+    general: 'GENERAL'
 };
 exports.CONTACT_TYPE = {
     CUSTOMER: 'CUSTOMER',
@@ -121,6 +124,7 @@ exports.LOGGING_SOURCE = {
     API: 'API',
     WEBHOOK: 'WEBHOOK',
 };
+exports.SPENDING_LIMIT = 1000;
 exports.MONTH = 30 * 24 * 60 * 60 * 1000; // Month in milliseconds
 exports.HIRING_DATE_LIMIT = 3 * exports.MONTH;
 exports.HIRING_DATE_INELIGIBILITY_PERIOD_NO = 90; //no. in days
@@ -185,6 +189,11 @@ exports.httpStatus = {
     "SUCCESS": "200",
     "PARTIAL": "206",
     "FAILED": "202"
+};
+exports.TIER_TYPE = {
+    DEF: 'DEFAULT',
+    LOS: 'LENGTH_OF_SERVICE',
+    AI: 'ANNUAL_INCOME'
 };
 /*mail*/
 exports.GB_DEV = process.env.GBDEV || "admin@aitestpro.com";

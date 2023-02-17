@@ -66,7 +66,13 @@ export const CORPORATE={
     FORMCONFIG:'/formConfig',
     BANK_DETAILS_REGISTER:'/bankDetails/register',
     BANK_VERIFY:'/bank/verify',
-    PLANS:'/corporate/validation'
+    PLANS:'/corporate/validation',
+    CUSTOMER_VALIDATION:'/corporate/customer/validation',
+    EMPLOYEE:'/corporate/{corporateId}/employee',
+    PLAN_SELECTION:'/corporate/{corporateId}/planSelections',
+    CONFIGURE_WALLET:'/corporate/{corporateId}/configureWallet',
+    TIER:'/corporate/{corporateId}/tiers',
+    EXCEL:'/corporate/uploadEmployees'
 }
 // broker paths
 export const BROKER={

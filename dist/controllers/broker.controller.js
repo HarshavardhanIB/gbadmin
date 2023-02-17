@@ -628,7 +628,7 @@ let BrokerController = class BrokerController {
                         // max: this.registrationService.getMaxHiringDate(),
                         ineligibilityPeriod: CONST.HIRING_DATE_INELIGIBILITY_PERIOD_NO
                     },
-                    //planErollmentDates: this.registrationService.getEnrollmentPlanDates(),
+                    // planErollmentDates: this.registrationService.getEnrollmentPlanDates(),
                     // planEnrollmentDates: this.registrationService.getEnrollmentPlanDates()
                 };
                 data['validations']['spouse'] = {

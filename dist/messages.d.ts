@@ -17,6 +17,7 @@ export declare const ERRORS: {
     missingDetails: string;
     invalidBankDetails: string;
     someThingwentWrong: string;
+    planSelectionPadByTheCompany: string;
 };
 export declare const MAIL: any;
 export declare const EMAIL_EXISTS: any;
@@ -26,6 +27,8 @@ export declare const CORPORATE_MSG: {
     LOGO_NOT_SET: string;
     LOGO: string;
     NOLOGO: string;
+    PLANS: string;
+    NO_CORPORATE: string;
 };
 export declare const BROKER_MSG: {
     BROKERCOUNT: string;

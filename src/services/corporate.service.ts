@@ -137,6 +137,7 @@ export class Corporate {
         }
     return true;
   }
+  
 }
 const btoa = function (str: string) { return Buffer.from(str).toString('base64'); }
 const atob = function (b64Encoded: string) { return Buffer.from(b64Encoded, 'base64').toString() }

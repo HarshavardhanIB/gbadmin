@@ -13,7 +13,9 @@ export const USER_ROLE: any = {
   AGENT: 'AGENT',
   ADMINISTRATOR: 'ADMINISTRATOR'
 }
-
+export const TIER={
+  general:'GENERAL'
+}
 export const CONTACT_TYPE: any = {
   CUSTOMER: 'CUSTOMER',
   CUSTOMER_RELATIVE: 'CUSTOMER_RELATIVE',
@@ -139,7 +141,7 @@ export const LOGGING_SOURCE: any = {
   WEBHOOK: 'WEBHOOK',
 
 }
-
+export const SPENDING_LIMIT=1000;
 export const MONTH = 30 * 24 * 60 * 60 * 1000;  // Month in milliseconds
 
 export const HIRING_DATE_LIMIT = 3 * MONTH
@@ -218,7 +220,11 @@ export const httpStatus: any = {
   "PARTIAL": "206",
   "FAILED": "202"
 }
-
+export const TIER_TYPE={
+  DEF:'DEFAULT',
+  LOS:'LENGTH_OF_SERVICE',
+  AI:'ANNUAL_INCOME'
+}
 
 /*mail*/
 export const GB_DEV = process.env.GBDEV || "admin@aitestpro.com";

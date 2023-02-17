@@ -99,6 +99,7 @@ export class FilesController {
       encoding: f.encoding,
       mimetype: f.mimetype,
       size: f.size,
+      filepath:f.path
     });
     let files: any[] = [];
     if (Array.isArray(uploadedFiles)) {
@@ -371,6 +372,9 @@ export class FilesController {
       }
       return { files, fields: request.body };
     }
+    else if (method == 'excel') {
+      return { files, fields: request.body };
+    } 
     return { files, fields: request.body };
   }
 

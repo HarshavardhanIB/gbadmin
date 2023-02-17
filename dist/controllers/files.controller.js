@@ -56,6 +56,7 @@ let FilesController = class FilesController {
             encoding: f.encoding,
             mimetype: f.mimetype,
             size: f.size,
+            filepath: f.path
         });
         let files = [];
         if (Array.isArray(uploadedFiles)) {
@@ -316,6 +317,9 @@ let FilesController = class FilesController {
                     }
                 }
             }
+            return { files, fields: request.body };
+        }
+        else if (method == 'excel') {
             return { files, fields: request.body };
         }
         return { files, fields: request.body };

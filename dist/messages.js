@@ -20,7 +20,8 @@ exports.ERRORS = {
     accountNo: `Account number must be only numbers of length between 5 and 12`,
     missingDetails: `Input details are insufficient`,
     invalidBankDetails: `Invalid bank details`,
-    someThingwentWrong: 'Something went wrong'
+    someThingwentWrong: 'Something went wrong',
+    planSelectionPadByTheCompany: 'Please select at least one plan paid by the company'
 };
 exports.MAIL = {
     SENT: "Mail sent successfully",
@@ -36,7 +37,9 @@ exports.CORPORATE_MSG = {
     REGISTRATION_FAIL: 'Corporate registration failed',
     LOGO_NOT_SET: 'logo is not set',
     LOGO: 'logo',
-    NOLOGO: 'No logo found'
+    NOLOGO: 'No logo found',
+    PLANS: 'Plans selections are successfully',
+    NO_CORPORATE: 'No details found for this corporate'
 };
 exports.BROKER_MSG = {
     BROKERCOUNT: "The brokers count",
