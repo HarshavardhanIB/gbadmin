@@ -26,3 +26,4 @@ export * from './candoo-health-provisioning.service';
 export * from './pdf.service';
 export * from './executable.service';
 export * from './registration-service.service';
+export * from './excel2.service';

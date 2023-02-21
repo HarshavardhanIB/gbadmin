@@ -73,7 +73,8 @@
     "pdf-lib": "^1.17.1",
     "resize-img": "^2.0.0",
     "sharp": "^0.31.3",
-    "tslib": "^2.4.0"
+    "tslib": "^2.4.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@loopback/build": "^9.0.4",

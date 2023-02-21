@@ -28,7 +28,7 @@ const corporate_tiered_plan_levels_repository_1 = require("../repositories/corpo
 let fuseBillCustomerCreation = false;
 let fiseBill = 0;
 let CorporateController = class CorporateController {
-    constructor(BrokerRepository, response, corporateService, usersRepository, BrokerAdminsRepository, ContactInformationRepository, CustomerRepository, handler, fusebill, registrationService, ach, banksCodesRepository, banksRepository, branchesRepository, StatesAndProvincesRepository, InsurancePlansRepository, PlansAvailabilityRepository, insurancePackages, SignupFormsRepository, PlanLevelRepository, CorporateTiersRepository, CorporateTieredPlanLevelsRepository, CorporatePaidTieredPlanLevelsRepository, CustomerContactInfoRepository, excelService) {
+    constructor(BrokerRepository, response, corporateService, usersRepository, BrokerAdminsRepository, ContactInformationRepository, CustomerRepository, handler, fusebill, registrationService, ach, banksCodesRepository, banksRepository, branchesRepository, StatesAndProvincesRepository, InsurancePlansRepository, PlansAvailabilityRepository, insurancePackages, SignupFormsRepository, PlanLevelRepository, CorporateTiersRepository, CorporateTieredPlanLevelsRepository, CorporatePaidTieredPlanLevelsRepository, CustomerContactInfoRepository, excelService, excel2Service) {
         this.BrokerRepository = BrokerRepository;
         this.response = response;
         this.corporateService = corporateService;
@@ -54,6 +54,7 @@ let CorporateController = class CorporateController {
         this.CorporatePaidTieredPlanLevelsRepository = CorporatePaidTieredPlanLevelsRepository;
         this.CustomerContactInfoRepository = CustomerContactInfoRepository;
         this.excelService = excelService;
+        this.excel2Service = excel2Service;
     }
     async brokerDetailsBasedonId(company) {
         let message, status, statusCode, data = {};
@@ -482,7 +483,7 @@ let CorporateController = class CorporateController {
             data['defaultCountry'] = CONST.DEFAULT_COUNTRY;
             data['paymentMethod'] = CONST.PAYMENT_METHOD_LIST_ARRAY;
             console.log("ppppppppppppppppppp");
-            data['brokerSearch'] = await this.corporateService.modelPropoerties(models_1.Broker);
+            data['corporateSettings'] = await this.corporateService.modelPropoerties(models_1.Broker);
             data['sex'] = CONST.GENDER_LIST;
             data['maritalStatus'] = CONST.MARITAL_STATUS_LIST;
             let tierConfig = {
@@ -1611,8 +1612,8 @@ let CorporateController = class CorporateController {
             });
         });
         p.then(async (value) => {
-            let excelDatainJson = await this.excelService.excelToJson(value.files[0].filepath, "");
-            console.log(excelDatainJson);
+            let excelDatainJson = await this.excel2Service.excelToJson(value.files[0].filepath);
+            //  console.log(excelDatainJson);
         });
     }
 };
@@ -2171,6 +2172,7 @@ CorporateController = tslib_1.__decorate([
     tslib_1.__param(22, (0, repository_1.repository)(repositories_1.CorporatePaidTieredPlanLevelsRepository)),
     tslib_1.__param(23, (0, repository_1.repository)(repositories_1.CustomerContactInfoRepository)),
     tslib_1.__param(24, (0, core_1.service)(services_1.ExcelService)),
+    tslib_1.__param(25, (0, core_1.service)(services_1.Excel2Service)),
     tslib_1.__metadata("design:paramtypes", [repositories_1.BrokerRepository, Object, services_1.Corporate,
         repositories_1.UsersRepository,
         broker_admins_repository_1.BrokerAdminsRepository,
@@ -2191,7 +2193,8 @@ CorporateController = tslib_1.__decorate([
         corporate_tiered_plan_levels_repository_1.CorporateTieredPlanLevelsRepository,
         repositories_1.CorporatePaidTieredPlanLevelsRepository,
         repositories_1.CustomerContactInfoRepository,
-        services_1.ExcelService])
+        services_1.ExcelService,
+        services_1.Excel2Service])
 ], CorporateController);
 exports.CorporateController = CorporateController;
 //# sourceMappingURL=corporate.controller.js.map

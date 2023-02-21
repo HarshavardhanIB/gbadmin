@@ -493,7 +493,7 @@ export class BrokerController {
     }
 
   }
-  @del(BROKER.FORM, {
+  @del(BROKER.FORM,{
     responses: {
       200: {
         content: {
@@ -574,7 +574,7 @@ export class BrokerController {
   }
   @authenticate.skip()
   @get('/formConfigurations')
-  @response(200, {
+  @response(200,{
 
     description: 'Mixed object of all the specific values needed for form configuration',
 
@@ -1021,7 +1021,6 @@ export class BrokerController {
 
 
   }
-  
   @put(BROKER.UPDATE_CONTACTINFO)
   @response(200, {
     content: {
@@ -1170,10 +1169,12 @@ export class BrokerController {
       for (const signupForm of signUpForms) {
         await this.SignupFormsPlanLevelMappingRepository.deleteAll({ formId: signupForm.id })
       }
+      
       await this.ContactInformationRepository.deleteAll({ id: brokerId });
       await this.BrokerLicensedStatesAndProvincesRepository.deleteAll({ brokerId: brokerId })
       await this.BrokerEoInsuranceRepository.deleteAll({ brokerId: brokerId });
       await this.SignupFormsRepository.deleteAll({ brokerId: brokerId });
+      await this.UsersRepository.deleteById(broker.userId);
       await this.BrokerRepository.deleteById(brokerId);
       statusCode = 200;
       message = "Broker details deleted successfull"

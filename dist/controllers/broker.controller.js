@@ -732,6 +732,7 @@ let BrokerController = class BrokerController {
             await this.BrokerLicensedStatesAndProvincesRepository.deleteAll({ brokerId: brokerId });
             await this.BrokerEoInsuranceRepository.deleteAll({ brokerId: brokerId });
             await this.SignupFormsRepository.deleteAll({ brokerId: brokerId });
+            await this.UsersRepository.deleteById(broker.userId);
             await this.BrokerRepository.deleteById(brokerId);
             statusCode = 200;
             message = "Broker details deleted successfull";

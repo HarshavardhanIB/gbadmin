@@ -8,7 +8,7 @@ import { nextTick } from 'process';
 import { Broker, BrokerAdmins, ContactInformation, CorporatePaidTieredPlanLevels, CorporateTieredPlanLevels, CorporateTiers, Customer, CustomerContactInfo, InsurancePlans, SignupForms, Users } from '../models';
 import * as CONST from '../constants'
 import { BankCodesRepository, BrokerRepository, ContactInformationRepository, CorporatePaidTieredPlanLevelsRepository, CorporateTiersRepository, CustomerContactInfoRepository, CustomerRepository, FinancialInstitutionsRepository, FinancialInstitutionsRoutingNumbersRepository, InsurancePackagesRepository, InsurancePlansRepository, PlanLevelRepository, PlansAvailabilityRepository, SignupFormsRepository, StatesAndProvincesRepository, UsersRepository, } from '../repositories'
-import { AchService, Corporate, ExcelService, FusebillService, mail, RegistrationServiceService } from '../services';
+import { AchService, Corporate, Excel2Service, ExcelService, FusebillService, mail, RegistrationServiceService } from '../services';
 import { FILE_UPLOAD_SERVICE } from '../keys';
 import { FileUploadHandler } from "../types";
 import { FilesController } from './files.controller';
@@ -68,7 +68,8 @@ export class CorporateController {
     @repository(CorporateTieredPlanLevelsRepository) public CorporateTieredPlanLevelsRepository: CorporateTieredPlanLevelsRepository,
     @repository(CorporatePaidTieredPlanLevelsRepository) public CorporatePaidTieredPlanLevelsRepository: CorporatePaidTieredPlanLevelsRepository,
     @repository(CustomerContactInfoRepository) public CustomerContactInfoRepository: CustomerContactInfoRepository,
-    @service(ExcelService)public excelService:ExcelService,
+    @service(ExcelService) public excelService: ExcelService,
+    @service(Excel2Service) public excel2Service: Excel2Service,
   ) { }
 
   @get(CORPORATE.LOGO)
@@ -641,7 +642,7 @@ export class CorporateController {
       data['defaultCountry'] = CONST.DEFAULT_COUNTRY;
       data['paymentMethod'] = CONST.PAYMENT_METHOD_LIST_ARRAY;
       console.log("ppppppppppppppppppp")
-      data['brokerSearch'] = await this.corporateService.modelPropoerties(Broker);
+      data['corporateSettings'] = await this.corporateService.modelPropoerties(Broker);
       data['sex'] = CONST.GENDER_LIST;
       data['maritalStatus'] = CONST.MARITAL_STATUS_LIST;
       let tierConfig = {
@@ -1078,7 +1079,7 @@ export class CorporateController {
     return this.response;
   }
   @authorize({
-    allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR,CONST.USER_ROLE.CORPORATE_ADMINISTRATOR],
+    allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR, CONST.USER_ROLE.CORPORATE_ADMINISTRATOR],
     voters: [basicAuthorization]
   })
   @get(CORPORATE.PLANS)
@@ -1789,146 +1790,167 @@ export class CorporateController {
       }
     ) apiRequest: Employee
   ): Promise<any> {
-    // user creation, customer.role=
-    let corporate: any = await this.BrokerRepository.findById(corporateId);
-    if (corporate) {
-      let employeeUserObj: Users = new Users();
-      employeeUserObj.username = apiRequest.emailId;
-      employeeUserObj.role = CONST.USER_ROLE.CUSTOMER;
-      let randomPswrd = await generateRandomPassword();
-      employeeUserObj.password = await encryptPassword(randomPswrd);
-      employeeUserObj.block = true;
-      employeeUserObj.activation = await getActivationCode();
-      employeeUserObj.registrationDate = moment().format('YYYY-MM-DD');
-      employeeUserObj.companyId = corporateId;
-      let employeeUser: any = await this.usersRepository.create(employeeUserObj);
-      let customerObj: Customer = new Customer();
-      customerObj.brokerId = corporateId;
-      //firstname and last should be created in backend level
-      customerObj.firstName = apiRequest.firstName;
-      customerObj.lastName = apiRequest.lastName;
-      customerObj.gender = apiRequest.sex;
-      customerObj.companyName = corporate.name;
-      customerObj.isCorporateAccount = false;
-      customerObj.registrationDate = moment().format('YYYY-MM-DD');
-      customerObj.userId = employeeUser.id;
-      let customer: any = await this.CustomerRepository.create(customerObj);
-      let customerContactInfoObj: ContactInformation = new ContactInformation();
-      customerContactInfoObj.city = apiRequest.residentIn;
-      customerContactInfoObj.state = CONST.DEFAULT_COUNTRY.name;
-      customerContactInfoObj.contactType = CONST.USER_ROLE.CUSTOMER;
-      customerContactInfoObj.addressType = CONST.ADDRESS_TYPE.HOME_ADDRESS;
-      customerContactInfoObj.primaryEmail = apiRequest.emailId;
-      customerContactInfoObj.primaryPhone = apiRequest.phoneNum.toString();
-      customerContactInfoObj.state = apiRequest.provienceName;
-      let contcatInfo: any = await this.ContactInformationRepository.create(customerContactInfoObj);
-      let customerContact: CustomerContactInfo = new CustomerContactInfo();
-      customerContactInfoObj.customerId = customer.id;
-      customerContactInfoObj.contactId = customerContact.id;
-      let customerContactInfo = await this.CustomerContactInfoRepository.create(customerContactInfoObj);
-      // customerId = customer.id;
-      var fusebillCustomer: any = {};
-      if (fuseBillCustomerCreation) {
-        const fusebillData: any = {}
-        fusebillData.firstName = customer.firstName;
-        fusebillData.lastName = customer.lastName;
-        // fusebillData.parent = broker.fusebillCustomerId;
-        fusebillData.companyName = apiRequest.corporationName;
-        fusebillData.primaryEmail = apiRequest.email;
-        fusebillData.primaryPhone = apiRequest.phoneNum;//phone num is not mandatory
-        fusebillData.reference = customer.id;
-        //fusebillData.companyName=apiRequest.company_name;     
-        fusebillData.currency = apiRequest.currency || 'CAD';// || ' 
-        try {
+    let status, message, data: any = {};
+    try {
+      // user creation, customer.role=
+      let corporate: any = await this.BrokerRepository.findById(corporateId);
+      if (corporate) {
+        let employeeUserObj: Users = new Users();
+        employeeUserObj.username = apiRequest.emailId;
+        employeeUserObj.role = CONST.USER_ROLE.CUSTOMER;
+        let randomPswrd = await generateRandomPassword();
+        employeeUserObj.password = await encryptPassword(randomPswrd);
+        employeeUserObj.block = true;
+        employeeUserObj.activation = await getActivationCode();
+        employeeUserObj.registrationDate = moment().format('YYYY-MM-DD');
+        employeeUserObj.companyId = corporateId;
+        let employeeUser: any = await this.usersRepository.create(employeeUserObj);
+        let customerObj: Customer = new Customer();
+        customerObj.brokerId = corporateId;
+        //firstname and last should be created in backend level
+        customerObj.firstName = apiRequest.firstName;
+        customerObj.lastName = apiRequest.lastName;
+        customerObj.gender = apiRequest.sex;
+        customerObj.companyName = corporate.name;
+        customerObj.isCorporateAccount = false;
+        customerObj.registrationDate = moment().format('YYYY-MM-DD');
+        customerObj.userId = employeeUser.id;
+        let customer: any = await this.CustomerRepository.create(customerObj);
+        let customerContactInfoObj: ContactInformation = new ContactInformation();
+        customerContactInfoObj.city = apiRequest.residentIn;
+        customerContactInfoObj.state = CONST.DEFAULT_COUNTRY.name;
+        customerContactInfoObj.contactType = CONST.USER_ROLE.CUSTOMER;
+        customerContactInfoObj.addressType = CONST.ADDRESS_TYPE.HOME_ADDRESS;
+        customerContactInfoObj.primaryEmail = apiRequest.emailId;
+        customerContactInfoObj.primaryPhone = apiRequest.phoneNum.toString();
+        customerContactInfoObj.state = apiRequest.provienceName;
+        let contcatInfo: any = await this.ContactInformationRepository.create(customerContactInfoObj);
+        let customerContact: CustomerContactInfo = new CustomerContactInfo();
+        customerContactInfoObj.customerId = customer.id;
+        customerContactInfoObj.contactId = customerContact.id;
+        let customerContactInfo = await this.CustomerContactInfoRepository.create(customerContactInfoObj);
+        // customerId = customer.id;
+        var fusebillCustomer: any = {};
+        if (fuseBillCustomerCreation) {
+          const fusebillData: any = {}
+          fusebillData.firstName = customer.firstName;
+          fusebillData.lastName = customer.lastName;
+          // fusebillData.parent = broker.fusebillCustomerId;
+          fusebillData.companyName = corporate.name;
+          fusebillData.primaryEmail = apiRequest.email;
+          fusebillData.primaryPhone = apiRequest.phoneNum;//phone num is not mandatory
+          fusebillData.reference = customer.id;
+          //fusebillData.companyName=apiRequest.company_name;     
+          fusebillData.currency = apiRequest.currency || 'CAD';// || ' 
+          try {
 
-          fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
-          console.log("**************************************************")
-          // console.log(fusebillCustomer)
-          console.log("**************************************************")
-          let fuseBillAddressData: any = {
-            "customerAddressPreferenceId": fusebillCustomer.id,
-            "countryId": apiRequest.country_id,
-            "stateId": apiRequest.state_id,
-            //"addressType": apiRequest.address_type ?? 'Shipping',//here shipping is same as home //Billing, shipping    
-            "addressType": apiRequest.address_type ?? 'Billing', //here shipping is same as home //Billing, shipping  
-            "enforceFullAddress": true,
-            "line1": apiRequest.street_address_line1,
-            "line2": apiRequest.street_address_line2,
-            "city": apiRequest.city,
-            "postalZip": apiRequest.postal_code,
-            "country": apiRequest.country,
-            "state": apiRequest.state
+            fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
+            console.log("**************************************************")
+            // console.log(fusebillCustomer)
+            console.log("**************************************************")
+            let fuseBillAddressData: any = {
+              "customerAddressPreferenceId": fusebillCustomer.id,
+              "countryId": apiRequest.country_id,
+              "stateId": apiRequest.state_id,
+              //"addressType": apiRequest.address_type ?? 'Shipping',//here shipping is same as home //Billing, shipping    
+              "addressType": apiRequest.address_type ?? 'Billing', //here shipping is same as home //Billing, shipping  
+              "enforceFullAddress": true,
+              "line1": apiRequest.street_address_line1,
+              "line2": apiRequest.street_address_line2,
+              "city": apiRequest.city,
+              "postalZip": apiRequest.postal_code,
+              "country": apiRequest.country,
+              "state": apiRequest.state
+            }
+            const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
+
+          } catch (error) {
+            console.log(error.response.data.Errors)
           }
-          const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
-
-        } catch (error) {
-          console.log(error.response.data.Errors)
         }
-      }
-      else {
-        fiseBill = fiseBill + 1;
-        fusebillCustomer = {
-          firstName: 'Admin',
-          middleName: null,
-          lastName: 'Ideabytes',
-          companyName: 'Ideabytes',
-          suffix: null,
-          primaryEmail: null,
-          primaryPhone: null,
-          secondaryEmail: null,
-          secondaryPhone: null,
-          title: '',
-          reference: '1844',
-          status: 'Draft',
-          customerAccountStatus: 'Good',
-          currency: 'CAD',
-          canChangeCurrency: true,
-          customerReference: {
-            reference1: null,
-            reference2: null,
-            reference3: null,
-            salesTrackingCodes: [],
-            id: 11673101,
+        else {
+          fiseBill = fiseBill + 1;
+          fusebillCustomer = {
+            firstName: 'Admin',
+            middleName: null,
+            lastName: 'Ideabytes',
+            companyName: 'Ideabytes',
+            suffix: null,
+            primaryEmail: null,
+            primaryPhone: null,
+            secondaryEmail: null,
+            secondaryPhone: null,
+            title: '',
+            reference: '1844',
+            status: 'Draft',
+            customerAccountStatus: 'Good',
+            currency: 'CAD',
+            canChangeCurrency: true,
+            customerReference: {
+              reference1: null,
+              reference2: null,
+              reference3: null,
+              salesTrackingCodes: [],
+              id: 11673101,
+              uri: 'https://secure.fusebill.com/v1/customers/11673101'
+            },
+            customerAcquisition: {
+              adContent: null,
+              campaign: null,
+              keyword: null,
+              landingPage: null,
+              medium: null,
+              source: null,
+              id: 11673101,
+              uri: 'https://secure.fusebill.com/v1/customers/11673101'
+            },
+            monthlyRecurringRevenue: 0,
+            netMonthlyRecurringRevenue: 0,
+            salesforceId: null,
+            salesforceAccountType: null,
+            salesforceSynchStatus: 'Enabled',
+            netsuiteId: null,
+            netsuiteSynchStatus: 'Enabled',
+            netsuiteCustomerType: '',
+            portalUserName: null,
+            parentId: null,
+            isParent: false,
+            quickBooksLatchType: null,
+            quickBooksId: null,
+            quickBooksSyncToken: null,
+            hubSpotId: null,
+            hubSpotCompanyId: null,
+            geotabId: null,
+            digitalRiverId: null,
+            modifiedTimestamp: '2023-02-01T11:36:16.0432031Z',
+            createdTimestamp: '2023-02-01T11:36:15.9442038Z',
+            requiresProjectedInvoiceGeneration: false,
+            requiresFinancialCalendarGeneration: false,
+            id: 11673101 + fiseBill,
             uri: 'https://secure.fusebill.com/v1/customers/11673101'
-          },
-          customerAcquisition: {
-            adContent: null,
-            campaign: null,
-            keyword: null,
-            landingPage: null,
-            medium: null,
-            source: null,
-            id: 11673101,
-            uri: 'https://secure.fusebill.com/v1/customers/11673101'
-          },
-          monthlyRecurringRevenue: 0,
-          netMonthlyRecurringRevenue: 0,
-          salesforceId: null,
-          salesforceAccountType: null,
-          salesforceSynchStatus: 'Enabled',
-          netsuiteId: null,
-          netsuiteSynchStatus: 'Enabled',
-          netsuiteCustomerType: '',
-          portalUserName: null,
-          parentId: null,
-          isParent: false,
-          quickBooksLatchType: null,
-          quickBooksId: null,
-          quickBooksSyncToken: null,
-          hubSpotId: null,
-          hubSpotCompanyId: null,
-          geotabId: null,
-          digitalRiverId: null,
-          modifiedTimestamp: '2023-02-01T11:36:16.0432031Z',
-          createdTimestamp: '2023-02-01T11:36:15.9442038Z',
-          requiresProjectedInvoiceGeneration: false,
-          requiresFinancialCalendarGeneration: false,
-          id: 11673101 + fiseBill,
-          uri: 'https://secure.fusebill.com/v1/customers/11673101'
-        };
+          };
+        }
+        await this.CustomerRepository.updateById(customerContactInfo.id, { fusebillCustomerId: fusebillCustomer.id })
+        status=200;
+        message=MESSAGE.CORPORATE_MSG.EMP_REGISTRATION_SUCCESS
       }
+      else{
+        status = 201;
+        message = MESSAGE.CORPORATE_MSG.NO_CORPORATE
+      }
+    
+    }
+    catch (error) {
+      console.log(error);
+      status = 204;
+      message = error.message;
+
     }
 
+    this.response.status(status).send({
+      status, message, data, dete: new Date()
+    })
+    return this.response;
 
   }
   @post(CORPORATE.PLAN_SELECTION)
@@ -2136,22 +2158,22 @@ export class CorporateController {
   }
   @post(CORPORATE.EXCEL)
   async uploadEmployeeExcel(@requestBody({
-    description:'excel file',
-    content:{
-      'multipart/form-data':{
+    description: 'excel file',
+    content: {
+      'multipart/form-data': {
         'x-parser': 'stream',
-        schema:{
-          type:'object',          
-          properties:{
-            employeeData:{
-              type:'string',
-              format:'binary'
+        schema: {
+          type: 'object',
+          properties: {
+            employeeData: {
+              type: 'string',
+              format: 'binary'
             }
           }
         }
       }
     }
-  })request:any, @inject(RestBindings.Http.RESPONSE) response: Response){
+  }) request: any, @inject(RestBindings.Http.RESPONSE) response: Response) {
     let p = new Promise<any>((resolve, reject) => {
       this.handler(request, response, err => {
         if (err) reject(err);
@@ -2162,9 +2184,9 @@ export class CorporateController {
       });
     });
     p.then(async value => {
-      let excelDatainJson=await this.excelService.excelToJson(value.files[0].filepath,"")
-     console.log(excelDatainJson);
+      let excelDatainJson = await this.excel2Service.excelToJson(value.files[0].filepath);
+      // let addingEmployee=await this.corporateService.
+      //  console.log(excelDatainJson);
     })
-
   }
 }
