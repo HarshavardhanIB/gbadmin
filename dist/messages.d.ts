@@ -29,6 +29,7 @@ export declare const CORPORATE_MSG: {
     NOLOGO: string;
     PLANS: string;
     NO_CORPORATE: string;
+    EMP_REGISTRATION_SUCCESS: string;
 };
 export declare const BROKER_MSG: {
     BROKERCOUNT: string;

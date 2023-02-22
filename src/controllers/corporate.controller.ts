@@ -256,24 +256,24 @@ export class CorporateController {
           date: new Date(),
         });
       }
-      if (!this.registrationService.validateName(value.fields.firstName)) {
-        this.response.status(422).send({
-          status: '422',
-          error: `Invalid Firstname`,
-          message: MESSAGE.ERRORS.firstName,
-          date: new Date(),
-        });
-        return this.response;
-      }
-      if (!this.registrationService.validateName(value.fields.lastName)) {
-        this.response.status(422).send({
-          status: '422',
-          error: `Invalid Lastname`,
-          message: MESSAGE.ERRORS.lastName,
-          date: new Date(),
-        });
-        return this.response;
-      }      //email     
+      // if (!this.registrationService.validateName(value.fields.firstName)) {
+      //   this.response.status(422).send({
+      //     status: '422',
+      //     error: `Invalid Firstname`,
+      //     message: MESSAGE.ERRORS.firstName,
+      //     date: new Date(),
+      //   });
+      //   return this.response;
+      // }
+      // if (!this.registrationService.validateName(value.fields.lastName)) {
+      //   this.response.status(422).send({
+      //     status: '422',
+      //     error: `Invalid Lastname`,
+      //     message: MESSAGE.ERRORS.lastName,
+      //     date: new Date(),
+      //   });
+      //   return this.response;
+      // }      //email     
       if (!this.registrationService.validateEmail(value.fields.email)) {
         this.response.status(422).send({
           status: '422',
@@ -376,8 +376,8 @@ export class CorporateController {
           let customerObj: Customer = new Customer();
           customerObj.brokerId = broker.id;
           //firstname and last should be created in backend level
-          customerObj.firstName = apiRequest.firstName;
-          customerObj.lastName = apiRequest.lastName;
+          customerObj.firstName = apiRequest.firstName??'';
+          customerObj.lastName = apiRequest.lastName??'';
           customerObj.gender = CONST.GENDER.UNDISCLOSED;
           customerObj.companyName = apiRequest.corporationName;
           customerObj.isCorporateAccount = true;
@@ -420,7 +420,7 @@ export class CorporateController {
 
             } catch (error) {
               console.log(error.response.data.Errors)
-            }
+               }
           }
           else {
             fiseBill = fiseBill + 1;
@@ -481,10 +481,10 @@ export class CorporateController {
               requiresProjectedInvoiceGeneration: false,
               requiresFinancialCalendarGeneration: false,
               id: 11673101 + fiseBill,
-              uri: 'https://secure.fusebill.com/v1/customers/11673101'
+              uri:'https://secure.fusebill.com/v1/customers/11673101'
             };
           }
-          await this.CustomerRepository.updateById(customerId, { fusebillCustomerId: fusebillCustomer.id })
+          await this.CustomerRepository.updateById(customerId,{ fusebillCustomerId: fusebillCustomer.id })
           //activationg fuse bill customer id
           // bank details and void check service 
           // data.push(customer);
@@ -641,8 +641,8 @@ export class CorporateController {
       data['states'] = await this.StatesAndProvincesRepository.find(countryFilter);
       data['defaultCountry'] = CONST.DEFAULT_COUNTRY;
       data['paymentMethod'] = CONST.PAYMENT_METHOD_LIST_ARRAY;
-      console.log("ppppppppppppppppppp")
-      data['corporateSettings'] = await this.corporateService.modelPropoerties(Broker);
+      let brokerProp=await this.corporateService.modelPropoerties(Broker);      
+      data['corporateSettings'] = CONST.CORPORATE_SETTINGS;
       data['sex'] = CONST.GENDER_LIST;
       data['maritalStatus'] = CONST.MARITAL_STATUS_LIST;
       let tierConfig = {
@@ -1487,7 +1487,6 @@ export class CorporateController {
             //fusebillData.companyName=apiRequest.company_name;     
             fusebillData.currency = apiRequest.currency || 'CAD';// || ' 
             try {
-
               fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
               console.log("**************************************************")
               // console.log(fusebillCustomer)

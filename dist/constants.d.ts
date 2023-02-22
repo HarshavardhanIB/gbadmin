@@ -5,6 +5,17 @@ export declare const USER_ROLE: any;
 export declare const TIER: {
     general: string;
 };
+export declare const CORPORATE_SETTINGS: {
+    settings_allow_invoice_payment_method: string;
+    settings_allow_group_benefits_wallet: string;
+    settings_group_benefitz_wallet_type: string;
+    settings_health_spending_account: string;
+    settings_health_spending_allotment: string;
+    settings_rollover_employee_limit_next_year: string;
+    settings_enable_tiered_health_benefits: string;
+    settings_enable_length_of_service_tiers: string;
+    settings_enable_annual_income_tiers: string;
+};
 export declare const CONTACT_TYPE: any;
 export declare const ADDRESS_TYPE: any;
 export declare const RELATIONSHIP_TYPE: any;

@@ -16,6 +16,17 @@ export const USER_ROLE: any = {
 export const TIER={
   general:'GENERAL'
 }
+export const CORPORATE_SETTINGS={
+  settings_allow_invoice_payment_method :"settings_allow_invoice_payment_method",
+  settings_allow_group_benefits_wallet:"Set up GroupBenefitz Wallet for employees",
+  settings_group_benefitz_wallet_type:"settings_group_benefitz_wallet_type",
+  settings_health_spending_account :"settings_health_spending_account",
+  settings_health_spending_allotment :"settings_health_spending_allotment",
+  settings_rollover_employee_limit_next_year:"settings_rollover_employee_limit_next_year",
+  settings_enable_tiered_health_benefits :"Set up levels of coverage for different tiers of employees",
+  settings_enable_length_of_service_tiers:"settings_enable_length_of_service_tiers",
+  settings_enable_annual_income_tiers:"settings_enable_annual_income_tiers"
+};
 export const CONTACT_TYPE: any = {
   CUSTOMER: 'CUSTOMER',
   CUSTOMER_RELATIVE: 'CUSTOMER_RELATIVE',

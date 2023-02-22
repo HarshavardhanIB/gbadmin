@@ -1,9 +1,9 @@
-import {Entity, model, property} from '@loopback/repository';
+import { Entity, model, property } from '@loopback/repository';
 
 @model({
   settings: {
     idInjection: false,
-    mysql: {schema: 'group_benefitz', table: 'corporate_tiers'}
+    mysql: { schema: 'group_benefitz', table: 'corporate_tiers' }
   }
 })
 export class CorporateTiers extends Entity {
@@ -20,7 +20,7 @@ export class CorporateTiers extends Entity {
     required: true,
     precision: 10,
     scale: 0,
-    mysql: {columnName: 'broker_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N'},
+    mysql: { columnName: 'broker_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N' },
   })
   brokerId: number;
 
@@ -29,7 +29,7 @@ export class CorporateTiers extends Entity {
     type: 'string',
     required: true,
     length: 35,
-    mysql: {columnName: 'name', dataType: 'varchar', dataLength: 35, dataPrecision: null, dataScale: null, nullable: 'N'},
+    mysql: { columnName: 'name', dataType: 'varchar', dataLength: 35, dataPrecision: null, dataScale: null, nullable: 'N' },
   })
   name: string;
 
@@ -37,36 +37,51 @@ export class CorporateTiers extends Entity {
     type: 'number',
     precision: 3,
     scale: 0,
-    mysql: {columnName: 'published', dataType: 'tinyint', dataLength: null, dataPrecision: 3, dataScale: 0, nullable: 'N'},
+    mysql: { columnName: 'published', dataType: 'tinyint', dataLength: null, dataPrecision: 3, dataScale: 0, nullable: 'N' },
   })
   published?: number;
 
   @property({
     type: 'string',
     length: 20,
-    mysql: {columnName: 'tier_type', dataType: 'enum', dataLength: 20, dataPrecision: null, dataScale: null, nullable: 'N'},
+    mysql: { columnName: 'tier_type', dataType: 'enum', dataLength: 20, dataPrecision: null, dataScale: null, nullable: 'N' },
   })
   tierType?: string;
-
   @property({
     type: 'number',
-    precision: 10,
-    mysql: {columnName: 'lower_limit', dataType: 'float', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'Y'},
+    precision: 3,
+    scale: 0,
+    generated: 0,
+    mysql: { columnName: 'from_length', dataType: 'tinyint', dataLength: null, dataPrecision: 3, dataScale: 0, nullable: 'N', generated: 0 },
   })
-  lowerLimit?: number;
-
+  fromLength?: number;
   @property({
     type: 'number',
-    precision: 10,
-    mysql: {columnName: 'upper_limit', dataType: 'float', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'Y'},
+    precision: 3,
+    scale: 0,
+    generated: 0,
+    mysql: { columnName: 'to_length', dataType: 'tinyint', dataLength: null, dataPrecision: 3, dataScale: 0, nullable: 'N', generated: 0 },
   })
-  upperLimit?: number;
-
+  toLength?: number;
+  @property({
+    type: 'number',
+    required: true,
+    precision: 12,
+    mysql: { columnName: 'income_percentage', dataType: 'float', dataLength: null, dataPrecision: 12, dataScale: null, nullable: 'N' },
+  })
+  incomePercentage: number;
+  @property({
+    type: 'number',
+    required: true,
+    precision: 12,
+    mysql: { columnName: 'annual_income', dataType: 'float', dataLength: null, dataPrecision: 12, dataScale: null, nullable: 'N' },
+  })
+  annualIncome: number;
   @property({
     type: 'number',
     precision: 10,
     scale: 0,
-    mysql: {columnName: 'spending_limit', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y'},
+    mysql: { columnName: 'spending_limit', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y' },
   })
   spendingLimit?: number;
 

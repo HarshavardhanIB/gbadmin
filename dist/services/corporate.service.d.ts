@@ -1,8 +1,12 @@
 import { RegistrationServiceService } from './registration-service.service';
 import { AchService } from './ach.service';
-import { BankCodesRepository, FinancialInstitutionsRepository, FinancialInstitutionsRoutingNumbersRepository, StatesAndProvincesRepository } from '../repositories';
+import { BankCodesRepository, BrokerRepository, ContactInformationRepository, CorporatePaidTieredPlanLevelsRepository, CorporateTiersRepository, CustomerContactInfoRepository, CustomerRepository, FinancialInstitutionsRepository, FinancialInstitutionsRoutingNumbersRepository, InsurancePackagesRepository, InsurancePlansRepository, PlanLevelRepository, PlansAvailabilityRepository, SignupFormsRepository, StatesAndProvincesRepository, UsersRepository } from '../repositories';
 import { FileUploadHandler } from '../types';
+import { BrokerAdminsRepository } from '../repositories/broker-admins.repository';
+import { CorporateTieredPlanLevelsRepository } from '../repositories/corporate-tiered-plan-levels.repository';
+import { FusebillService } from './fusebill.service';
 export declare class Corporate {
+    fusebill: FusebillService;
     handler: FileUploadHandler;
     registrationService: RegistrationServiceService;
     ach: AchService;
@@ -10,8 +14,23 @@ export declare class Corporate {
     banksRepository: FinancialInstitutionsRepository;
     branchesRepository: FinancialInstitutionsRoutingNumbersRepository;
     StatesAndProvincesRepository: StatesAndProvincesRepository;
-    constructor(/* Add @inject to inject parameters */ handler: FileUploadHandler, registrationService: RegistrationServiceService, ach: AchService, banksCodesRepository: BankCodesRepository, banksRepository: FinancialInstitutionsRepository, branchesRepository: FinancialInstitutionsRoutingNumbersRepository, StatesAndProvincesRepository: StatesAndProvincesRepository);
+    BrokerRepository: BrokerRepository;
+    usersRepository: UsersRepository;
+    BrokerAdminsRepository: BrokerAdminsRepository;
+    ContactInformationRepository: ContactInformationRepository;
+    CustomerRepository: CustomerRepository;
+    InsurancePlansRepository: InsurancePlansRepository;
+    PlansAvailabilityRepository: PlansAvailabilityRepository;
+    insurancePackages: InsurancePackagesRepository;
+    SignupFormsRepository: SignupFormsRepository;
+    PlanLevelRepository: PlanLevelRepository;
+    CorporateTiersRepository: CorporateTiersRepository;
+    CorporateTieredPlanLevelsRepository: CorporateTieredPlanLevelsRepository;
+    CorporatePaidTieredPlanLevelsRepository: CorporatePaidTieredPlanLevelsRepository;
+    CustomerContactInfoRepository: CustomerContactInfoRepository;
+    constructor(/* Add @inject to inject parameters */ fusebill: FusebillService, handler: FileUploadHandler, registrationService: RegistrationServiceService, ach: AchService, banksCodesRepository: BankCodesRepository, banksRepository: FinancialInstitutionsRepository, branchesRepository: FinancialInstitutionsRoutingNumbersRepository, StatesAndProvincesRepository: StatesAndProvincesRepository, BrokerRepository: BrokerRepository, usersRepository: UsersRepository, BrokerAdminsRepository: BrokerAdminsRepository, ContactInformationRepository: ContactInformationRepository, CustomerRepository: CustomerRepository, InsurancePlansRepository: InsurancePlansRepository, PlansAvailabilityRepository: PlansAvailabilityRepository, insurancePackages: InsurancePackagesRepository, SignupFormsRepository: SignupFormsRepository, PlanLevelRepository: PlanLevelRepository, CorporateTiersRepository: CorporateTiersRepository, CorporateTieredPlanLevelsRepository: CorporateTieredPlanLevelsRepository, CorporatePaidTieredPlanLevelsRepository: CorporatePaidTieredPlanLevelsRepository, CustomerContactInfoRepository: CustomerContactInfoRepository);
     encryptPswrd(password: string): Promise<string>;
     modelPropoerties(model: any): Promise<any>;
     customerBankDetailsRegister(session: any, filenamets: any, ext: any, mimetype: any, customerName: any): Promise<any>;
+    addEmployee(data: any, corporateId: number): Promise<boolean>;
 }

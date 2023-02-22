@@ -4,17 +4,26 @@ exports.Corporate = void 0;
 const tslib_1 = require("tslib");
 const core_1 = require("@loopback/core");
 const bcryptjs_1 = require("bcryptjs");
+const models_1 = require("../models");
 const repository_1 = require("@loopback/repository");
 const constants_1 = require("../constants");
 const moment_1 = tslib_1.__importDefault(require("moment"));
 const storage_helper_1 = require("../storage.helper");
 const paths_1 = require("../paths");
+const common_functions_1 = require("../common-functions");
 const registration_service_service_1 = require("./registration-service.service");
 const ach_service_1 = require("./ach.service");
 const repositories_1 = require("../repositories");
 const keys_1 = require("../keys");
+const broker_admins_repository_1 = require("../repositories/broker-admins.repository");
+const corporate_tiered_plan_levels_repository_1 = require("../repositories/corporate-tiered-plan-levels.repository");
+const CONST = tslib_1.__importStar(require("../constants"));
+const fusebill_service_1 = require("./fusebill.service");
+let fuseBillCustomerCreation = true;
+let fiseBill = 0;
 let Corporate = class Corporate {
-    constructor(/* Add @inject to inject parameters */ handler, registrationService, ach, banksCodesRepository, banksRepository, branchesRepository, StatesAndProvincesRepository) {
+    constructor(/* Add @inject to inject parameters */ fusebill, handler, registrationService, ach, banksCodesRepository, banksRepository, branchesRepository, StatesAndProvincesRepository, BrokerRepository, usersRepository, BrokerAdminsRepository, ContactInformationRepository, CustomerRepository, InsurancePlansRepository, PlansAvailabilityRepository, insurancePackages, SignupFormsRepository, PlanLevelRepository, CorporateTiersRepository, CorporateTieredPlanLevelsRepository, CorporatePaidTieredPlanLevelsRepository, CustomerContactInfoRepository) {
+        this.fusebill = fusebill;
         this.handler = handler;
         this.registrationService = registrationService;
         this.ach = ach;
@@ -22,6 +31,20 @@ let Corporate = class Corporate {
         this.banksRepository = banksRepository;
         this.branchesRepository = branchesRepository;
         this.StatesAndProvincesRepository = StatesAndProvincesRepository;
+        this.BrokerRepository = BrokerRepository;
+        this.usersRepository = usersRepository;
+        this.BrokerAdminsRepository = BrokerAdminsRepository;
+        this.ContactInformationRepository = ContactInformationRepository;
+        this.CustomerRepository = CustomerRepository;
+        this.InsurancePlansRepository = InsurancePlansRepository;
+        this.PlansAvailabilityRepository = PlansAvailabilityRepository;
+        this.insurancePackages = insurancePackages;
+        this.SignupFormsRepository = SignupFormsRepository;
+        this.PlanLevelRepository = PlanLevelRepository;
+        this.CorporateTiersRepository = CorporateTiersRepository;
+        this.CorporateTieredPlanLevelsRepository = CorporateTieredPlanLevelsRepository;
+        this.CorporatePaidTieredPlanLevelsRepository = CorporatePaidTieredPlanLevelsRepository;
+        this.CustomerContactInfoRepository = CustomerContactInfoRepository;
     }
     async encryptPswrd(password) {
         let encryptedPasswrd = await (0, bcryptjs_1.hash)(password, await (0, bcryptjs_1.genSalt)());
@@ -75,24 +98,24 @@ let Corporate = class Corporate {
         // console.log(`customerName:${bank_details.customerName}`)
         //const multerText = Buffer.from(newFilename.buffer).toString("utf-8"); /
         /*
-  {
-  "customerId": 0,
-  "bankCode": "string",
-  "transitNumber": "string",
-  "accountNumber": "string",
-  "customerStatus": "string",
-  "voidCheckImage": "string",
-  "nextBillingDate": "2022-09-07T12:47:58.323Z",
-  "nextBillingPrice": 0
-  }
-
-  accountNumber: "12345"
-  amount: 22.6
-  bankCode: "001"
-  branchCode: "00011"
-  customerId: 5031
-  customerName: "George Kongalath"
-  enrollmentDate: "2022-10-01"
+    {
+    "customerId": 0,
+    "bankCode": "string",
+    "transitNumber": "string",
+    "accountNumber": "string",
+    "customerStatus": "string",
+    "voidCheckImage": "string",
+    "nextBillingDate": "2022-09-07T12:47:58.323Z",
+    "nextBillingPrice": 0
+    }
+    
+    accountNumber: "12345"
+    amount: 22.6
+    bankCode: "001"
+    branchCode: "00011"
+    customerId: 5031
+    customerName: "George Kongalath"
+    enrollmentDate: "2022-10-01"
         */
         //eyJjdXN0b21lcklkIjoiMTIiLCJiYW5rQ29kZSI6IjAwMyIsImJyYW5jaENvZGUiOiIwMDAwMSIsImFjY291bnROdW1iZXIiOiIxMjM0NTYiLCJhbW91bnQiOiIwLjEwIn0=
         //eyJjdXN0b21lcklkIjoiMTIiLCJiYW5rQ29kZSI6IjAwMyIsImJyYW5jaENvZGUiOiIwMDAwMSIsImFjY291bnROdW1iZXIiOiIxMjM0NTYiLCJhbW91bnQiOiIwLjEwIiwiZW5yb2xsbWVudERhdGUiOiIxMC0wMS0yMDIyIn0=
@@ -123,22 +146,203 @@ let Corporate = class Corporate {
         }
         return true;
     }
+    async addEmployee(data, corporateId) {
+        var _a;
+        try {
+            let corporate = await this.BrokerRepository.findById(corporateId);
+            if (corporate) {
+                let employeeUserObj = new models_1.Users();
+                employeeUserObj.username = data.emailId;
+                employeeUserObj.role = CONST.USER_ROLE.CUSTOMER;
+                let randomPswrd = await (0, common_functions_1.generateRandomPassword)();
+                employeeUserObj.password = await (0, common_functions_1.encryptPassword)(randomPswrd);
+                employeeUserObj.block = true;
+                employeeUserObj.activation = await (0, common_functions_1.getActivationCode)();
+                employeeUserObj.registrationDate = (0, moment_1.default)().format('YYYY-MM-DD');
+                employeeUserObj.companyId = corporateId;
+                let employeeUser = await this.usersRepository.create(employeeUserObj);
+                let customerObj = new models_1.Customer();
+                customerObj.brokerId = corporateId;
+                //firstname and last should be created in backend level
+                customerObj.firstName = data.firstName;
+                customerObj.lastName = data.lastName;
+                customerObj.gender = data.sex;
+                customerObj.companyName = corporate.name;
+                customerObj.isCorporateAccount = false;
+                customerObj.registrationDate = (0, moment_1.default)().format('YYYY-MM-DD');
+                customerObj.userId = employeeUser.id;
+                let customer = await this.CustomerRepository.create(customerObj);
+                let customerContactInfoObj = new models_1.ContactInformation();
+                customerContactInfoObj.city = data.residentIn;
+                customerContactInfoObj.state = CONST.DEFAULT_COUNTRY.name;
+                customerContactInfoObj.contactType = CONST.USER_ROLE.CUSTOMER;
+                customerContactInfoObj.addressType = CONST.ADDRESS_TYPE.HOME_ADDRESS;
+                customerContactInfoObj.primaryEmail = data.emailId;
+                customerContactInfoObj.primaryPhone = data.phoneNum.toString();
+                customerContactInfoObj.state = data.provienceName;
+                let contcatInfo = await this.ContactInformationRepository.create(customerContactInfoObj);
+                let customerContact = new models_1.CustomerContactInfo();
+                customerContactInfoObj.customerId = customer.id;
+                customerContactInfoObj.contactId = customerContact.id;
+                let customerContactInfo = await this.CustomerContactInfoRepository.create(customerContactInfoObj);
+                // customerId = customer.id;
+                var fusebillCustomer = {};
+                if (fuseBillCustomerCreation) {
+                    const fusebillData = {};
+                    fusebillData.firstName = customer.firstName;
+                    fusebillData.lastName = customer.lastName;
+                    // fusebillData.parent = broker.fusebillCustomerId;
+                    fusebillData.companyName = corporate.name;
+                    fusebillData.primaryEmail = data.email;
+                    fusebillData.primaryPhone = data.phoneNum; //phone num is not mandatory
+                    fusebillData.reference = customer.id;
+                    //fusebillData.companyName=apiRequest.company_name;     
+                    fusebillData.currency = data.currency || 'CAD'; // || ' 
+                    try {
+                        fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
+                        console.log("**************************************************");
+                        // console.log(fusebillCustomer)
+                        console.log("**************************************************");
+                        let fuseBillAddressData = {
+                            "customerAddressPreferenceId": fusebillCustomer.id,
+                            "countryId": data.country_id,
+                            "stateId": data.state_id,
+                            //"addressType": apiRequest.address_type ?? 'Shipping',//here shipping is same as home //Billing, shipping    
+                            "addressType": (_a = data.address_type) !== null && _a !== void 0 ? _a : 'Billing',
+                            "enforceFullAddress": true,
+                            "line1": data.street_address_line1,
+                            "line2": data.street_address_line2,
+                            "city": data.city,
+                            "postalZip": data.postal_code,
+                            "country": data.country,
+                            "state": data.state
+                        };
+                        const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
+                    }
+                    catch (error) {
+                        console.log(error.response.data.Errors);
+                    }
+                }
+                else {
+                    fiseBill = fiseBill + 1;
+                    fusebillCustomer = {
+                        firstName: 'Admin',
+                        middleName: null,
+                        lastName: 'Ideabytes',
+                        companyName: 'Ideabytes',
+                        suffix: null,
+                        primaryEmail: null,
+                        primaryPhone: null,
+                        secondaryEmail: null,
+                        secondaryPhone: null,
+                        title: '',
+                        reference: '1844',
+                        status: 'Draft',
+                        customerAccountStatus: 'Good',
+                        currency: 'CAD',
+                        canChangeCurrency: true,
+                        customerReference: {
+                            reference1: null,
+                            reference2: null,
+                            reference3: null,
+                            salesTrackingCodes: [],
+                            id: 11673101,
+                            uri: 'https://secure.fusebill.com/v1/customers/11673101'
+                        },
+                        customerAcquisition: {
+                            adContent: null,
+                            campaign: null,
+                            keyword: null,
+                            landingPage: null,
+                            medium: null,
+                            source: null,
+                            id: 11673101,
+                            uri: 'https://secure.fusebill.com/v1/customers/11673101'
+                        },
+                        monthlyRecurringRevenue: 0,
+                        netMonthlyRecurringRevenue: 0,
+                        salesforceId: null,
+                        salesforceAccountType: null,
+                        salesforceSynchStatus: 'Enabled',
+                        netsuiteId: null,
+                        netsuiteSynchStatus: 'Enabled',
+                        netsuiteCustomerType: '',
+                        portalUserName: null,
+                        parentId: null,
+                        isParent: false,
+                        quickBooksLatchType: null,
+                        quickBooksId: null,
+                        quickBooksSyncToken: null,
+                        hubSpotId: null,
+                        hubSpotCompanyId: null,
+                        geotabId: null,
+                        digitalRiverId: null,
+                        modifiedTimestamp: '2023-02-01T11:36:16.0432031Z',
+                        createdTimestamp: '2023-02-01T11:36:15.9442038Z',
+                        requiresProjectedInvoiceGeneration: false,
+                        requiresFinancialCalendarGeneration: false,
+                        id: 11673101 + fiseBill,
+                        uri: 'https://secure.fusebill.com/v1/customers/11673101'
+                    };
+                }
+                await this.CustomerRepository.updateById(customerContactInfo.id, { fusebillCustomerId: fusebillCustomer.id });
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        catch (error) {
+            console.log(error);
+            return false;
+        }
+        return true;
+    }
 };
 Corporate = tslib_1.__decorate([
     (0, core_1.injectable)({ scope: core_1.BindingScope.TRANSIENT }),
-    tslib_1.__param(0, (0, core_1.inject)(keys_1.FILE_UPLOAD_SERVICE)),
-    tslib_1.__param(1, (0, core_1.service)(registration_service_service_1.RegistrationServiceService)),
-    tslib_1.__param(2, (0, core_1.service)(ach_service_1.AchService)),
-    tslib_1.__param(3, (0, repository_1.repository)(repositories_1.BankCodesRepository)),
-    tslib_1.__param(4, (0, repository_1.repository)(repositories_1.FinancialInstitutionsRepository)),
-    tslib_1.__param(5, (0, repository_1.repository)(repositories_1.FinancialInstitutionsRoutingNumbersRepository)),
-    tslib_1.__param(6, (0, repository_1.repository)(repositories_1.StatesAndProvincesRepository)),
-    tslib_1.__metadata("design:paramtypes", [Function, registration_service_service_1.RegistrationServiceService,
+    tslib_1.__param(0, (0, core_1.service)(fusebill_service_1.FusebillService)),
+    tslib_1.__param(1, (0, core_1.inject)(keys_1.FILE_UPLOAD_SERVICE)),
+    tslib_1.__param(2, (0, core_1.service)(registration_service_service_1.RegistrationServiceService)),
+    tslib_1.__param(3, (0, core_1.service)(ach_service_1.AchService)),
+    tslib_1.__param(4, (0, repository_1.repository)(repositories_1.BankCodesRepository)),
+    tslib_1.__param(5, (0, repository_1.repository)(repositories_1.FinancialInstitutionsRepository)),
+    tslib_1.__param(6, (0, repository_1.repository)(repositories_1.FinancialInstitutionsRoutingNumbersRepository)),
+    tslib_1.__param(7, (0, repository_1.repository)(repositories_1.StatesAndProvincesRepository)),
+    tslib_1.__param(8, (0, repository_1.repository)(repositories_1.BrokerRepository)),
+    tslib_1.__param(9, (0, repository_1.repository)(repositories_1.UsersRepository)),
+    tslib_1.__param(10, (0, repository_1.repository)(broker_admins_repository_1.BrokerAdminsRepository)),
+    tslib_1.__param(11, (0, repository_1.repository)(repositories_1.ContactInformationRepository)),
+    tslib_1.__param(12, (0, repository_1.repository)(repositories_1.CustomerRepository)),
+    tslib_1.__param(13, (0, repository_1.repository)(repositories_1.InsurancePlansRepository)),
+    tslib_1.__param(14, (0, repository_1.repository)(repositories_1.PlansAvailabilityRepository)),
+    tslib_1.__param(15, (0, repository_1.repository)(repositories_1.InsurancePackagesRepository)),
+    tslib_1.__param(16, (0, repository_1.repository)(repositories_1.SignupFormsRepository)),
+    tslib_1.__param(17, (0, repository_1.repository)(repositories_1.PlanLevelRepository)),
+    tslib_1.__param(18, (0, repository_1.repository)(repositories_1.CorporateTiersRepository)),
+    tslib_1.__param(19, (0, repository_1.repository)(corporate_tiered_plan_levels_repository_1.CorporateTieredPlanLevelsRepository)),
+    tslib_1.__param(20, (0, repository_1.repository)(repositories_1.CorporatePaidTieredPlanLevelsRepository)),
+    tslib_1.__param(21, (0, repository_1.repository)(repositories_1.CustomerContactInfoRepository)),
+    tslib_1.__metadata("design:paramtypes", [fusebill_service_1.FusebillService, Function, registration_service_service_1.RegistrationServiceService,
         ach_service_1.AchService,
         repositories_1.BankCodesRepository,
         repositories_1.FinancialInstitutionsRepository,
         repositories_1.FinancialInstitutionsRoutingNumbersRepository,
-        repositories_1.StatesAndProvincesRepository])
+        repositories_1.StatesAndProvincesRepository,
+        repositories_1.BrokerRepository,
+        repositories_1.UsersRepository,
+        broker_admins_repository_1.BrokerAdminsRepository,
+        repositories_1.ContactInformationRepository,
+        repositories_1.CustomerRepository,
+        repositories_1.InsurancePlansRepository,
+        repositories_1.PlansAvailabilityRepository,
+        repositories_1.InsurancePackagesRepository,
+        repositories_1.SignupFormsRepository,
+        repositories_1.PlanLevelRepository,
+        repositories_1.CorporateTiersRepository,
+        corporate_tiered_plan_levels_repository_1.CorporateTieredPlanLevelsRepository,
+        repositories_1.CorporatePaidTieredPlanLevelsRepository,
+        repositories_1.CustomerContactInfoRepository])
 ], Corporate);
 exports.Corporate = Corporate;
 const btoa = function (str) { return Buffer.from(str).toString('base64'); };

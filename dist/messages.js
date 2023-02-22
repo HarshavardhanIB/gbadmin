@@ -39,7 +39,8 @@ exports.CORPORATE_MSG = {
     LOGO: 'logo',
     NOLOGO: 'No logo found',
     PLANS: 'Plans selections are successfully',
-    NO_CORPORATE: 'No details found for this corporate'
+    NO_CORPORATE: 'No details found for this corporate',
+    EMP_REGISTRATION_SUCCESS: 'Employee registration successfully'
 };
 exports.BROKER_MSG = {
     BROKERCOUNT: "The brokers count",

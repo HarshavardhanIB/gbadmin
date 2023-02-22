@@ -100,7 +100,7 @@ let CorporateController = class CorporateController {
             });
         });
         p.then(async (value) => {
-            var _a, _b;
+            var _a, _b, _c, _d;
             if (!value.fields) {
                 this.response.status(422).send({
                     status: '422',
@@ -109,24 +109,24 @@ let CorporateController = class CorporateController {
                     date: new Date(),
                 });
             }
-            if (!this.registrationService.validateName(value.fields.firstName)) {
-                this.response.status(422).send({
-                    status: '422',
-                    error: `Invalid Firstname`,
-                    message: MESSAGE.ERRORS.firstName,
-                    date: new Date(),
-                });
-                return this.response;
-            }
-            if (!this.registrationService.validateName(value.fields.lastName)) {
-                this.response.status(422).send({
-                    status: '422',
-                    error: `Invalid Lastname`,
-                    message: MESSAGE.ERRORS.lastName,
-                    date: new Date(),
-                });
-                return this.response;
-            } //email     
+            // if (!this.registrationService.validateName(value.fields.firstName)) {
+            //   this.response.status(422).send({
+            //     status: '422',
+            //     error: `Invalid Firstname`,
+            //     message: MESSAGE.ERRORS.firstName,
+            //     date: new Date(),
+            //   });
+            //   return this.response;
+            // }
+            // if (!this.registrationService.validateName(value.fields.lastName)) {
+            //   this.response.status(422).send({
+            //     status: '422',
+            //     error: `Invalid Lastname`,
+            //     message: MESSAGE.ERRORS.lastName,
+            //     date: new Date(),
+            //   });
+            //   return this.response;
+            // }      //email     
             if (!this.registrationService.validateEmail(value.fields.email)) {
                 this.response.status(422).send({
                     status: '422',
@@ -229,8 +229,8 @@ let CorporateController = class CorporateController {
                     let customerObj = new models_1.Customer();
                     customerObj.brokerId = broker.id;
                     //firstname and last should be created in backend level
-                    customerObj.firstName = apiRequest.firstName;
-                    customerObj.lastName = apiRequest.lastName;
+                    customerObj.firstName = (_a = apiRequest.firstName) !== null && _a !== void 0 ? _a : '';
+                    customerObj.lastName = (_b = apiRequest.lastName) !== null && _b !== void 0 ? _b : '';
                     customerObj.gender = CONST.GENDER.UNDISCLOSED;
                     customerObj.companyName = apiRequest.corporationName;
                     customerObj.isCorporateAccount = true;
@@ -259,7 +259,7 @@ let CorporateController = class CorporateController {
                                 "countryId": apiRequest.country_id,
                                 "stateId": apiRequest.state_id,
                                 //"addressType": apiRequest.address_type ?? 'Shipping',//here shipping is same as home //Billing, shipping    
-                                "addressType": (_a = apiRequest.address_type) !== null && _a !== void 0 ? _a : 'Billing',
+                                "addressType": (_c = apiRequest.address_type) !== null && _c !== void 0 ? _c : 'Billing',
                                 "enforceFullAddress": true,
                                 "line1": apiRequest.street_address_line1,
                                 "line2": apiRequest.street_address_line2,
@@ -351,7 +351,7 @@ let CorporateController = class CorporateController {
                     signupFormData.brokerId = brokerId;
                     let link = await (0, common_functions_1.generateFormLink)(broker.userId || 0);
                     signupFormData.link = await this.checkAndGenerateNewFormLink(link, CorporateUser.id || 0);
-                    let aliasLink = "/" + ((_b = broker.name) === null || _b === void 0 ? void 0 : _b.toLowerCase().split(" ")[0]);
+                    let aliasLink = "/" + ((_d = broker.name) === null || _d === void 0 ? void 0 : _d.toLowerCase().split(" ")[0]);
                     signupFormData.alias = aliasLink;
                     signupFormData.name = CONST.signupForm.name;
                     signupFormData.description = CONST.signupForm.description;
@@ -482,8 +482,8 @@ let CorporateController = class CorporateController {
             data['states'] = await this.StatesAndProvincesRepository.find(countryFilter);
             data['defaultCountry'] = CONST.DEFAULT_COUNTRY;
             data['paymentMethod'] = CONST.PAYMENT_METHOD_LIST_ARRAY;
-            console.log("ppppppppppppppppppp");
-            data['corporateSettings'] = await this.corporateService.modelPropoerties(models_1.Broker);
+            let brokerProp = await this.corporateService.modelPropoerties(models_1.Broker);
+            data['corporateSettings'] = CONST.CORPORATE_SETTINGS;
             data['sex'] = CONST.GENDER_LIST;
             data['maritalStatus'] = CONST.MARITAL_STATUS_LIST;
             let tierConfig = {
@@ -1351,144 +1351,163 @@ let CorporateController = class CorporateController {
     }
     async employeeSignup(corporateId, apiRequest) {
         var _a;
-        // user creation, customer.role=
-        let corporate = await this.BrokerRepository.findById(corporateId);
-        if (corporate) {
-            let employeeUserObj = new models_1.Users();
-            employeeUserObj.username = apiRequest.emailId;
-            employeeUserObj.role = CONST.USER_ROLE.CUSTOMER;
-            let randomPswrd = await (0, common_functions_1.generateRandomPassword)();
-            employeeUserObj.password = await (0, common_functions_1.encryptPassword)(randomPswrd);
-            employeeUserObj.block = true;
-            employeeUserObj.activation = await (0, common_functions_1.getActivationCode)();
-            employeeUserObj.registrationDate = (0, moment_1.default)().format('YYYY-MM-DD');
-            employeeUserObj.companyId = corporateId;
-            let employeeUser = await this.usersRepository.create(employeeUserObj);
-            let customerObj = new models_1.Customer();
-            customerObj.brokerId = corporateId;
-            //firstname and last should be created in backend level
-            customerObj.firstName = apiRequest.firstName;
-            customerObj.lastName = apiRequest.lastName;
-            customerObj.gender = apiRequest.sex;
-            customerObj.companyName = corporate.name;
-            customerObj.isCorporateAccount = false;
-            customerObj.registrationDate = (0, moment_1.default)().format('YYYY-MM-DD');
-            customerObj.userId = employeeUser.id;
-            let customer = await this.CustomerRepository.create(customerObj);
-            let customerContactInfoObj = new models_1.ContactInformation();
-            customerContactInfoObj.city = apiRequest.residentIn;
-            customerContactInfoObj.state = CONST.DEFAULT_COUNTRY.name;
-            customerContactInfoObj.contactType = CONST.USER_ROLE.CUSTOMER;
-            customerContactInfoObj.addressType = CONST.ADDRESS_TYPE.HOME_ADDRESS;
-            customerContactInfoObj.primaryEmail = apiRequest.emailId;
-            customerContactInfoObj.primaryPhone = apiRequest.phoneNum.toString();
-            customerContactInfoObj.state = apiRequest.provienceName;
-            let contcatInfo = await this.ContactInformationRepository.create(customerContactInfoObj);
-            let customerContact = new models_1.CustomerContactInfo();
-            customerContactInfoObj.customerId = customer.id;
-            customerContactInfoObj.contactId = customerContact.id;
-            let customerContactInfo = await this.CustomerContactInfoRepository.create(customerContactInfoObj);
-            // customerId = customer.id;
-            var fusebillCustomer = {};
-            if (fuseBillCustomerCreation) {
-                const fusebillData = {};
-                fusebillData.firstName = customer.firstName;
-                fusebillData.lastName = customer.lastName;
-                // fusebillData.parent = broker.fusebillCustomerId;
-                fusebillData.companyName = apiRequest.corporationName;
-                fusebillData.primaryEmail = apiRequest.email;
-                fusebillData.primaryPhone = apiRequest.phoneNum; //phone num is not mandatory
-                fusebillData.reference = customer.id;
-                //fusebillData.companyName=apiRequest.company_name;     
-                fusebillData.currency = apiRequest.currency || 'CAD'; // || ' 
-                try {
-                    fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
-                    console.log("**************************************************");
-                    // console.log(fusebillCustomer)
-                    console.log("**************************************************");
-                    let fuseBillAddressData = {
-                        "customerAddressPreferenceId": fusebillCustomer.id,
-                        "countryId": apiRequest.country_id,
-                        "stateId": apiRequest.state_id,
-                        //"addressType": apiRequest.address_type ?? 'Shipping',//here shipping is same as home //Billing, shipping    
-                        "addressType": (_a = apiRequest.address_type) !== null && _a !== void 0 ? _a : 'Billing',
-                        "enforceFullAddress": true,
-                        "line1": apiRequest.street_address_line1,
-                        "line2": apiRequest.street_address_line2,
-                        "city": apiRequest.city,
-                        "postalZip": apiRequest.postal_code,
-                        "country": apiRequest.country,
-                        "state": apiRequest.state
+        let status, message, data = {};
+        try {
+            // user creation, customer.role=
+            let corporate = await this.BrokerRepository.findById(corporateId);
+            if (corporate) {
+                let employeeUserObj = new models_1.Users();
+                employeeUserObj.username = apiRequest.emailId;
+                employeeUserObj.role = CONST.USER_ROLE.CUSTOMER;
+                let randomPswrd = await (0, common_functions_1.generateRandomPassword)();
+                employeeUserObj.password = await (0, common_functions_1.encryptPassword)(randomPswrd);
+                employeeUserObj.block = true;
+                employeeUserObj.activation = await (0, common_functions_1.getActivationCode)();
+                employeeUserObj.registrationDate = (0, moment_1.default)().format('YYYY-MM-DD');
+                employeeUserObj.companyId = corporateId;
+                let employeeUser = await this.usersRepository.create(employeeUserObj);
+                let customerObj = new models_1.Customer();
+                customerObj.brokerId = corporateId;
+                //firstname and last should be created in backend level
+                customerObj.firstName = apiRequest.firstName;
+                customerObj.lastName = apiRequest.lastName;
+                customerObj.gender = apiRequest.sex;
+                customerObj.companyName = corporate.name;
+                customerObj.isCorporateAccount = false;
+                customerObj.registrationDate = (0, moment_1.default)().format('YYYY-MM-DD');
+                customerObj.userId = employeeUser.id;
+                let customer = await this.CustomerRepository.create(customerObj);
+                let customerContactInfoObj = new models_1.ContactInformation();
+                customerContactInfoObj.city = apiRequest.residentIn;
+                customerContactInfoObj.state = CONST.DEFAULT_COUNTRY.name;
+                customerContactInfoObj.contactType = CONST.USER_ROLE.CUSTOMER;
+                customerContactInfoObj.addressType = CONST.ADDRESS_TYPE.HOME_ADDRESS;
+                customerContactInfoObj.primaryEmail = apiRequest.emailId;
+                customerContactInfoObj.primaryPhone = apiRequest.phoneNum.toString();
+                customerContactInfoObj.state = apiRequest.provienceName;
+                let contcatInfo = await this.ContactInformationRepository.create(customerContactInfoObj);
+                let customerContact = new models_1.CustomerContactInfo();
+                customerContactInfoObj.customerId = customer.id;
+                customerContactInfoObj.contactId = customerContact.id;
+                let customerContactInfo = await this.CustomerContactInfoRepository.create(customerContactInfoObj);
+                // customerId = customer.id;
+                var fusebillCustomer = {};
+                if (fuseBillCustomerCreation) {
+                    const fusebillData = {};
+                    fusebillData.firstName = customer.firstName;
+                    fusebillData.lastName = customer.lastName;
+                    // fusebillData.parent = broker.fusebillCustomerId;
+                    fusebillData.companyName = corporate.name;
+                    fusebillData.primaryEmail = apiRequest.email;
+                    fusebillData.primaryPhone = apiRequest.phoneNum; //phone num is not mandatory
+                    fusebillData.reference = customer.id;
+                    //fusebillData.companyName=apiRequest.company_name;     
+                    fusebillData.currency = apiRequest.currency || 'CAD'; // || ' 
+                    try {
+                        fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
+                        console.log("**************************************************");
+                        // console.log(fusebillCustomer)
+                        console.log("**************************************************");
+                        let fuseBillAddressData = {
+                            "customerAddressPreferenceId": fusebillCustomer.id,
+                            "countryId": apiRequest.country_id,
+                            "stateId": apiRequest.state_id,
+                            //"addressType": apiRequest.address_type ?? 'Shipping',//here shipping is same as home //Billing, shipping    
+                            "addressType": (_a = apiRequest.address_type) !== null && _a !== void 0 ? _a : 'Billing',
+                            "enforceFullAddress": true,
+                            "line1": apiRequest.street_address_line1,
+                            "line2": apiRequest.street_address_line2,
+                            "city": apiRequest.city,
+                            "postalZip": apiRequest.postal_code,
+                            "country": apiRequest.country,
+                            "state": apiRequest.state
+                        };
+                        const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
+                    }
+                    catch (error) {
+                        console.log(error.response.data.Errors);
+                    }
+                }
+                else {
+                    fiseBill = fiseBill + 1;
+                    fusebillCustomer = {
+                        firstName: 'Admin',
+                        middleName: null,
+                        lastName: 'Ideabytes',
+                        companyName: 'Ideabytes',
+                        suffix: null,
+                        primaryEmail: null,
+                        primaryPhone: null,
+                        secondaryEmail: null,
+                        secondaryPhone: null,
+                        title: '',
+                        reference: '1844',
+                        status: 'Draft',
+                        customerAccountStatus: 'Good',
+                        currency: 'CAD',
+                        canChangeCurrency: true,
+                        customerReference: {
+                            reference1: null,
+                            reference2: null,
+                            reference3: null,
+                            salesTrackingCodes: [],
+                            id: 11673101,
+                            uri: 'https://secure.fusebill.com/v1/customers/11673101'
+                        },
+                        customerAcquisition: {
+                            adContent: null,
+                            campaign: null,
+                            keyword: null,
+                            landingPage: null,
+                            medium: null,
+                            source: null,
+                            id: 11673101,
+                            uri: 'https://secure.fusebill.com/v1/customers/11673101'
+                        },
+                        monthlyRecurringRevenue: 0,
+                        netMonthlyRecurringRevenue: 0,
+                        salesforceId: null,
+                        salesforceAccountType: null,
+                        salesforceSynchStatus: 'Enabled',
+                        netsuiteId: null,
+                        netsuiteSynchStatus: 'Enabled',
+                        netsuiteCustomerType: '',
+                        portalUserName: null,
+                        parentId: null,
+                        isParent: false,
+                        quickBooksLatchType: null,
+                        quickBooksId: null,
+                        quickBooksSyncToken: null,
+                        hubSpotId: null,
+                        hubSpotCompanyId: null,
+                        geotabId: null,
+                        digitalRiverId: null,
+                        modifiedTimestamp: '2023-02-01T11:36:16.0432031Z',
+                        createdTimestamp: '2023-02-01T11:36:15.9442038Z',
+                        requiresProjectedInvoiceGeneration: false,
+                        requiresFinancialCalendarGeneration: false,
+                        id: 11673101 + fiseBill,
+                        uri: 'https://secure.fusebill.com/v1/customers/11673101'
                     };
-                    const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
                 }
-                catch (error) {
-                    console.log(error.response.data.Errors);
-                }
+                await this.CustomerRepository.updateById(customerContactInfo.id, { fusebillCustomerId: fusebillCustomer.id });
+                status = 200;
+                message = MESSAGE.CORPORATE_MSG.EMP_REGISTRATION_SUCCESS;
             }
             else {
-                fiseBill = fiseBill + 1;
-                fusebillCustomer = {
-                    firstName: 'Admin',
-                    middleName: null,
-                    lastName: 'Ideabytes',
-                    companyName: 'Ideabytes',
-                    suffix: null,
-                    primaryEmail: null,
-                    primaryPhone: null,
-                    secondaryEmail: null,
-                    secondaryPhone: null,
-                    title: '',
-                    reference: '1844',
-                    status: 'Draft',
-                    customerAccountStatus: 'Good',
-                    currency: 'CAD',
-                    canChangeCurrency: true,
-                    customerReference: {
-                        reference1: null,
-                        reference2: null,
-                        reference3: null,
-                        salesTrackingCodes: [],
-                        id: 11673101,
-                        uri: 'https://secure.fusebill.com/v1/customers/11673101'
-                    },
-                    customerAcquisition: {
-                        adContent: null,
-                        campaign: null,
-                        keyword: null,
-                        landingPage: null,
-                        medium: null,
-                        source: null,
-                        id: 11673101,
-                        uri: 'https://secure.fusebill.com/v1/customers/11673101'
-                    },
-                    monthlyRecurringRevenue: 0,
-                    netMonthlyRecurringRevenue: 0,
-                    salesforceId: null,
-                    salesforceAccountType: null,
-                    salesforceSynchStatus: 'Enabled',
-                    netsuiteId: null,
-                    netsuiteSynchStatus: 'Enabled',
-                    netsuiteCustomerType: '',
-                    portalUserName: null,
-                    parentId: null,
-                    isParent: false,
-                    quickBooksLatchType: null,
-                    quickBooksId: null,
-                    quickBooksSyncToken: null,
-                    hubSpotId: null,
-                    hubSpotCompanyId: null,
-                    geotabId: null,
-                    digitalRiverId: null,
-                    modifiedTimestamp: '2023-02-01T11:36:16.0432031Z',
-                    createdTimestamp: '2023-02-01T11:36:15.9442038Z',
-                    requiresProjectedInvoiceGeneration: false,
-                    requiresFinancialCalendarGeneration: false,
-                    id: 11673101 + fiseBill,
-                    uri: 'https://secure.fusebill.com/v1/customers/11673101'
-                };
+                status = 201;
+                message = MESSAGE.CORPORATE_MSG.NO_CORPORATE;
             }
         }
+        catch (error) {
+            console.log(error);
+            status = 204;
+            message = error.message;
+        }
+        this.response.status(status).send({
+            status, message, data, dete: new Date()
+        });
+        return this.response;
     }
     async planSelctions(corporateId, apiRequest) {
         let status, message, data = {};
@@ -1613,6 +1632,7 @@ let CorporateController = class CorporateController {
         });
         p.then(async (value) => {
             let excelDatainJson = await this.excel2Service.excelToJson(value.files[0].filepath);
+            // let addingEmployee=await this.corporateService.
             //  console.log(excelDatainJson);
         });
     }

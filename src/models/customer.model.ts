@@ -349,8 +349,6 @@ export class Customer extends Entity {
     mysql: {columnName: 'assigner_tier', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y'},
   })
   assignerTier?: number;
-
-
   @property({
     type: 'number',
     precision: 10,
@@ -358,6 +356,13 @@ export class Customer extends Entity {
     mysql: {columnName: 'actual_tier', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'Y'},
   })
   actualTier?: number;
+  @property({
+    type: 'string',
+    length: 10,
+    generated: 0,
+    mysql: { columnName: 'employee_id', dataType: 'varchar', dataLength: 10, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
+  })
+  employeeId?: string;
 
   @belongsTo(() => Users, { name: 'user' })
   user_id: number;

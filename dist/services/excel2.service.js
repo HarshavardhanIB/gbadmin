@@ -14,6 +14,7 @@ let Excel2Service = class Excel2Service {
         let worksheet = workbook.Sheets[workbook.SheetNames[0]];
         let jsonData = xlsx.utils.sheet_to_json(worksheet, { defval: '' });
         console.log(jsonData);
+        return jsonData;
     }
 };
 Excel2Service = tslib_1.__decorate([

@@ -28,13 +28,46 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
+        //required: true,
+        precision: 3,
+        scale: 0,
+        generated: 0,
+        mysql: { columnName: 'paid_by_company', dataType: 'tinyint', dataLength: null, dataPrecision: 3, dataScale: 0, nullable: 'N', generated: 0 },
+    }),
+    tslib_1.__metadata("design:type", Number)
+], CorporateTieredPlanLevels.prototype, "paidByCompany", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'number',
+        //required: true,
+        precision: 3,
+        scale: 0,
+        generated: 0,
+        mysql: { columnName: 'covered_by_company', dataType: 'tinyint', dataLength: null, dataPrecision: 3, dataScale: 0, nullable: 'N', generated: 0 },
+    }),
+    tslib_1.__metadata("design:type", Number)
+], CorporateTieredPlanLevels.prototype, "coveredByCompany", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'number',
+        //required: true,
+        precision: 3,
+        scale: 0,
+        generated: 0,
+        mysql: { columnName: 'paid_by_employee', dataType: 'tinyint', dataLength: null, dataPrecision: 3, dataScale: 0, nullable: 'N', generated: 0 },
+    }),
+    tslib_1.__metadata("design:type", Number)
+], CorporateTieredPlanLevels.prototype, "paidByEmployee", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'number',
         required: true,
         precision: 10,
         scale: 0,
-        mysql: { columnName: 'plan_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N' },
+        mysql: { columnName: 'plan_level_id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N' },
     }),
     tslib_1.__metadata("design:type", Number)
-], CorporateTieredPlanLevels.prototype, "planId", void 0);
+], CorporateTieredPlanLevels.prototype, "planLevelId", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
