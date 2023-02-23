@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AUTH = exports.BROKER = exports.CORPORATE = exports.FUSEBILL_API_BASE_PATH = exports.USER_API_BASE_PATH = exports.CUSTOMER_API_BASE_PATH = exports.COMMON_API_BASE_PATH = exports.ADMIN_APP_DETAILS = exports.ADMIN_API_BASE_PATH = exports.APP_BASE_PATH = exports.API_BASE_PATH = exports.BASE_PATH = exports.CHEQUEPATH_STRING = exports.CUSTOMER_CHEQUES_PATH = exports.CUSTOMER_CHEQUES_FOLDER = exports.SERVER_ROE_FOLDER = exports.REPORTS_PATH = exports.REPORTS_FOLDER = exports.SERVER_FOLDER = exports.BROKERPATH_STRING = exports.BROKERIMG_RESOURCES_FOLDER = exports.IMAGE_RESOURCES_FOLDER = exports.RESOURCES_FOLDER = exports.TEMP_UPLOADS_FOLDER = exports.TEMP_EXTDATA_FOLDER = exports.GB_LOGO = exports.DISCLOSURE = exports.TERMS_COND = exports.LANG_TOKENS = exports.SERVER_EXTDATA_PATH = exports.SERVER_ROE_FILES_PATH = exports.SERVER_FILES_PATH = exports.IMG_RESOURCES_PATH = exports.RESOURCES_PATH = exports.BASE_URL = void 0;
+exports.AUTH = exports.BROKER = exports.CORPORATE = exports.FUSEBILL_API_BASE_PATH = exports.USER_API_BASE_PATH = exports.CUSTOMER_API_BASE_PATH = exports.COMMON_API_BASE_PATH = exports.ADMIN_APP_DETAILS = exports.ADMIN_API_BASE_PATH = exports.APP_BASE_PATH = exports.API_BASE_PATH = exports.BASE_PATH = exports.CHEQUEPATH_STRING = exports.CUSTOMER_CHEQUES_PATH = exports.CUSTOMER_CHEQUES_FOLDER = exports.SERVER_ROE_FOLDER = exports.REPORTS_PATH = exports.REPORTS_FOLDER = exports.SERVER_FOLDER = exports.DISCLOSUREPATH_STRING = exports.BROKERPATH_STRING = exports.BROKER_DISCLOSURES_FOLDER = exports.DISCLOSURES_FOLDER = exports.BROKERIMG_RESOURCES_FOLDER = exports.IMAGE_RESOURCES_FOLDER = exports.RESOURCES_FOLDER = exports.TEMP_UPLOADS_FOLDER = exports.TEMP_EXTDATA_FOLDER = exports.GB_LOGO = exports.DISCLOSURE = exports.TERMS_COND = exports.LANG_TOKENS = exports.SERVER_EXTDATA_PATH = exports.SERVER_ROE_FILES_PATH = exports.SERVER_FILES_PATH = exports.IMG_RESOURCES_PATH = exports.RESOURCES_PATH = exports.BASE_URL = void 0;
 exports.BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 exports.RESOURCES_PATH = exports.BASE_URL + '/app/resources/';
 exports.IMG_RESOURCES_PATH = exports.BASE_URL + '/app/resources/images/';
@@ -18,7 +18,10 @@ exports.TEMP_UPLOADS_FOLDER = "./uploads";
 exports.RESOURCES_FOLDER = "./public/resources";
 exports.IMAGE_RESOURCES_FOLDER = exports.RESOURCES_FOLDER + "/images";
 exports.BROKERIMG_RESOURCES_FOLDER = exports.IMAGE_RESOURCES_FOLDER + "/broker";
+exports.DISCLOSURES_FOLDER = exports.RESOURCES_FOLDER + '/disclosures';
+exports.BROKER_DISCLOSURES_FOLDER = exports.DISCLOSURES_FOLDER + "/broker";
 exports.BROKERPATH_STRING = 'app/resources/images/broker/';
+exports.DISCLOSUREPATH_STRING = 'app/resources/disclosures/broker/';
 exports.SERVER_FOLDER = './public/server';
 exports.REPORTS_FOLDER = exports.SERVER_FOLDER + '/reports';
 exports.REPORTS_PATH = exports.SERVER_FILES_PATH + 'reports/';
@@ -87,6 +90,9 @@ exports.BROKER = {
     SEARCH: '/broker/search',
     REGISTRATION: '/broker/registration',
     APP: '/app',
+    FORM_LOGO: '/broker/form/{formId}/logo',
+    FORM_DISCLOUSER: '/broker/form/{formId}/disclouser',
+    BROKER_DISCLOUSER: '/broker/{brokerId}/disclouser'
 };
 //AUTH 
 exports.AUTH = {

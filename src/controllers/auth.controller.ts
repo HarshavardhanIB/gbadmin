@@ -43,8 +43,10 @@ import { JWTService } from '../services/jwt.service'
 import { Users } from '../models';
 import { email } from '../configurations';
 import { AuthService } from '../services';
-import {AUTH} from '../paths'
+import { AUTH } from '../paths'
 import { config } from 'dotenv';
+import * as MSGS from '../messages'
+import { stat } from 'fs';
 @model()
 export class NewUserRequest extends Admin {
   @property({
@@ -287,31 +289,35 @@ export class AuthController {
       }
     }
     else {
-      let customers: any = await this.adminRepository.findOne({ where: { email: useremail } });
-      if (customers) {
-        let dbpass: any = customers?.password;
-        let matchpass = await compare(userEnterPaswrd, dbpass);
-        if (matchpass) {
-          // const token = await this.jwtService.generateToken(customers);
-          let token = jwt.sign({ adminid: customers.id, role: customers.username }, constants.secret, { expiresIn: constants.expiresIn, algorithm: constants.algorithm });
-          response = {
-            "statusCode": 200,
-            "message": messages.LoginSuccess,
-            "token": token
-          }
-        }
-        else {
-          response = {
-            "statusCode": 202,
-            "message": messages.InvaliCredentials
-          }
-        }
-      }
-      else {
-        response = {
-          "statusCode": 202,
-          "message": messages.InvaliCredentials
-        }
+      // let customers: any = await this.adminRepository.findOne({ where: { email: useremail } });
+      // if (customers) {
+      //   let dbpass: any = customers?.password;
+      //   let matchpass = await compare(userEnterPaswrd, dbpass);
+      //   if (matchpass) {
+      //     // const token = await this.jwtService.generateToken(customers);
+      //     let token = jwt.sign({ adminid: customers.id, role: customers.username }, constants.secret, { expiresIn: constants.expiresIn, algorithm: constants.algorithm });
+      //     response = {
+      //       "statusCode": 200,
+      //       "message": messages.LoginSuccess,
+      //       "token": token
+      //     }
+      //   }
+      //   else {
+      //     response = {
+      //       "statusCode": 202,
+      //       "message": messages.InvaliCredentials
+      //     }
+      //   }
+      // }
+      // else {
+      //   response = {
+      //     "statusCode": 202,
+      //     "message": messages.InvaliCredentials
+      //   }
+      // }
+      response = {
+        "statusCode": 400,
+        "message": MSGS.AUTH.NO_USER
       }
     }
     return response;
@@ -352,7 +358,7 @@ export class AuthController {
       let id = activeStatus.id;
       let HTMLcontentFile = (process.env.APP_URL ?? "https://devresources.aitestpro.com/apps/temp") + "/gb_user_activation.html?key=" + activeStatus.activation;
 
-      let inActiveUser = activeStatus.block?? true;
+      let inActiveUser = activeStatus.block ?? true;
       // const active_buffer = Buffer.from(activeStatus.block);
       // const active_boolean = Boolean(active_buffer.readInt8());
       let userNewPassword = await generateRandomPassword();
@@ -491,8 +497,40 @@ export class AuthController {
   }
   @get('/user')
   async userss(): Promise<any> {
-let user=await this.usersRepository.find();
-return user;
+    let user = await this.usersRepository.find();
+    return user;
   }
+  @post('/userName')
+  async usersample(@requestBody({
+    content: {
+      'application/json': {
+        schema: {
+          properties: {
+            name: {
+              type:'string',
+              
+            }
+          }
+        }
+      }
+    }
+  }) apiReq: any): Promise<any> {
+    console.log("enter");
+    let status,message,data:any;
+    let name=apiReq.name;
+    if(!name){
+      status=201;
+      message="Send proper input";
+    }
+    else{
+      status=200;
+      message="Ok";
+      data={'name':name}
+    }
+    let response={
+      status,message,data
+    }
+    return response;
+   }
 }
 

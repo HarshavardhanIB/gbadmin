@@ -56,6 +56,14 @@ export class Broker extends Entity {
 
   @property({
     type: 'string',
+    length: 255,
+    generated: 0,
+    mysql: { columnName: 'disclosure_agreement', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
+  })
+  disclosureAgreement?: string;
+
+  @property({
+    type: 'string',
     length: 45,
     generated: 0,
     mysql: { columnName: 'description', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },

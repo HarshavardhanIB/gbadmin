@@ -5,8 +5,10 @@ export declare class CorporateTiers extends Entity {
     name: string;
     published?: number;
     tierType?: string;
-    lowerLimit?: number;
-    upperLimit?: number;
+    fromLength?: number;
+    toLength?: number;
+    incomePercentage: number;
+    annualIncome: number;
     spendingLimit?: number;
     [prop: string]: any;
     constructor(data?: Partial<CorporateTiers>);

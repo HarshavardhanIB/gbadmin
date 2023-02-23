@@ -366,6 +366,15 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:type", Number)
 ], Customer.prototype, "actualTier", void 0);
 tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'string',
+        length: 10,
+        generated: 0,
+        mysql: { columnName: 'employee_id', dataType: 'varchar', dataLength: 10, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
+    }),
+    tslib_1.__metadata("design:type", String)
+], Customer.prototype, "employeeId", void 0);
+tslib_1.__decorate([
     (0, repository_1.belongsTo)(() => users_model_1.Users, { name: 'user' }),
     tslib_1.__metadata("design:type", Number)
 ], Customer.prototype, "user_id", void 0);

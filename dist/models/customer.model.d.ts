@@ -44,6 +44,7 @@ export declare class Customer extends Entity {
     dateOfHiring?: string;
     assignerTier?: number;
     actualTier?: number;
+    employeeId?: string;
     user_id: number;
     broker_id: number;
     childCustomers: Customer[];

@@ -10,9 +10,9 @@ let Employee = class Employee extends repository_1.Entity {
 };
 tslib_1.__decorate([
     (0, repository_1.property)({
-        type: 'number',
+        type: 'string',
     }),
-    tslib_1.__metadata("design:type", Number)
+    tslib_1.__metadata("design:type", String)
 ], Employee.prototype, "employeeId", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
@@ -104,6 +104,13 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", String)
 ], Employee.prototype, "provienceName", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'boolean',
+        require: true,
+    }),
+    tslib_1.__metadata("design:type", Boolean)
+], Employee.prototype, "fuseBillCustomerCreation", void 0);
 Employee = tslib_1.__decorate([
     (0, repository_1.model)({ settings: { idInjection: false } }),
     tslib_1.__metadata("design:paramtypes", [Object])

@@ -25,6 +25,7 @@ const jwt_service_1 = require("../services/jwt.service");
 const models_1 = require("../models");
 const services_1 = require("../services");
 const paths_1 = require("../paths");
+const MSGS = tslib_1.__importStar(require("../messages"));
 let NewUserRequest = class NewUserRequest extends admin_model_1.Admin {
 };
 tslib_1.__decorate([
@@ -190,32 +191,36 @@ let AuthController = class AuthController {
             }
         }
         else {
-            let customers = await this.adminRepository.findOne({ where: { email: useremail } });
-            if (customers) {
-                let dbpass = customers === null || customers === void 0 ? void 0 : customers.password;
-                let matchpass = await (0, bcryptjs_1.compare)(userEnterPaswrd, dbpass);
-                if (matchpass) {
-                    // const token = await this.jwtService.generateToken(customers);
-                    let token = jwt.sign({ adminid: customers.id, role: customers.username }, constants.secret, { expiresIn: constants.expiresIn, algorithm: constants.algorithm });
-                    response = {
-                        "statusCode": 200,
-                        "message": messages.LoginSuccess,
-                        "token": token
-                    };
-                }
-                else {
-                    response = {
-                        "statusCode": 202,
-                        "message": messages.InvaliCredentials
-                    };
-                }
-            }
-            else {
-                response = {
-                    "statusCode": 202,
-                    "message": messages.InvaliCredentials
-                };
-            }
+            // let customers: any = await this.adminRepository.findOne({ where: { email: useremail } });
+            // if (customers) {
+            //   let dbpass: any = customers?.password;
+            //   let matchpass = await compare(userEnterPaswrd, dbpass);
+            //   if (matchpass) {
+            //     // const token = await this.jwtService.generateToken(customers);
+            //     let token = jwt.sign({ adminid: customers.id, role: customers.username }, constants.secret, { expiresIn: constants.expiresIn, algorithm: constants.algorithm });
+            //     response = {
+            //       "statusCode": 200,
+            //       "message": messages.LoginSuccess,
+            //       "token": token
+            //     }
+            //   }
+            //   else {
+            //     response = {
+            //       "statusCode": 202,
+            //       "message": messages.InvaliCredentials
+            //     }
+            //   }
+            // }
+            // else {
+            //   response = {
+            //     "statusCode": 202,
+            //     "message": messages.InvaliCredentials
+            //   }
+            // }
+            response = {
+                "statusCode": 400,
+                "message": MSGS.AUTH.NO_USER
+            };
         }
         return response;
         // let customers: any = await this.adminRepository.findOne({ where: { email: useremail }, fields: {} });
@@ -371,6 +376,24 @@ let AuthController = class AuthController {
         let user = await this.usersRepository.find();
         return user;
     }
+    async usersample(apiReq) {
+        console.log("enter");
+        let status, message, data;
+        let name = apiReq.name;
+        if (!name) {
+            status = 201;
+            message = "Send proper input";
+        }
+        else {
+            status = 200;
+            message = "Ok";
+            data = { 'name': name };
+        }
+        let response = {
+            status, message, data
+        };
+        return response;
+    }
 };
 tslib_1.__decorate([
     (0, rest_1.post)(paths_1.AUTH.LOGIN, {
@@ -503,6 +526,25 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:paramtypes", []),
     tslib_1.__metadata("design:returntype", Promise)
 ], AuthController.prototype, "userss", null);
+tslib_1.__decorate([
+    (0, rest_1.post)('/userName'),
+    tslib_1.__param(0, (0, rest_1.requestBody)({
+        content: {
+            'application/json': {
+                schema: {
+                    properties: {
+                        name: {
+                            type: 'string',
+                        }
+                    }
+                }
+            }
+        }
+    })),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], AuthController.prototype, "usersample", null);
 AuthController = tslib_1.__decorate([
     tslib_1.__param(0, (0, core_1.inject)(authentication_jwt_1.TokenServiceBindings.TOKEN_SERVICE)),
     tslib_1.__param(1, (0, core_1.inject)(authentication_jwt_1.UserServiceBindings.USER_SERVICE)),

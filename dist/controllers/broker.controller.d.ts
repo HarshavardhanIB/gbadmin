@@ -6,18 +6,18 @@ import { BrokerEoInsurance, ContactInformation } from "../models";
 import { BrokerService, HttpService, ResizeimgService } from "../services";
 import { BrokerAdminsRepository } from "../repositories/broker-admins.repository";
 export declare class BrokerController {
-    BrokerRepository: BrokerRepository;
-    BrokerLicensedStatesAndProvincesRepository: BrokerLicensedStatesAndProvincesRepository;
-    SignupFormsPlanLevelMappingRepository: SignupFormsPlanLevelMappingRepository;
-    UsersRepository: UsersRepository;
-    ContactInformationRepository: ContactInformationRepository;
-    SignupFormsRepository: SignupFormsRepository;
+    brokerRepository: BrokerRepository;
+    brokerLicensedStatesAndProvincesRepository: BrokerLicensedStatesAndProvincesRepository;
+    signupFormsPlanLevelMappingRepository: SignupFormsPlanLevelMappingRepository;
+    usersRepository: UsersRepository;
+    contactInformationRepository: ContactInformationRepository;
+    signupFormsRepository: SignupFormsRepository;
     StatesAndProvincesRepository: StatesAndProvincesRepository;
-    CustomerSignupRepository: CustomerSignupRepository;
-    CustomerRepository: CustomerRepository;
-    InsurancePlansRepository: InsurancePlansRepository;
-    PlanLevelRepository: PlanLevelRepository;
-    BrokerEoInsuranceRepository: BrokerEoInsuranceRepository;
+    customerSignupRepository: CustomerSignupRepository;
+    customerRepository: CustomerRepository;
+    insurancePlansRepository: InsurancePlansRepository;
+    planLevelRepository: PlanLevelRepository;
+    brokerEoInsuranceRepository: BrokerEoInsuranceRepository;
     private response;
     handler: FileUploadHandler;
     http: HttpService;
@@ -25,8 +25,8 @@ export declare class BrokerController {
     bs: BrokerService;
     insurancePackages: InsurancePackagesRepository;
     plansAvalibility: PlansAvailabilityRepository;
-    BrokerAdminsRepository: BrokerAdminsRepository;
-    constructor(BrokerRepository: BrokerRepository, BrokerLicensedStatesAndProvincesRepository: BrokerLicensedStatesAndProvincesRepository, SignupFormsPlanLevelMappingRepository: SignupFormsPlanLevelMappingRepository, UsersRepository: UsersRepository, ContactInformationRepository: ContactInformationRepository, SignupFormsRepository: SignupFormsRepository, StatesAndProvincesRepository: StatesAndProvincesRepository, CustomerSignupRepository: CustomerSignupRepository, CustomerRepository: CustomerRepository, InsurancePlansRepository: InsurancePlansRepository, PlanLevelRepository: PlanLevelRepository, BrokerEoInsuranceRepository: BrokerEoInsuranceRepository, response: Response, handler: FileUploadHandler, http: HttpService, img: ResizeimgService, bs: BrokerService, insurancePackages: InsurancePackagesRepository, plansAvalibility: PlansAvailabilityRepository, BrokerAdminsRepository: BrokerAdminsRepository);
+    brokerAdminsRepository: BrokerAdminsRepository;
+    constructor(brokerRepository: BrokerRepository, brokerLicensedStatesAndProvincesRepository: BrokerLicensedStatesAndProvincesRepository, signupFormsPlanLevelMappingRepository: SignupFormsPlanLevelMappingRepository, usersRepository: UsersRepository, contactInformationRepository: ContactInformationRepository, signupFormsRepository: SignupFormsRepository, StatesAndProvincesRepository: StatesAndProvincesRepository, customerSignupRepository: CustomerSignupRepository, customerRepository: CustomerRepository, insurancePlansRepository: InsurancePlansRepository, planLevelRepository: PlanLevelRepository, brokerEoInsuranceRepository: BrokerEoInsuranceRepository, response: Response, handler: FileUploadHandler, http: HttpService, img: ResizeimgService, bs: BrokerService, insurancePackages: InsurancePackagesRepository, plansAvalibility: PlansAvailabilityRepository, brokerAdminsRepository: BrokerAdminsRepository);
     brokerCount(): Promise<Response>;
     getBroker(): Promise<any>;
     brokerDetailsBasedonId(id: number): Promise<any>;
@@ -60,4 +60,7 @@ export declare class BrokerController {
     search(apiRequest: any): Promise<any>;
     broker_registration(request: Request, response: Response): Promise<Response>;
     app(): Promise<any>;
+    formLogo(request: Request, response: Response, formId: number): Promise<Response<any, Record<string, any>>>;
+    formDisclouser(request: Request, response: Response, formId: number): Promise<void>;
+    brokerDisclouserUpdate(request: Request, response: Response, brokerId: number): Promise<Response<any, Record<string, any>>>;
 }

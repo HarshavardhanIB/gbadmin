@@ -7,7 +7,7 @@ import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
 import { FILE_UPLOAD_SERVICE, STORAGE_DIRECTORY } from '../keys';
-import { BROKERIMG_RESOURCES_FOLDER, CUSTOMER_CHEQUES_FOLDER, TEMP_UPLOADS_FOLDER } from '../paths';
+import { BROKERIMG_RESOURCES_FOLDER, CUSTOMER_CHEQUES_FOLDER, TEMP_UPLOADS_FOLDER ,BROKER_DISCLOSURES_FOLDER} from '../paths';
 import { BrokerRepository } from '../repositories';
 import { FileUploadHandler } from '../types';
 const readdir = promisify(fs.readdir);
@@ -90,6 +90,7 @@ export class FilesController {
   * @param request - Http request
   */
   public static async getFilesAndFields(request: Request, method: string, others: any) {
+    // if method is disclouserAgreementUpdate need to send brokerName in others
     const uploadedFiles = request.files;
     const uploadedFields = request.body
     //console.log(uploadedFields)
@@ -115,7 +116,7 @@ export class FilesController {
       }
     }
 
-    if (method == 'brokerLogoUpload') {
+    if (method == 'brokerLogoUpload'|| method=='formLogo') {
       console.log(files);
       console.log(`uploadedFields.parent_id: ${uploadedFields.parent_id}`)
       console.log(`uploadedFields.parent_name: ${uploadedFields.parent_name}`)
@@ -127,51 +128,77 @@ export class FilesController {
       }
 
       for (let file of files) {
+        // if(file.fieldname=="logo"){}
         var allowedMimes = ['image/jpg', 'image/jpeg', 'image/pjpeg', 'image/png'];
-        if (allowedMimes.includes(file.mimetype)) {
-          console.log(file.size);
-          if (file.size <= (1 * 1024 * 1024)) {
-            //1mb
+        var pdfMime=['application/pdf']
+        if(file.fieldname=='disclosureAgreement'){
+          if (pdfMime.includes(file.mimetype)) {
+            console.log(file.size);
+            if (file.size <= (1 * 1024 * 1024)) {
+              //1mb
+            } else {
+              return { files: null, fields: { error: 'Invalid file size. File with max. of 1 MB is allowed.' } };
+            }
+  
           } else {
-            return { files: null, fields: { error: 'Invalid file size. File with max. of 1 MB is allowed.' } };
+            return { files: null, fields: { error: 'Invalid file type disclouser agreement. Only pdf   files are allowed.' } };
           }
-
-        } else {
-          return { files: null, fields: { error: 'Invalid file type. Only jpg, png image files are allowed.' } };
         }
+        else{
+          if (allowedMimes.includes(file.mimetype)) {
+            console.log(file.size);
+            if (file.size <= (1 * 1024 * 1024)) {
+              //1mb
+            } else {
+              return { files: null, fields: { error: 'Invalid file size. File with max. of 1 MB is allowed.' } };
+            }
+  
+          } else {
+            return { files: null, fields: { error: 'Invalid file type for logo. Only jpg, png image files are allowed.' } };
+          }
+        }
+        
 
         console.log(`file.originalname`);
         let originalname = file.originalname;
         console.log(originalname)
         originalname = originalname.replace(/[\])}[{(]/g, '').replace(/ /g, '')
         console.log(originalname)
-
-        let modfilenameArr = originalname.split(".")
-        let modfilename = modfilenameArr[0] + "0." + modfilenameArr[1]
-
-        console.log(TEMP_UPLOADS_FOLDER + '/' + file.originalname);
-        try {
-          fs.rename(TEMP_UPLOADS_FOLDER + '/' + file.originalname, BROKERIMG_RESOURCES_FOLDER + '/' + originalname, function (res) {
-            console.log(res);
-
-            //const fileBuffer = await getFile(BROKERIMG_RESOURCES_FOLDER + '/' + originalname, '');
-            // const lowImage = await compressAccurately(file, 3) //3kb
-            // console.log(typeof lowImage);
-            // console.log(lowImage);
-            // compressAccurately(file, 3).then(async res1 => {
-            //   //The res in the promise is a compressed Blob type (which can be treated as a File type) file;
-            //   console.log(typeof res1);
-            //   console.log(res1);
-
-            //   //await createFilex(BROKERIMG_RESOURCES_FOLDER + '/', modfilename, res1);
-
-            // })
-            //console.log(res);
-          })
-
-        } catch (error) {
-          console.log(error);
+        if(file.fieldname=="logo"){
+          console.log(TEMP_UPLOADS_FOLDER + '/' + file.originalname);
+          try {
+            fs.rename(TEMP_UPLOADS_FOLDER + '/' + file.originalname, BROKERIMG_RESOURCES_FOLDER + '/'+originalname, function (res) {
+              console.log(res);
+              //const fileBuffer = await getFile(BROKERIMG_RESOURCES_FOLDER + '/' + originalname, '');
+              // const lowImage = await compressAccurately(file, 3) //3kb
+              // console.log(typeof lowImage);
+              // console.log(lowImage);
+              // compressAccurately(file, 3).then(async res1 => {
+              //   //The res in the promise is a compressed Blob type (which can be treated as a File type) file;
+              //   console.log(typeof res1);
+              //   console.log(res1);
+  
+              //   //await createFilex(BROKERIMG_RESOURCES_FOLDER + '/', modfilename, res1);
+  
+              // })
+              //console.log(res);
+            })
+  
+          } catch (error) {
+            console.log(error);
+          }
         }
+        else if(file.fieldname=='disclosureAgreement'){
+          let disClosureName=`disclosure-agreement-${uploadedFields.name}`;
+          disClosureName=disClosureName.replace(/[\])}[{(]/g, '').replace(/ /g, '')
+          try {
+            fs.rename(TEMP_UPLOADS_FOLDER + '/' + file.originalname, BROKER_DISCLOSURES_FOLDER + '/' + disClosureName, function (res) {
+              console.log(res);
+            });  
+          } catch (error) {
+            console.log(error);
+          }
+        }      
       }
     } else if (method == 'customerChequeUpload') {
       for (let file of files) {
@@ -375,6 +402,81 @@ export class FilesController {
     else if (method == 'excel') {
       return { files, fields: request.body };
     } 
+    else if(method=='formDisclouser'){
+      console.log(files);
+      console.log(`uploadedFields.parent_id: ${uploadedFields.parent_id}`)
+      console.log(`uploadedFields.parent_name: ${uploadedFields.parent_name}`)
+
+     
+
+      for (let file of files) {
+        // if(file.fieldname=="logo"){}
+        var pdfMime=['application/pdf'];
+          if (pdfMime.includes(file.mimetype)) {
+            console.log(file.size);
+            if (file.size <= (1 * 1024 * 1024)) {
+              //1mb
+            } else {
+              return { files: null, fields: { error: 'Invalid file size. File with max. of 1 MB is allowed.' } };
+            }
+  
+          } else {
+            return { files: null, fields: { error: 'Invalid file type disclouser agreement. Only pdf   files are allowed.' } };
+          } 
+        console.log(`file.originalname`);
+        let originalname = file.originalname;
+        console.log(originalname)
+        originalname = originalname.replace(/[\])}[{(]/g, '').replace(/ /g, '')
+        console.log(originalname)
+
+        let modfilenameArr = originalname.split(".")
+        let modfilename = modfilenameArr[0] + "0." + modfilenameArr[1];  
+          let disClosureName=`disclosure-agreement-${originalname}`;
+          disClosureName.replace(' ','_')
+          try {
+            fs.rename(TEMP_UPLOADS_FOLDER + '/' + file.originalname, BROKER_DISCLOSURES_FOLDER + '/' + disClosureName, function (res) {
+            });  
+          } catch (error) {
+            console.log(error);
+          }              
+      }
+    }
+    else if(method=='disclouserAgreementUpdate'){
+      for (let file of files) {
+        var pdfMime=['application/pdf']
+        
+          if (pdfMime.includes(file.mimetype)) {
+            console.log(file.size);
+            if (file.size <= (1 * 1024 * 1024)) {
+              //1mb
+            } else {
+              return { files: null, fields: { error: 'Invalid file size. File with max. of 1 MB is allowed.' } };
+            }
+  
+          } else {
+            return { files: null, fields: { error: 'Invalid file type disclouser agreement. Only pdf   files are allowed.' } };
+          }
+              
+        console.log(`file.originalname`);
+        let originalname = file.originalname;
+        console.log(originalname)
+        originalname = originalname.replace(/[\])}[{(]/g, '').replace(/ /g, '')
+        console.log(originalname)
+        let modfilenameArr = originalname.split(".")
+        let modfilename = modfilenameArr[0] + "0." + modfilenameArr[1]
+          let disClosureName=`disclosure-agreement-${others.brokerName}.pdf`;
+          let disVClouserspaces=disClosureName.replace(/[\])}[{(]/g, '').replace(/ /g, '')
+          console.log(disVClouserspaces);
+          try {
+            fs.rename(TEMP_UPLOADS_FOLDER + '/' + file.originalname, BROKER_DISCLOSURES_FOLDER + '/' + disVClouserspaces, function (res) {
+              console.log(res);
+            });  
+          } catch (error) {
+            console.log(error);
+          }             
+      }
+      return { files, fields: request.body };
+    }
     return { files, fields: request.body };
   }
 

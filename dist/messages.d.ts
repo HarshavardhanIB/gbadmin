@@ -30,10 +30,16 @@ export declare const CORPORATE_MSG: {
     PLANS: string;
     NO_CORPORATE: string;
     EMP_REGISTRATION_SUCCESS: string;
+    GROUP_ADMIN_DETAILS: string;
 };
 export declare const BROKER_MSG: {
     BROKERCOUNT: string;
     BROKERS_PRMARY_DETAILS: string;
     BROKER_DETAILS: string;
     CUSTOMERS_DETAILS_COUNT: string;
+    NO_FORM: string;
+    NO_BROKER: string;
+};
+export declare const AUTH: {
+    NO_USER: string;
 };

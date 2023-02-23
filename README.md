@@ -1,6 +1,9 @@
 #CHANGE LOG
 1.0.0.0 - RELEASE(v...)
 -----------------------------------------------------------------
+0.5.0
+- Changes in db and models, repos (**-02-23)   removed corporate_paid_tiered_plan_levels   modified customer_plans (paid_by_company, covered_by_company, paid_by_employee)  modified broker (disclosure_agreement)  modified signup_forms (logo, disclosure_agreement)  modified corporate_tiered_plan_levels (paid_by_company, covered_by_company, paid_by_employee, plan_id vs plan_level_id, foriegn key corporate_tiered_plan_levels_ibfk_1)  modified corporate_tiers (from_length, to_length, income_percentage, annual_income)  modified customer(employee_id)
+
 0.4.8
 
 added model properties funcytion in corporate services and change the app details service auth controller to broker controller

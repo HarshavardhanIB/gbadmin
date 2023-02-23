@@ -11,6 +11,8 @@ export declare class SignupForms extends Entity {
     isDemoForm?: boolean;
     keywords?: string;
     link?: string;
+    logo?: string;
+    disclosureAgreement?: string;
     name?: string;
     notAfter?: string;
     notBefore?: string;

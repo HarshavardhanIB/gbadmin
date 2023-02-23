@@ -41,11 +41,18 @@ export const CORPORATE_MSG={
   NOLOGO:'No logo found',
   PLANS:'Plans selections are successfully',
   NO_CORPORATE:'No details found for this corporate',
-  EMP_REGISTRATION_SUCCESS:'Employee registration successfully'
+  EMP_REGISTRATION_SUCCESS:'Employee registration successfully',
+  GROUP_ADMIN_DETAILS:'Please atlease one company administrator details'
 }
 export const BROKER_MSG={
 BROKERCOUNT:"The brokers count",
 BROKERS_PRMARY_DETAILS:"Broker primary details",
 BROKER_DETAILS:"Broker Details",
-CUSTOMERS_DETAILS_COUNT:"List of customers and count"
+CUSTOMERS_DETAILS_COUNT:"List of customers and count",
+NO_FORM:"No form details found",
+NO_BROKER:'No broker details found for this broker id'
+}
+export const AUTH={
+  NO_USER:"No user found please contact admin",
+
 }

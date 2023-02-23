@@ -20,10 +20,11 @@ export const TEMP_EXTDATA_FOLDER = "./support/extdata"
 export const TEMP_UPLOADS_FOLDER = "./uploads"
 export const RESOURCES_FOLDER = "./public/resources"
 export const IMAGE_RESOURCES_FOLDER = RESOURCES_FOLDER + "/images"
-export const BROKERIMG_RESOURCES_FOLDER = IMAGE_RESOURCES_FOLDER + "/broker"
-
+export const BROKERIMG_RESOURCES_FOLDER = IMAGE_RESOURCES_FOLDER + "/broker";
+export const DISCLOSURES_FOLDER=RESOURCES_FOLDER+'/disclosures'
+export const BROKER_DISCLOSURES_FOLDER=DISCLOSURES_FOLDER+"/broker";
 export const BROKERPATH_STRING = 'app/resources/images/broker/';
-
+export const DISCLOSUREPATH_STRING='app/resources/disclosures/broker/'
 export const SERVER_FOLDER = './public/server'
 export const REPORTS_FOLDER = SERVER_FOLDER + '/reports'
 export const REPORTS_PATH = SERVER_FILES_PATH + 'reports/'
@@ -103,6 +104,9 @@ export const BROKER={
     SEARCH:'/broker/search',
     REGISTRATION:'/broker/registration',
     APP:'/app',
+    FORM_LOGO:'/broker/form/{formId}/logo',
+    FORM_DISCLOUSER:'/broker/form/{formId}/disclouser',
+    BROKER_DISCLOUSER:'/broker/{brokerId}/disclouser'
 }
 //AUTH 
 export const AUTH={

@@ -13,7 +13,10 @@ export declare const TEMP_UPLOADS_FOLDER = "./uploads";
 export declare const RESOURCES_FOLDER = "./public/resources";
 export declare const IMAGE_RESOURCES_FOLDER: string;
 export declare const BROKERIMG_RESOURCES_FOLDER: string;
+export declare const DISCLOSURES_FOLDER: string;
+export declare const BROKER_DISCLOSURES_FOLDER: string;
 export declare const BROKERPATH_STRING = "app/resources/images/broker/";
+export declare const DISCLOSUREPATH_STRING = "app/resources/disclosures/broker/";
 export declare const SERVER_FOLDER = "./public/server";
 export declare const REPORTS_FOLDER: string;
 export declare const REPORTS_PATH: string;
@@ -72,6 +75,9 @@ export declare const BROKER: {
     SEARCH: string;
     REGISTRATION: string;
     APP: string;
+    FORM_LOGO: string;
+    FORM_DISCLOUSER: string;
+    BROKER_DISCLOUSER: string;
 };
 export declare const AUTH: {
     LOGIN: string;

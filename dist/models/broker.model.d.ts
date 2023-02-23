@@ -7,6 +7,7 @@ export declare class Broker extends Entity {
     brokerType: string;
     contactId?: number;
     deleted?: boolean;
+    disclosureAgreement?: string;
     description?: string;
     discoverable?: boolean;
     fusebillCorporateCustomerId?: string;

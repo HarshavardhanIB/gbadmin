@@ -3,9 +3,9 @@ import { Entity, model, property } from '@loopback/repository';
 @model({ settings: { idInjection: false } })
 export class Employee extends Entity {
     @property({
-        type: 'number',
+        type: 'string',
     })
-    employeeId?: number;
+    employeeId?: string;
     @property({
         type: 'string',
         required: true,
@@ -18,8 +18,6 @@ export class Employee extends Entity {
         length: 45
     })
     lastName: string;
-
-
     @property({
         type: 'string',
         required: true,
@@ -74,6 +72,11 @@ export class Employee extends Entity {
         require:true,
     })
     provienceName:string;
+    @property({
+        type:'boolean',
+        require:true,
+    })
+    fuseBillCustomerCreation:boolean
     // Define well-known properties here
 
     // Indexer property to allow additional data

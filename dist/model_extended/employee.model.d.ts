@@ -1,6 +1,6 @@
 import { Entity } from '@loopback/repository';
 export declare class Employee extends Entity {
-    employeeId?: number;
+    employeeId?: string;
     firstName: string;
     lastName: string;
     emailId: string;
@@ -13,6 +13,7 @@ export declare class Employee extends Entity {
     walletLimit: number;
     provienceId: number;
     provienceName: string;
+    fuseBillCustomerCreation: boolean;
     [prop: string]: any;
     constructor(data?: Partial<Employee>);
 }

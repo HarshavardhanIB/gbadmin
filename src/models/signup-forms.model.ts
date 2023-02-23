@@ -98,6 +98,20 @@ export class SignupForms extends Entity {
     mysql: { columnName: 'link', dataType: 'varchar', dataLength: 1000, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   link?: string;
+  @property({
+    type: 'string',
+    length: 255,
+    generated: 0,
+    mysql: { columnName: 'logo', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
+  })
+  logo?: string;
+  @property({
+    type: 'string',
+    length: 255,
+    generated: 0,
+    mysql: { columnName: 'disclosure_agreement', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
+  })
+  disclosureAgreement?: string;
 
   @property({
     type: 'string',

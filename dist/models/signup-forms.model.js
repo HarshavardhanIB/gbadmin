@@ -105,6 +105,24 @@ tslib_1.__decorate([
         type: 'string',
         length: 255,
         generated: 0,
+        mysql: { columnName: 'logo', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
+    }),
+    tslib_1.__metadata("design:type", String)
+], SignupForms.prototype, "logo", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'string',
+        length: 255,
+        generated: 0,
+        mysql: { columnName: 'disclosure_agreement', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
+    }),
+    tslib_1.__metadata("design:type", String)
+], SignupForms.prototype, "disclosureAgreement", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'string',
+        length: 255,
+        generated: 0,
         mysql: { columnName: 'name', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
     }),
     tslib_1.__metadata("design:type", String)

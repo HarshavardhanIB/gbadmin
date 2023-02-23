@@ -55,19 +55,41 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
-        precision: 10,
-        mysql: { columnName: 'lower_limit', dataType: 'float', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'Y' },
+        precision: 3,
+        scale: 0,
+        generated: 0,
+        mysql: { columnName: 'from_length', dataType: 'tinyint', dataLength: null, dataPrecision: 3, dataScale: 0, nullable: 'N', generated: 0 },
     }),
     tslib_1.__metadata("design:type", Number)
-], CorporateTiers.prototype, "lowerLimit", void 0);
+], CorporateTiers.prototype, "fromLength", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
-        precision: 10,
-        mysql: { columnName: 'upper_limit', dataType: 'float', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'Y' },
+        precision: 3,
+        scale: 0,
+        generated: 0,
+        mysql: { columnName: 'to_length', dataType: 'tinyint', dataLength: null, dataPrecision: 3, dataScale: 0, nullable: 'N', generated: 0 },
     }),
     tslib_1.__metadata("design:type", Number)
-], CorporateTiers.prototype, "upperLimit", void 0);
+], CorporateTiers.prototype, "toLength", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'number',
+        required: true,
+        precision: 12,
+        mysql: { columnName: 'income_percentage', dataType: 'float', dataLength: null, dataPrecision: 12, dataScale: null, nullable: 'N' },
+    }),
+    tslib_1.__metadata("design:type", Number)
+], CorporateTiers.prototype, "incomePercentage", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'number',
+        required: true,
+        precision: 12,
+        mysql: { columnName: 'annual_income', dataType: 'float', dataLength: null, dataPrecision: 12, dataScale: null, nullable: 'N' },
+    }),
+    tslib_1.__metadata("design:type", Number)
+], CorporateTiers.prototype, "annualIncome", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
