@@ -105,12 +105,12 @@ tslib_1.__decorate([
 ], PlanLevel.prototype, "parentId", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
-        type: 'boolean',
-        precision: 1,
-        generated: 0,
-        mysql: { columnName: 'published', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'Y', generated: 0 },
+        type: 'Buffer',
+        length: 3,
+        precision: 2,
+        mysql: { columnName: 'published', dataType: 'bit', dataLength: null, dataPrecision: 2, dataScale: null, nullable: 'Y' },
     }),
-    tslib_1.__metadata("design:type", Boolean)
+    tslib_1.__metadata("design:type", Buffer)
 ], PlanLevel.prototype, "published", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({

@@ -52,5 +52,4 @@ export declare class AuthController {
     app(): Promise<any>;
     ip(): Promise<any>;
     userss(): Promise<any>;
-    usersample(apiReq: any): Promise<any>;
 }

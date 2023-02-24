@@ -1798,7 +1798,7 @@ export class BrokerController {
           where: {
             //"id": {"inq": planLevelIds},
             "id": { "inq": filteredPlanLevels },
-            "published": true,
+            "published": { "type": "Buffer", "data": [1] },
             "requirePlanLevel": null
           },
 
@@ -2049,7 +2049,7 @@ export class BrokerController {
                 where: {
                   and: [
                     { name: { like: `%${pl}%` } },
-                    { published: '1' }
+                    { published: { "type": "Buffer", "data": [1] } }
                   ]
                 },
                 // fields: { id: true }
@@ -2073,7 +2073,7 @@ export class BrokerController {
               where: {
                 and: [
                   { or: [{ id: pl }, { parentId: pl }] },
-                  { published: '1' }
+                  { published: { "type": "Buffer", "data": [1] } }
                 ]
               }, fields: {
                 id: true
@@ -2310,7 +2310,7 @@ export class BrokerController {
                   where: {
                     and: [
                       { name: { like: `%${pl}%` } },
-                      { published: '1' }
+                      { published: { "type": "Buffer", "data": [1] } }
                     ]
                   },
                   // fields: { id: true }
@@ -2336,7 +2336,7 @@ export class BrokerController {
                 where: {
                   and: [
                     { or: [{ id: pl }, { parentId: pl }] },
-                    { published: '1' }
+                    { published: { "type": "Buffer", "data": [1] } }
                   ]
                 }, fields: {
                   id: true
@@ -2588,7 +2588,7 @@ export class BrokerController {
                 where: {
                   and: [
                     { name: { like: `%${pl}%` } },
-                    { published: '1' }
+                    { published: { "type": "Buffer", "data": [1] } }
                   ]
                 },
                 // fields: { id: true }
@@ -2610,7 +2610,7 @@ export class BrokerController {
                 where: {
                   and: [
                     { or: [{ id: pl }, { parentId: pl }] },
-                    { published: '1' }
+                    { published: { "type": "Buffer", "data": [1] } }
                   ]
                 }, fields: {
                   id: true
@@ -3429,7 +3429,7 @@ export class BrokerController {
                 //     where: {
                 //       and: [
                 //         { or: [{ id: pl }, { parentId: pl }] },
-                //         { published: '1' }
+                //         { published: { "type": "Buffer", "data": [1] } }
                 //       ]
                 //     }, fields: {
                 //       id: true

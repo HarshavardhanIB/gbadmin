@@ -1,6 +1,10 @@
 export declare const WELCOME = "Welcome to GroupBenefitz";
 export declare const dateFormat1 = "YYYY-MM-DD HH:MM:SS";
 export declare const dateFormat2 = "YYYY-MM-DD";
+export declare const rolloverUnusedWalletFunds: string[];
+export declare const walletAllotment: string[];
+export declare const walletType: string[];
+export declare const payForService: string[];
 export declare const USER_ROLE: any;
 export declare const TIER: {
     general: string;

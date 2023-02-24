@@ -50,7 +50,7 @@ exports.FUSEBILL_API_BASE_PATH = exports.API_BASE_PATH + "fusebill/";
 exports.CORPORATE = {
     SIGNUP: '/corporate/signup',
     LOGO: '/corporate/{company}/logo',
-    FORMCONFIG: '/formConfig',
+    FORMCONFIG: '/corporateSignup/formConfig',
     BANK_DETAILS_REGISTER: '/bankDetails/register',
     BANK_VERIFY: '/bank/verify',
     PLANS: '/corporate/validation',

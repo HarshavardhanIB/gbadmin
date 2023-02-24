@@ -5,6 +5,10 @@ import { SERVER_FILES_PATH } from './paths';
 export const WELCOME = 'Welcome to GroupBenefitz';
 export const dateFormat1 = "YYYY-MM-DD HH:MM:SS";
 export const dateFormat2 = "YYYY-MM-DD";
+export const rolloverUnusedWalletFunds=['PRE_FUNDED_MONTHLY','PRE_FUNDED_QUATERLY','PAY_AS_YOU_GO'];
+export const walletAllotment=['FULL_YEAR','PRORATED']
+export const walletType=['HEATH_SPENDING_ACCOUNT','WELLNESS_SPENDING_ACCOUNT','BOTH']
+export const payForService=['PRE_FUNDED_MONTHLY','PRE_FUNDED_QUATERLY','PAY_AS_YOU_GO']
 export const USER_ROLE: any = {
   CUSTOMER: 'CUSTOMER',
   CORPORATE_ADMINISTRATOR: 'CORPORATE_ADMIN',
@@ -16,7 +20,7 @@ export const USER_ROLE: any = {
 export const TIER={
   general:'GENERAL'
 }
-export const CORPORATE_SETTINGS={
+export const  CORPORATE_SETTINGS={
   settings_allow_invoice_payment_method :"settings_allow_invoice_payment_method",
   settings_allow_group_benefits_wallet:"Set up GroupBenefitz Wallet for employees",
   settings_group_benefitz_wallet_type:"settings_group_benefitz_wallet_type",

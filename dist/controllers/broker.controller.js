@@ -1085,7 +1085,7 @@ let BrokerController = class BrokerController {
                     where: {
                         //"id": {"inq": planLevelIds},
                         "id": { "inq": filteredPlanLevels },
-                        "published": true,
+                        "published": { "type": "Buffer", "data": [1] },
                         "requirePlanLevel": null
                     },
                     "include": [
@@ -1263,7 +1263,7 @@ let BrokerController = class BrokerController {
                                 where: {
                                     and: [
                                         { name: { like: `%${pl}%` } },
-                                        { published: '1' }
+                                        { published: { "type": "Buffer", "data": [1] } }
                                     ]
                                 },
                                 // fields: { id: true }
@@ -1286,7 +1286,7 @@ let BrokerController = class BrokerController {
                             where: {
                                 and: [
                                     { or: [{ id: pl }, { parentId: pl }] },
-                                    { published: '1' }
+                                    { published: { "type": "Buffer", "data": [1] } }
                                 ]
                             }, fields: {
                                 id: true
@@ -1459,7 +1459,7 @@ let BrokerController = class BrokerController {
                                     where: {
                                         and: [
                                             { name: { like: `%${pl}%` } },
-                                            { published: '1' }
+                                            { published: { "type": "Buffer", "data": [1] } }
                                         ]
                                     },
                                     // fields: { id: true }
@@ -1484,7 +1484,7 @@ let BrokerController = class BrokerController {
                                 where: {
                                     and: [
                                         { or: [{ id: pl }, { parentId: pl }] },
-                                        { published: '1' }
+                                        { published: { "type": "Buffer", "data": [1] } }
                                     ]
                                 }, fields: {
                                     id: true
@@ -1668,7 +1668,7 @@ let BrokerController = class BrokerController {
                                 where: {
                                     and: [
                                         { name: { like: `%${pl}%` } },
-                                        { published: '1' }
+                                        { published: { "type": "Buffer", "data": [1] } }
                                     ]
                                 },
                                 // fields: { id: true }
@@ -1690,7 +1690,7 @@ let BrokerController = class BrokerController {
                                 where: {
                                     and: [
                                         { or: [{ id: pl }, { parentId: pl }] },
-                                        { published: '1' }
+                                        { published: { "type": "Buffer", "data": [1] } }
                                     ]
                                 }, fields: {
                                     id: true
@@ -2254,7 +2254,7 @@ let BrokerController = class BrokerController {
                                 //     where: {
                                 //       and: [
                                 //         { or: [{ id: pl }, { parentId: pl }] },
-                                //         { published: '1' }
+                                //         { published: { "type": "Buffer", "data": [1] } }
                                 //       ]
                                 //     }, fields: {
                                 //       id: true
@@ -2315,7 +2315,7 @@ let BrokerController = class BrokerController {
                             }
                             else if (file.fieldname == 'disclosureAgreement') {
                                 let disClosureName = `disclosure-agreement-${apiRequest.name}.pdf`;
-                                disClosureName.replace(' ', '_');
+                                disClosureName = disClosureName.replace(/[\])}[{(]/g, '').replace(/ /g, '');
                                 await this.brokerRepository.updateById(brokerId, { disclosureAgreement: paths_1.DISCLOSUREPATH_STRING + disClosureName });
                             }
                         }
@@ -2414,8 +2414,6 @@ let BrokerController = class BrokerController {
                                 let originalname = file.originalname;
                                 originalname = originalname.replace(/[\])}[{(]/g, '').replace(/ /g, '');
                                 let filename = originalname;
-                                let modfilenameArr = filename.split(".");
-                                let modfilename = modfilenameArr[0] + "0." + modfilenameArr[1];
                                 await this.signupFormsRepository.updateById(formId, { logo: paths_1.BROKERPATH_STRING + filename });
                                 message = 'Form logo is set';
                                 status = 200;
@@ -2457,84 +2455,83 @@ let BrokerController = class BrokerController {
         let brokerAndForm = await this.signupFormsRepository.findById(formId, { include: [{ relation: 'broker' }] });
         // console.log(brokerAndForm);
         console.log(brokerAndForm.broker.id);
-        // if(brokerAndForm){
-        //   let message: string, status: any, statusCode: number, data: any = {};
-        //   let p = new Promise<any>((resolve, reject) => {
-        //     this.handler(request, response, err => {
-        //       if (err) reject(err);
-        //       else {
-        //         resolve(FilesController.getFilesAndFields(request, 'disclouserAgreementUpdate', {brokerName:brokerAndForm.broker.name}));
-        //       }
-        //     });
-        //   });
-        //   p.then(async value => {
-        //     if (!value.fields) {
-        //       this.response.status(422).send({
-        //         status: '422',
-        //         error: `Missing input fields`,
-        //         message: MESSAGE.ERRORS.missingDetails,
-        //         date: new Date(),
-        //       });
-        //       return this.response;
-        //     }
-        //     if (value.fields) {
-        //       if (value.fields.error) {
-        //         this.response.status(422).send({
-        //           status: '422',
-        //           error: value.fields.error,
-        //           message: value.fields.error,
-        //           date: new Date(),
-        //         });
-        //         return this.response;
-        //       }
-        //     }
-        //       if (value.files) {
-        //         for (let file of value.files) {
-        //           if (file.fieldname == "logo") {
-        //             console.log("filelength >>>>>>>>>>>>>>>>>")
-        //             console.log(value.files.length)
-        //             console.log(file)
-        //             if (value.files.length > 0) {
-        //               let originalname = file.originalname;
-        //               originalname = originalname.replace(/[\])}[{(]/g, '').replace(/ /g, '')
-        //               let filename = originalname
-        //               let disClosureName = `disclosure-agreement-${originalname}`;
-        //               disClosureName.replace(' ', '_')
-        //               await this.signupFormsRepository.updateById(formId, { disclosureAgreement: DISCLOSUREPATH_STRING + disClosureName });
-        //               message = 'Disclouser is set'
-        //               status = 200
-        //             } else {
-        //               message = "Disclouser is not set"
-        //               status = 201;
-        //             }
-        //           }
-        //         }
-        //       }
-        //       this.response.status(status).send({
-        //         status, message, date: new Date(),
-        //       })
-        //       return this.response;       
-        //   })
-        //   p.catch(onrejected => {
-        //     message = 'Broker logo is not set'
-        //     status = '202'
-        //     this.response.status(parseInt(status)).send({
-        //       status: status,
-        //       message: message,
-        //       date: new Date(),
-        //       data: data
-        //     });
-        //   })
-        //   return this.response;
-        // }
-        // else {
-        //   this.response.status(422).send({
-        //     status: '201',
-        //     message: MESSAGE.BROKER_MSG.NO_FORM,
-        //     date: new Date(),
-        //   });
-        //   return this.response;
-        // }
+        if (brokerAndForm) {
+            let message, status, statusCode, data = {};
+            let p = new Promise((resolve, reject) => {
+                this.handler(request, response, err => {
+                    if (err)
+                        reject(err);
+                    else {
+                        resolve(files_controller_1.FilesController.getFilesAndFields(request, 'disclouserAgreementUpdate', { brokerName: brokerAndForm.broker.name }));
+                    }
+                });
+            });
+            p.then(async (value) => {
+                if (!value.fields) {
+                    this.response.status(422).send({
+                        status: '422',
+                        error: `Missing input fields`,
+                        message: MESSAGE.ERRORS.missingDetails,
+                        date: new Date(),
+                    });
+                    return this.response;
+                }
+                if (value.fields) {
+                    if (value.fields.error) {
+                        this.response.status(422).send({
+                            status: '422',
+                            error: value.fields.error,
+                            message: value.fields.error,
+                            date: new Date(),
+                        });
+                        return this.response;
+                    }
+                }
+                if (value.files) {
+                    for (let file of value.files) {
+                        if (file.fieldname == "disclosure") {
+                            console.log("filelength >>>>>>>>>>>>>>>>>");
+                            console.log(value.files.length);
+                            console.log(file);
+                            if (value.files.length > 0) {
+                                let disClosureName = `disclosure-agreement-${brokerAndForm.broker.name}.pdf`;
+                                disClosureName = disClosureName.replace(/[\])}[{(]/g, '').replace(/ /g, '');
+                                await this.signupFormsRepository.updateById(formId, { disclosureAgreement: paths_1.DISCLOSUREPATH_STRING + disClosureName });
+                                message = 'Disclouser is set';
+                                status = 200;
+                            }
+                            else {
+                                message = "Disclouser is not set";
+                                status = 201;
+                            }
+                        }
+                    }
+                }
+                this.response.status(status).send({
+                    status, message, date: new Date(),
+                });
+                return this.response;
+            });
+            p.catch(onrejected => {
+                message = 'Broker logo is not set';
+                status = '202';
+                this.response.status(parseInt(status)).send({
+                    status: status,
+                    message: message,
+                    date: new Date(),
+                    data: data
+                });
+            });
+            return this.response;
+        }
+        else {
+            this.response.status(422).send({
+                status: '201',
+                message: MESSAGE.BROKER_MSG.NO_FORM,
+                date: new Date(),
+            });
+            return this.response;
+        }
     }
     async brokerDisclouserUpdate(request, response, brokerId) {
         let broker = await this.brokerRepository.findById(brokerId);
@@ -3619,7 +3616,7 @@ tslib_1.__decorate([
                 schema: {
                     type: 'object',
                     properties: {
-                        logo: {
+                        disclosure: {
                             type: 'string',
                             format: 'binary'
                         }

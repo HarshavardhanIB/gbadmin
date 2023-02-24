@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.intersection = exports.genCrypt = exports.encryptPassword = exports.generateRandomPassword = exports.randomString = void 0;
+exports.moments = exports.intersection = exports.genCrypt = exports.encryptPassword = exports.generateRandomPassword = exports.randomString = void 0;
 const tslib_1 = require("tslib");
 const bcryptjs_1 = require("bcryptjs");
 const crypto = tslib_1.__importStar(require("crypto"));
+const moment_1 = tslib_1.__importDefault(require("moment"));
 async function randomString(length, chars) {
     var result = '';
     for (var i = length; i > 0; --i)
@@ -40,4 +41,12 @@ async function intersection(a, b) {
     });
 }
 exports.intersection = intersection;
+//this sets the date in the given format and also avoid erros/warnings related to moment argument format
+function moments(date) {
+    if (date)
+        return (0, moment_1.default)((new Date(date)).toJSON());
+    else
+        return (0, moment_1.default)();
+}
+exports.moments = moments;
 //# sourceMappingURL=common.services.js.map

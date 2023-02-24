@@ -90,14 +90,20 @@ export class PlanLevel extends Entity {
   })
   parentId?: number;
 
+  // @property({
+  //   type: 'boolean',
+  //   precision: 1,
+  //   generated: 0,
+  //   mysql: { columnName: 'published', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'Y', generated: 0 },
+  // })
+  // published?: boolean;
   @property({
-    type: 'boolean',
-    precision: 1,
-    generated: 0,
-    mysql: { columnName: 'published', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'Y', generated: 0 },
+    type: 'Buffer',
+    length: 3,
+    precision: 2,
+    mysql: {columnName: 'published', dataType: 'bit', dataLength: null, dataPrecision: 2, dataScale: null, nullable: 'Y'},
   })
-  published?: boolean;
-
+  published?: Buffer; //bit-2
   @property({
     type: 'number',
     precision: 10,

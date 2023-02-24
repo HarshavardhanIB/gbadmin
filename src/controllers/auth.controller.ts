@@ -500,37 +500,6 @@ export class AuthController {
     let user = await this.usersRepository.find();
     return user;
   }
-  @post('/userName')
-  async usersample(@requestBody({
-    content: {
-      'application/json': {
-        schema: {
-          properties: {
-            name: {
-              type:'string',
-              
-            }
-          }
-        }
-      }
-    }
-  }) apiReq: any): Promise<any> {
-    console.log("enter");
-    let status,message,data:any;
-    let name=apiReq.name;
-    if(!name){
-      status=201;
-      message="Send proper input";
-    }
-    else{
-      status=200;
-      message="Ok";
-      data={'name':name}
-    }
-    let response={
-      status,message,data
-    }
-    return response;
-   }
+  
 }
 

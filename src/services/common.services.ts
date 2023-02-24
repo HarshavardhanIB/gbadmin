@@ -1,5 +1,6 @@
 import { genSalt, hash, compare } from 'bcryptjs';
 import * as crypto from 'crypto'
+import moment from 'moment';
 export async function randomString(length: number, chars: string) {
   var result = '';
   for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
@@ -37,3 +38,10 @@ export async function intersection(a: any, b: any) {
   });
 
 }
+//this sets the date in the given format and also avoid erros/warnings related to moment argument format
+export function moments(date: string | undefined): moment.Moment {
+   if (date)
+    return moment((new Date(date)).toJSON())
+    else     
+     return moment();
+  }

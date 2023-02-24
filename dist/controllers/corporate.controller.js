@@ -21,8 +21,6 @@ const paths_1 = require("../paths");
 const messages_1 = require("../messages");
 const storage_helper_1 = require("../storage.helper");
 const constants_1 = require("../constants");
-const authorization_1 = require("@loopback/authorization");
-const auth_middleware_1 = require("../middlewares/auth.middleware");
 const model_extended_1 = require("../model_extended");
 const corporate_tiered_plan_levels_repository_1 = require("../repositories/corporate-tiered-plan-levels.repository");
 let fuseBillCustomerCreation = false;
@@ -182,9 +180,9 @@ let CorporateController = class CorporateController {
                         contactDetailsObj.city = apiRequest.city;
                         contactDetailsObj.state = apiRequest.state;
                         contactDetailsObj.country = apiRequest.country;
-                        contactDetailsObj.line1 = apiRequest.street_address_line1;
-                        contactDetailsObj.line2 = apiRequest.street_address_line2;
-                        contactDetailsObj.postalCode = apiRequest.postal_code;
+                        contactDetailsObj.line1 = apiRequest.streetAddressLine1;
+                        contactDetailsObj.line2 = apiRequest.streetAddressLine2;
+                        contactDetailsObj.postalCode = apiRequest.postalCode;
                         contactDetailsObj.contactType = 'COMPANY';
                         contactDetailsObj.addressType = 'OFFICE_ADDRESS';
                         contactDetailsObj.primaryEmail = groupAdmins[0].email;
@@ -257,15 +255,15 @@ let CorporateController = class CorporateController {
                                 console.log("**************************************************");
                                 let fuseBillAddressData = {
                                     "customerAddressPreferenceId": fusebillCustomer.id,
-                                    "countryId": apiRequest.country_id,
-                                    "stateId": apiRequest.state_id,
-                                    //"addressType": apiRequest.address_type ?? 'Shipping',//here shipping is same as home //Billing, shipping    
-                                    "addressType": (_c = apiRequest.address_type) !== null && _c !== void 0 ? _c : 'Billing',
+                                    "countryId": apiRequest.countryId,
+                                    "stateId": apiRequest.stateId,
+                                    //"addressType": apiRequest.addressType ?? 'Shipping',//here shipping is same as home //Billing, shipping    
+                                    "addressType": (_c = apiRequest.addressType) !== null && _c !== void 0 ? _c : 'Billing',
                                     "enforceFullAddress": true,
-                                    "line1": apiRequest.street_address_line1,
-                                    "line2": apiRequest.street_address_line2,
+                                    "line1": apiRequest.streetAddressLine1,
+                                    "line2": apiRequest.streetAddressLine2,
                                     "city": apiRequest.city,
-                                    "postalZip": apiRequest.postal_code,
+                                    "postalZip": apiRequest.postalCode,
                                     "country": apiRequest.country,
                                     "state": apiRequest.state
                                 };
@@ -502,6 +500,15 @@ let CorporateController = class CorporateController {
                 'annualIncome': [{ 'tierName': 'Income one', 'percentage': 1, 'annualIncome': 50000, 'walletAmount': 500 }, { 'tierName': 'Income Two', 'Percentage': 2, 'AnnualIncome': 75000, 'walletAmount': 2500 }, { 'tierName': 'Income Three', 'Percentage': 2.5, 'AnnualIncome': 100000, 'walletAmount': 3500 }]
             };
             data['tierConfig'] = tierConfig;
+            let walletConfig = {
+                "walletType": 'Health and Wellness Spending Accounts',
+                "walletTypeKeys": CONST.walletType,
+                "walletAllotment": 'Health and Wellness Spending Accounts',
+                'walletAllotmentKeys': CONST.walletAllotment,
+                'payForService': 'How does the company want to pay for the service?',
+                'payForServiceKeys': CONST.rolloverUnusedWalletFunds
+            };
+            data['walletConfig'] = walletConfig;
         }
         catch (error) {
             status = 400;
@@ -697,7 +704,7 @@ let CorporateController = class CorporateController {
                     "voidCheckImage": '',
                     "voidCheckImage2": checkFileBuffer,
                     "voidCheckFileType": mimetype,
-                    "nextBillingDate": (0, moment_1.default)(bank_details.enrollmentDate).format(constants_1.dateFormat1),
+                    "nextBillingDate": (0, services_1.moments)(bank_details.enrollmentDate).format(constants_1.dateFormat1),
                     "nextBillingPrice": parseFloat(bank_details.amount),
                     "customerName": bank_details.customerName,
                     //   "fusebillCustomerId": customer.fusebillCustomerId,
@@ -830,13 +837,17 @@ let CorporateController = class CorporateController {
         });
         return this.response;
     }
+    // @authorize({
+    //   allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR, CONST.USER_ROLE.CORPORATE_ADMINISTRATOR],
+    //   voters: [basicAuthorization]
+    // })
     async validatePlans() {
         let message, status, data = {}, final = {};
         try {
             let packageFilter = {
                 order: 'ordering ASC',
                 where: {
-                    published: true
+                    published: { "type": "Buffer", "data": [1] }
                 },
             };
             const packages = await this.insurancePackages.find(packageFilter);
@@ -855,7 +866,7 @@ let CorporateController = class CorporateController {
                 let plansLevelFilter = {
                     order: 'ordering ASC',
                     where: {
-                        "published": true,
+                        "published": { "type": "Buffer", "data": [1] },
                         "requirePlanLevel": null
                     }
                 };
@@ -999,9 +1010,9 @@ let CorporateController = class CorporateController {
                     contactDetailsObj.city = apiRequest.city;
                     contactDetailsObj.state = apiRequest.state;
                     contactDetailsObj.country = apiRequest.country;
-                    contactDetailsObj.line1 = apiRequest.street_address_line1;
-                    contactDetailsObj.line2 = apiRequest.street_address_line2;
-                    contactDetailsObj.postalCode = apiRequest.postal_code;
+                    contactDetailsObj.line1 = apiRequest.streetAddressLine1;
+                    contactDetailsObj.line2 = apiRequest.streetAddressLine2;
+                    contactDetailsObj.postalCode = apiRequest.postalCode;
                     contactDetailsObj.contactType = 'COMPANY';
                     contactDetailsObj.addressType = 'OFFICE_ADDRESS';
                     contactDetailsObj.primaryEmail = apiRequest.email;
@@ -1088,15 +1099,15 @@ let CorporateController = class CorporateController {
                             console.log("**************************************************");
                             let fuseBillAddressData = {
                                 "customerAddressPreferenceId": fusebillCustomer.id,
-                                "countryId": apiRequest.country_id,
-                                "stateId": apiRequest.state_id,
-                                //"addressType": apiRequest.address_type ?? 'Shipping',//here shipping is same as home //Billing, shipping    
-                                "addressType": (_a = apiRequest.address_type) !== null && _a !== void 0 ? _a : 'Billing',
+                                "countryId": apiRequest.countryId,
+                                "stateId": apiRequest.stateId,
+                                //"addressType": apiRequest.addressType ?? 'Shipping',//here shipping is same as home //Billing, shipping    
+                                "addressType": (_a = apiRequest.addressType) !== null && _a !== void 0 ? _a : 'Billing',
                                 "enforceFullAddress": true,
-                                "line1": apiRequest.street_address_line1,
-                                "line2": apiRequest.street_address_line2,
+                                "line1": apiRequest.streetAddressLine1,
+                                "line2": apiRequest.streetAddressLine2,
                                 "city": apiRequest.city,
-                                "postalZip": apiRequest.postal_code,
+                                "postalZip": apiRequest.postalCode,
                                 "country": apiRequest.country,
                                 "state": apiRequest.state
                             };
@@ -1263,7 +1274,7 @@ let CorporateController = class CorporateController {
                     let packageFilter = {
                         order: 'ordering ASC',
                         where: {
-                            published: true
+                            published: { "type": "Buffer", "data": [1] }
                         },
                     };
                     const packages = await this.insurancePackages.find(packageFilter);
@@ -1282,7 +1293,7 @@ let CorporateController = class CorporateController {
                         let plansLevelFilter = {
                             order: 'ordering ASC',
                             where: {
-                                "published": true,
+                                "published": { "type": "Buffer", "data": [1] },
                                 "requirePlanLevel": null
                             }
                         };
@@ -1421,15 +1432,15 @@ let CorporateController = class CorporateController {
                         console.log("**************************************************");
                         let fuseBillAddressData = {
                             "customerAddressPreferenceId": fusebillCustomer.id,
-                            "countryId": apiRequest.country_id,
-                            "stateId": apiRequest.state_id,
-                            //"addressType": apiRequest.address_type ?? 'Shipping',//here shipping is same as home //Billing, shipping    
-                            "addressType": (_a = apiRequest.address_type) !== null && _a !== void 0 ? _a : 'Billing',
+                            "countryId": apiRequest.countryId,
+                            "stateId": apiRequest.stateId,
+                            //"addressType": apiRequest.addressType ?? 'Shipping',//here shipping is same as home //Billing, shipping    
+                            "addressType": (_a = apiRequest.addressType) !== null && _a !== void 0 ? _a : 'Billing',
                             "enforceFullAddress": true,
-                            "line1": apiRequest.street_address_line1,
-                            "line2": apiRequest.street_address_line2,
+                            "line1": apiRequest.streetAddressLine1,
+                            "line2": apiRequest.streetAddressLine2,
                             "city": apiRequest.city,
-                            "postalZip": apiRequest.postal_code,
+                            "postalZip": apiRequest.postalCode,
                             "country": apiRequest.country,
                             "state": apiRequest.state
                         };
@@ -1554,43 +1565,46 @@ let CorporateController = class CorporateController {
             else {
                 let corporate = await this.brokerRepository.findById(corporateId);
                 if (corporate) {
-                    // && corporate.brokerType==CONST.BROKER.CORPORATE){
-                    let corporateTier = new models_1.CorporateTiers();
-                    corporateTier.brokerId = corporateId;
-                    corporateTier.name = CONST.TIER.general;
-                    corporateTier.published = 1;
-                    corporateTier.tierType = CONST.TIER_TYPE.DEF;
-                    corporateTier.spendingLimit = CONST.SPENDING_LIMIT;
-                    corporateDefaultTier = await this.corporateTiersRepository.create(corporateTier);
+                    if (!apiRequest.configuration.tier) {
+                        let corporateTier = new models_1.CorporateTiers();
+                        corporateTier.brokerId = corporateId;
+                        corporateTier.name = CONST.TIER.general;
+                        corporateTier.published = 1;
+                        corporateTier.tierType = CONST.TIER_TYPE.DEF;
+                        corporateTier.spendingLimit = CONST.SPENDING_LIMIT;
+                        corporateDefaultTier = await this.corporateTiersRepository.create(corporateTier);
+                    }
                     let corporateTiredPlanLevel = new models_1.CorporateTieredPlanLevels();
-                    corporateTiredPlanLevel.tierId = corporateDefaultTier.id;
                     corporateTiredPlanLevel.spendingLimit = CONST.SPENDING_LIMIT;
                     corporateTiredPlanLevel.coveredPercentage = 0;
                     //block 1
                     for (const planPaidByTheCompant of apiRequest.plansPaidByTheCompant) {
+                        corporateTiredPlanLevel.tierId = apiRequest.configuration.tier ? planPaidByTheCompant.tierId : corporateDefaultTier.id;
                         corporateTiredPlanLevel.paidByCompany = 1;
                         corporateTiredPlanLevel.coveredByCompany = 0;
                         corporateTiredPlanLevel.paidByEmployee = 0;
-                        corporateTiredPlanLevel.planId = planPaidByTheCompant;
+                        corporateTiredPlanLevel.planLevelId = planPaidByTheCompant.planLevelId;
                         await this.corporateTieredPlanLevelsRepository.create(corporateTiredPlanLevel);
                     }
                     if (apiRequest.enableUpgradedPlans && apiRequest.upgradedPlans.length > 0) {
                         //block 2
                         for (const enableUpgradedPlan of apiRequest.enableUpgradedPlans) {
+                            corporateTiredPlanLevel.tierId = apiRequest.configuration.tier ? enableUpgradedPlan.tierId : corporateDefaultTier.id;
                             corporateTiredPlanLevel.paidByCompany = 0;
                             corporateTiredPlanLevel.coveredByCompany = 1;
                             corporateTiredPlanLevel.paidByEmployee = 0;
-                            corporateTiredPlanLevel.planId = enableUpgradedPlan;
+                            corporateTiredPlanLevel.planLevelId = enableUpgradedPlan.planLevelId;
                             await this.corporateTieredPlanLevelsRepository.create(corporateTiredPlanLevel);
                         }
                     }
                     if (apiRequest.enableEmployeePurchasePlans && apiRequest.employeePurchasePlans.length > 0) {
                         //block 3
                         for (const employeePurchasePlan of apiRequest.employeePurchasePlans) {
+                            corporateTiredPlanLevel.tierId = apiRequest.configuration.tier ? employeePurchasePlan.tierId : corporateDefaultTier.id;
                             corporateTiredPlanLevel.paidByCompany = 0;
                             corporateTiredPlanLevel.coveredByCompany = 0;
                             corporateTiredPlanLevel.paidByEmployee = 1;
-                            corporateTiredPlanLevel.planId = employeePurchasePlan;
+                            corporateTiredPlanLevel.planLevelId = employeePurchasePlan.planLevelId;
                             await this.corporateTieredPlanLevelsRepository.create(corporateTiredPlanLevel);
                         }
                     }
@@ -1616,13 +1630,71 @@ let CorporateController = class CorporateController {
         });
         return this.response;
     }
-    async configureWallet(corporateId, apiRequest) { }
+    async configureWallet(corporateId, apiRequest) {
+        let status, message, data = {};
+        try {
+            let corporate = await this.brokerRepository.findById(corporateId);
+            if (corporate) {
+                await this.brokerRepository.updateById(corporateId, {
+                    settingsGroupBenefitzWalletType: apiRequest.walletType,
+                    settingsHealthSpendingAllotment: apiRequest.walletAllotment,
+                    settingsRolloverEmployeeLimitNextYear: apiRequest.roolOverLimitToTheNextYear,
+                    settingsRolloverUnusedWalletFunds: apiRequest.payForService
+                });
+                await this.corporateTiersRepository.updateAll({ spendingLimit: apiRequest.spendingLimit }, { brokerId: corporateId });
+                status = 200;
+                message = MESSAGE.CORPORATE_MSG.WALLET_CONFIG_SUCCESS;
+            }
+            else {
+                status = 201;
+                message = MESSAGE.CORPORATE_MSG.NO_CORPORATE;
+            }
+        }
+        catch (error) {
+            status = 201;
+            message = MESSAGE.ERRORS.someThingwentWrong;
+            console.log(error);
+        }
+        this.response.status(status).send({
+            status, message, data
+        });
+        return this.response;
+    }
     async corporateTiers(corporateId, apiRequest) {
         let status, message, data = {};
         try {
             let corporate = await this.brokerRepository.findById(corporateId);
             if (corporate) {
+                let corporateTier = new models_1.CorporateTiers();
+                corporateTier.brokerId = corporate.id;
+                corporateTier.published = 1;
+                if (apiRequest.default.length > 0) {
+                    for (const defaultTier of apiRequest.default) {
+                        corporateTier.name = defaultTier.tierName;
+                        corporateTier.tierType = CONST.TIER_TYPE.DEF;
+                        corporateTier.spendingLimit = defaultTier.walletAmount;
+                    }
+                }
+                if (apiRequest.lengthOfService.length > 0) {
+                    for (const lengthOfServiceTier of apiRequest.lengthOfService) {
+                        corporateTier.name = lengthOfServiceTier.tierName;
+                        corporateTier.tierType = CONST.TIER_TYPE.LOS;
+                        corporateTier.fromLength = lengthOfServiceTier.from;
+                        corporateTier.toLength = lengthOfServiceTier.to;
+                        corporateTier.spendingLimit = lengthOfServiceTier.walletAmount;
+                    }
+                }
+                if (apiRequest.annualIncome.length > 0) {
+                    for (const annualIncomeTier of apiRequest.annualIncome) {
+                        corporateTier.name = annualIncomeTier.tierName;
+                        corporateTier.tierType = CONST.TIER_TYPE.AI;
+                        corporateTier.incomePercentage = annualIncomeTier.percentage;
+                        corporateTier.annualIncome = annualIncomeTier.annualIncome;
+                        corporateTier.spendingLimit = annualIncomeTier.walletAmount;
+                    }
+                }
                 status = 200;
+                message = MESSAGE.CORPORATE_MSG.TIER_CONFIG_SUCCESS;
             }
             else {
                 status = 201;
@@ -1692,10 +1764,10 @@ tslib_1.__decorate([
                             type: 'string',
                             default: 'CORPORATE'
                         },
-                        firstName: { type: 'string', default: '', },
-                        lastName: { type: 'string', default: '', },
-                        email: { type: 'string', default: 'abc@gmail.com', },
-                        phoneNum: { type: 'number', default: 9999999999, },
+                        // firstName: { type: 'string', default: '', },
+                        // lastName: { type: 'string', default: '', },
+                        // email: { type: 'string', default: 'abc@gmail.com', },
+                        // phoneNum: { type: 'number', default: 9999999999, },
                         policyStartDate: { type: 'string', default: new Date().toISOString().slice(0, 10) },
                         logo: {
                             type: 'string',
@@ -1753,11 +1825,11 @@ tslib_1.__decorate([
                             type: 'number',
                             default: '1'
                         },
-                        street_address_line1: {
+                        streetAddressLine1: {
                             type: 'string',
                             default: '',
                         },
-                        street_address_line2: {
+                        streetAddressLine2: {
                             type: 'string',
                             default: '',
                         },
@@ -1769,7 +1841,7 @@ tslib_1.__decorate([
                             type: 'string',
                             default: '',
                         },
-                        province_id: {
+                        provinceId: {
                             type: 'number',
                             default: '0',
                         },
@@ -1777,7 +1849,7 @@ tslib_1.__decorate([
                             type: 'string',
                             default: '',
                         },
-                        state_id: {
+                        stateId: {
                             type: 'number',
                             default: '0',
                         },
@@ -1785,11 +1857,11 @@ tslib_1.__decorate([
                             type: 'string',
                             default: '',
                         },
-                        country_id: {
+                        countryId: {
                             type: 'number',
                             default: '0',
                         },
-                        postal_code: {
+                        postalCode: {
                             type: 'string',
                             default: '',
                         },
@@ -1877,10 +1949,6 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], CorporateController.prototype, "customerBankVerification", null);
 tslib_1.__decorate([
-    (0, authorization_1.authorize)({
-        allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR, CONST.USER_ROLE.CORPORATE_ADMINISTRATOR],
-        voters: [auth_middleware_1.basicAuthorization]
-    }),
     (0, rest_1.get)(paths_1.CORPORATE.PLANS),
     (0, rest_1.response)(200, {
         description: 'Mixed object of all the specific values needed for form configuration',
@@ -1981,11 +2049,11 @@ tslib_1.__decorate([
                             type: 'number',
                             default: '1'
                         },
-                        street_address_line1: {
+                        streetAddressLine1: {
                             type: 'string',
                             default: '',
                         },
-                        street_address_line2: {
+                        streetAddressLine2: {
                             type: 'string',
                             default: '',
                         },
@@ -1997,7 +2065,7 @@ tslib_1.__decorate([
                             type: 'string',
                             default: '',
                         },
-                        province_id: {
+                        provinceId: {
                             type: 'number',
                             default: '0',
                         },
@@ -2005,7 +2073,7 @@ tslib_1.__decorate([
                             type: 'string',
                             default: '',
                         },
-                        state_id: {
+                        stateId: {
                             type: 'number',
                             default: '0',
                         },
@@ -2013,11 +2081,11 @@ tslib_1.__decorate([
                             type: 'string',
                             default: '',
                         },
-                        country_id: {
+                        countryId: {
                             type: 'number',
                             default: '0',
                         },
-                        postal_code: {
+                        postalCode: {
                             type: 'string',
                             default: '',
                         },
@@ -2077,20 +2145,62 @@ tslib_1.__decorate([
                 schema: {
                     type: 'object',
                     properties: {
+                        configuration: {
+                            type: 'object',
+                            properties: {
+                                tier: {
+                                    type: 'boolean'
+                                },
+                                wallet: {
+                                    type: 'boolean'
+                                }
+                            }
+                        },
                         //block1
                         plansPaidByTheCompant: {
                             type: 'array',
-                            default: []
+                            required: ['planLevelId'],
+                            items: {
+                                properties: {
+                                    planLevelId: {
+                                        type: 'number'
+                                    },
+                                    tierId: {
+                                        type: 'number',
+                                        default: 0
+                                    }
+                                }
+                            },
                         },
                         //block 2
                         upgradedPlans: {
                             type: 'array',
-                            default: []
+                            required: ['planLevelId'],
+                            items: {
+                                properties: {
+                                    planLevelId: {
+                                        type: 'number',
+                                    },
+                                    tierId: {
+                                        type: 'number',
+                                    }
+                                }
+                            },
                         },
                         //block 3
                         employeePurchasePlans: {
                             type: 'array',
-                            default: []
+                            required: ['planLevelId'],
+                            items: {
+                                properties: {
+                                    planLevelId: {
+                                        type: 'number'
+                                    },
+                                    tierId: {
+                                        type: 'number',
+                                    }
+                                }
+                            },
                         },
                         //block 2 settings
                         enableUpgradedPlans: {
@@ -2120,10 +2230,31 @@ tslib_1.__decorate([
             'application/json': {
                 schema: {
                     properties: {
-                        allowGbWallet: {},
-                        allowGbWalletType: {},
-                        healthSpendingAccount: {},
-                        healthSpendingAmount: {}
+                        walletType: {
+                            //settings_group_benefitz_wallet_type
+                            type: 'string',
+                            default: 'Both',
+                            enum: CONST.walletType
+                        },
+                        walletAllotment: {
+                            //settings_health_spending_allotment
+                            type: 'string',
+                            default: 'FULL_YEAR',
+                            enum: CONST.walletAllotment
+                        },
+                        roolOverLimitToTheNextYear: {
+                            //settings_rollover_employee_limit_next_year
+                            type: 'boolean',
+                        },
+                        payForService: {
+                            //settings_rollover_unused_wallet_funds
+                            type: 'string',
+                            enum: CONST.rolloverUnusedWalletFunds
+                        },
+                        spendingLimit: {
+                            type: 'number',
+                            default: 1000
+                        }
                     }
                 }
             }
@@ -2142,17 +2273,31 @@ tslib_1.__decorate([
             'application/json': {
                 schema: {
                     properties: {
-                        tierLevelAndCorresponding: {
+                        default: {
                             type: 'array',
-                            default: [{ "tierName": "All", "walletAmount": 0 }]
+                            required: ['tierName', 'walletAmount'],
+                            items: {
+                                properties: {
+                                    tierName: { type: 'string' }, walletAmount: { type: 'number', default: 1000 }
+                                }
+                            },
+                            // default: [{ "tierName": "All", "walletAmount": 0 }]
                         },
-                        lengthOfServiceAndCorresponding: {
+                        lengthOfService: {
                             type: 'array',
-                            default: [{ "tierName": "New Joinee", "from": 0, "to": 2, "walletAmount": 0 }]
+                            items: {
+                                properties: {
+                                    tierName: { type: 'string' }, from: { type: 'number' }, to: { type: 'number' }, walletAmount: { type: 'number', default: 1000 }
+                                }
+                            },
                         },
                         annualIncome: {
                             type: 'array',
-                            default: [{ "tierName": "Income one", "Percentage": 1, "AnnualIncome": 50000, "walletAmount": 500 }]
+                            items: {
+                                properties: {
+                                    tierName: { type: 'string' }, percentage: { type: 'number' }, annualIncome: { type: 'number' }, walletAmount: { type: 'number', default: 1000 }
+                                }
+                            },
                         }
                     }
                 }

@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { Entity } from '@loopback/repository';
 import { EquitablePlanLevelMapping } from './equitable-plan-level-mapping.model';
 import { GreenshieldPlanLevelMapping } from './greenshield-plan-level-mapping.model';
@@ -14,7 +15,7 @@ export declare class PlanLevel extends Entity {
     name: string;
     ordering: number;
     parentId?: number;
-    published?: boolean;
+    published?: Buffer;
     requirePlanLevel?: number;
     textColor?: string;
     tooltipTitle?: string;

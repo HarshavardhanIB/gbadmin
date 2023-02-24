@@ -61,6 +61,6 @@ export declare class BrokerController {
     broker_registration(request: Request, response: Response): Promise<Response>;
     app(): Promise<any>;
     formLogo(request: Request, response: Response, formId: number): Promise<Response<any, Record<string, any>>>;
-    formDisclouser(request: Request, response: Response, formId: number): Promise<void>;
+    formDisclouser(request: Request, response: Response, formId: number): Promise<Response<any, Record<string, any>>>;
     brokerDisclouserUpdate(request: Request, response: Response, brokerId: number): Promise<Response<any, Record<string, any>>>;
 }

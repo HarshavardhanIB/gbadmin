@@ -64,7 +64,7 @@ export const FUSEBILL_API_BASE_PATH = API_BASE_PATH + "fusebill/"
 export const CORPORATE={
     SIGNUP:'/corporate/signup',
     LOGO:'/corporate/{company}/logo',
-    FORMCONFIG:'/formConfig',
+    FORMCONFIG:'/corporateSignup/formConfig',
     BANK_DETAILS_REGISTER:'/bankDetails/register',
     BANK_VERIFY:'/bank/verify',
     PLANS:'/corporate/validation',

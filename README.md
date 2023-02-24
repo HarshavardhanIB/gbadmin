@@ -1,6 +1,14 @@
 #CHANGE LOG
 1.0.0.0 - RELEASE(v...)
 -----------------------------------------------------------------
+0.6.1
+
+added tier configration and waller configration in corporate controller and made changes in planselection service in that added configration key in that key added tier and waller in tier is flase create a defaul tier in corporate tiers
+
+0.6.0
+
+form logo,disclouser aggrement and broker disclouser aggrement services added 
+
 0.5.0
 - Changes in db and models, repos (**-02-23)   removed corporate_paid_tiered_plan_levels   modified customer_plans (paid_by_company, covered_by_company, paid_by_employee)  modified broker (disclosure_agreement)  modified signup_forms (logo, disclosure_agreement)  modified corporate_tiered_plan_levels (paid_by_company, covered_by_company, paid_by_employee, plan_id vs plan_level_id, foriegn key corporate_tiered_plan_levels_ibfk_1)  modified corporate_tiers (from_length, to_length, income_percentage, annual_income)  modified customer(employee_id)
 

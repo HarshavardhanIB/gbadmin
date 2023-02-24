@@ -8,7 +8,7 @@ import { nextTick } from 'process';
 import { Broker, BrokerAdmins, ContactInformation, CorporatePaidTieredPlanLevels, CorporateTieredPlanLevels, CorporateTiers, Customer, CustomerContactInfo, InsurancePlans, SignupForms, Users } from '../models';
 import * as CONST from '../constants'
 import { BankCodesRepository, BrokerRepository, ContactInformationRepository, CorporatePaidTieredPlanLevelsRepository, CorporateTiersRepository, CustomerContactInfoRepository, CustomerRepository, FinancialInstitutionsRepository, FinancialInstitutionsRoutingNumbersRepository, InsurancePackagesRepository, InsurancePlansRepository, PlanLevelRepository, PlansAvailabilityRepository, SignupFormsRepository, StatesAndProvincesRepository, UsersRepository, } from '../repositories'
-import { AchService, Corporate, Excel2Service, ExcelService, FusebillService, mail, RegistrationServiceService } from '../services';
+import { AchService, Corporate, Excel2Service, ExcelService, FusebillService, mail, moments, RegistrationServiceService } from '../services';
 import { FILE_UPLOAD_SERVICE } from '../keys';
 import { FileUploadHandler } from "../types";
 import { FilesController } from './files.controller';
@@ -125,18 +125,18 @@ export class CorporateController {
               type: 'string',
               default: 'CORPORATE'
             },
-            firstName: { type: 'string', default: '', },
-            lastName: { type: 'string', default: '', },
-            email: { type: 'string', default: 'abc@gmail.com', },
-            phoneNum: { type: 'number', default: 9999999999, },
+            // firstName: { type: 'string', default: '', },
+            // lastName: { type: 'string', default: '', },
+            // email: { type: 'string', default: 'abc@gmail.com', },
+            // phoneNum: { type: 'number', default: 9999999999, },
             policyStartDate: { type: 'string', default: new Date().toISOString().slice(0, 10) },
             logo: {
               type: 'string',
               format: 'binary'
             },
-            fuseBillCustomerCreation:{
-              type:'boolean',
-              default:false
+            fuseBillCustomerCreation: {
+              type: 'boolean',
+              default: false
             },
             voidCheck: {
               type: 'string',
@@ -188,11 +188,11 @@ export class CorporateController {
               type: 'number',
               default: '1'
             },
-            street_address_line1: {
+            streetAddressLine1: {
               type: 'string',
               default: '',
             },
-            street_address_line2: {
+            streetAddressLine2: {
               type: 'string',
               default: '',
             },
@@ -204,7 +204,7 @@ export class CorporateController {
               type: 'string',
               default: '',
             },
-            province_id: {
+            provinceId: {
               type: 'number',
               default: '0',
             },
@@ -212,7 +212,7 @@ export class CorporateController {
               type: 'string',
               default: '',
             },
-            state_id: {
+            stateId: {
               type: 'number',
               default: '0',
             },
@@ -220,11 +220,11 @@ export class CorporateController {
               type: 'string',
               default: '',
             },
-            country_id: {
+            countryId: {
               type: 'number',
               default: '0',
             },
-            postal_code: {
+            postalCode: {
               type: 'string',
               default: '',
             },
@@ -333,13 +333,13 @@ export class CorporateController {
             contactDetailsObj.city = apiRequest.city;
             contactDetailsObj.state = apiRequest.state;
             contactDetailsObj.country = apiRequest.country;
-            contactDetailsObj.line1 = apiRequest.street_address_line1;
-            contactDetailsObj.line2 = apiRequest.street_address_line2;
-            contactDetailsObj.postalCode = apiRequest.postal_code;
+            contactDetailsObj.line1 = apiRequest.streetAddressLine1;
+            contactDetailsObj.line2 = apiRequest.streetAddressLine2;
+            contactDetailsObj.postalCode = apiRequest.postalCode;
             contactDetailsObj.contactType = 'COMPANY';
             contactDetailsObj.addressType = 'OFFICE_ADDRESS';
             contactDetailsObj.primaryEmail = groupAdmins[0].email;
-            contactDetailsObj.primaryPhone =  groupAdmins[0].phoneNum;
+            contactDetailsObj.primaryPhone = groupAdmins[0].phoneNum;
             let contactInfo = await this.contactInformationRepository.create(contactDetailsObj);
             contId = contactInfo.id;
             // let corporateUserObj: Users = new Users();
@@ -410,15 +410,15 @@ export class CorporateController {
                 console.log("**************************************************")
                 let fuseBillAddressData: any = {
                   "customerAddressPreferenceId": fusebillCustomer.id,
-                  "countryId": apiRequest.country_id,
-                  "stateId": apiRequest.state_id,
-                  //"addressType": apiRequest.address_type ?? 'Shipping',//here shipping is same as home //Billing, shipping    
-                  "addressType": apiRequest.address_type ?? 'Billing', //here shipping is same as home //Billing, shipping  
+                  "countryId": apiRequest.countryId,
+                  "stateId": apiRequest.stateId,
+                  //"addressType": apiRequest.addressType ?? 'Shipping',//here shipping is same as home //Billing, shipping    
+                  "addressType": apiRequest.addressType ?? 'Billing', //here shipping is same as home //Billing, shipping  
                   "enforceFullAddress": true,
-                  "line1": apiRequest.street_address_line1,
-                  "line2": apiRequest.street_address_line2,
+                  "line1": apiRequest.streetAddressLine1,
+                  "line2": apiRequest.streetAddressLine2,
                   "city": apiRequest.city,
-                  "postalZip": apiRequest.postal_code,
+                  "postalZip": apiRequest.postalCode,
                   "country": apiRequest.country,
                   "state": apiRequest.state
                 }
@@ -504,7 +504,7 @@ export class CorporateController {
             let signupFormData: SignupForms = new SignupForms();
             signupFormData.brokerId = brokerId;
             let link = await generateFormLink(broker.userId || 0)
-            signupFormData.link = await this.checkAndGenerateNewFormLink(link, groupAdminsUsers[0]|| 0)
+            signupFormData.link = await this.checkAndGenerateNewFormLink(link, groupAdminsUsers[0] || 0)
             let aliasLink = "/" + broker.name?.toLowerCase().split(" ")[0]
             signupFormData.alias = aliasLink
             signupFormData.name = CONST.signupForm.name;
@@ -590,7 +590,7 @@ export class CorporateController {
               data: data1
             });
           }
-          else{
+          else {
             this.response.status(200).send({
               status: '201',
               message: CORPORATE_MSG.GROUP_ADMIN_DETAILS,
@@ -598,7 +598,7 @@ export class CorporateController {
               data: data1
             });
           }
-         
+
         } catch (error) {
           console.log(error);
           this.response.status(202).send({
@@ -644,7 +644,7 @@ export class CorporateController {
     let status, message, date, data: any = {};
     try {
       status = 200;
-      message = "Form configurations"
+      message = "Form configurations";
       // data['gender'] = CONST.GENDER_LIST;
       // data['marital_status'] = CONST.MARITAL_STATUS_LIST;
       // data['brokerType'] = CONST.BROKER_TYPE_ARRAY;
@@ -667,6 +667,15 @@ export class CorporateController {
         'annualIncome': [{ 'tierName': 'Income one', 'percentage': 1, 'annualIncome': 50000, 'walletAmount': 500 }, { 'tierName': 'Income Two', 'Percentage': 2, 'AnnualIncome': 75000, 'walletAmount': 2500 }, { 'tierName': 'Income Three', 'Percentage': 2.5, 'AnnualIncome': 100000, 'walletAmount': 3500 }]
       }
       data['tierConfig'] = tierConfig;
+      let walletConfig={
+        "walletType":'Health and Wellness Spending Accounts',
+        "walletTypeKeys":CONST.walletType,
+        "walletAllotment":'Health and Wellness Spending Accounts',
+        'walletAllotmentKeys':CONST.walletAllotment,
+        'payForService':'How does the company want to pay for the service?',
+        'payForServiceKeys':CONST.rolloverUnusedWalletFunds
+      }
+      data['walletConfig']=walletConfig
     } catch (error) {
       status = 400;
       message = "Configuration error"
@@ -908,7 +917,7 @@ export class CorporateController {
           "voidCheckImage": '',//JSON.stringify(checkFileBuffer),
           "voidCheckImage2": checkFileBuffer,
           "voidCheckFileType": mimetype,
-          "nextBillingDate": moment(bank_details.enrollmentDate).format(dateFormat1),
+          "nextBillingDate": moments(bank_details.enrollmentDate).format(dateFormat1),
           "nextBillingPrice": parseFloat(bank_details.amount),
           "customerName": bank_details.customerName,
           //   "fusebillCustomerId": customer.fusebillCustomerId,
@@ -1094,10 +1103,10 @@ export class CorporateController {
     });
     return this.response;
   }
-  @authorize({
-    allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR, CONST.USER_ROLE.CORPORATE_ADMINISTRATOR],
-    voters: [basicAuthorization]
-  })
+  // @authorize({
+  //   allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR, CONST.USER_ROLE.CORPORATE_ADMINISTRATOR],
+  //   voters: [basicAuthorization]
+  // })
   @get(CORPORATE.PLANS)
   @response(200, {
     description: 'Mixed object of all the specific values needed for form configuration',
@@ -1115,7 +1124,7 @@ export class CorporateController {
       let packageFilter: any = {
         order: 'ordering ASC',
         where: {
-          published: true
+          published: { "type": "Buffer", "data": [1] }
         },
       }
       const packages: any = await this.insurancePackages.find(packageFilter)
@@ -1134,7 +1143,7 @@ export class CorporateController {
         let plansLevelFilter: any = {
           order: 'ordering ASC',
           where: {
-            "published": true,
+            "published": { "type": "Buffer", "data": [1] },
             "requirePlanLevel": null
           }
         }
@@ -1289,11 +1298,11 @@ export class CorporateController {
               type: 'number',
               default: '1'
             },
-            street_address_line1: {
+            streetAddressLine1: {
               type: 'string',
               default: '',
             },
-            street_address_line2: {
+            streetAddressLine2: {
               type: 'string',
               default: '',
             },
@@ -1305,7 +1314,7 @@ export class CorporateController {
               type: 'string',
               default: '',
             },
-            province_id: {
+            provinceId: {
               type: 'number',
               default: '0',
             },
@@ -1313,7 +1322,7 @@ export class CorporateController {
               type: 'string',
               default: '',
             },
-            state_id: {
+            stateId: {
               type: 'number',
               default: '0',
             },
@@ -1321,17 +1330,17 @@ export class CorporateController {
               type: 'string',
               default: '',
             },
-            country_id: {
+            countryId: {
               type: 'number',
               default: '0',
             },
-            postal_code: {
+            postalCode: {
               type: 'string',
               default: '',
             },
-            fuseBillCustomerCreation:{
-              type:'boolean',
-              default:false
+            fuseBillCustomerCreation: {
+              type: 'boolean',
+              default: false
             }
           }
         },
@@ -1424,9 +1433,9 @@ export class CorporateController {
           contactDetailsObj.city = apiRequest.city;
           contactDetailsObj.state = apiRequest.state;
           contactDetailsObj.country = apiRequest.country;
-          contactDetailsObj.line1 = apiRequest.street_address_line1;
-          contactDetailsObj.line2 = apiRequest.street_address_line2;
-          contactDetailsObj.postalCode = apiRequest.postal_code;
+          contactDetailsObj.line1 = apiRequest.streetAddressLine1;
+          contactDetailsObj.line2 = apiRequest.streetAddressLine2;
+          contactDetailsObj.postalCode = apiRequest.postalCode;
           contactDetailsObj.contactType = 'COMPANY';
           contactDetailsObj.addressType = 'OFFICE_ADDRESS';
           contactDetailsObj.primaryEmail = apiRequest.email;
@@ -1513,15 +1522,15 @@ export class CorporateController {
               console.log("**************************************************")
               let fuseBillAddressData: any = {
                 "customerAddressPreferenceId": fusebillCustomer.id,
-                "countryId": apiRequest.country_id,
-                "stateId": apiRequest.state_id,
-                //"addressType": apiRequest.address_type ?? 'Shipping',//here shipping is same as home //Billing, shipping    
-                "addressType": apiRequest.address_type ?? 'Billing', //here shipping is same as home //Billing, shipping  
+                "countryId": apiRequest.countryId,
+                "stateId": apiRequest.stateId,
+                //"addressType": apiRequest.addressType ?? 'Shipping',//here shipping is same as home //Billing, shipping    
+                "addressType": apiRequest.addressType ?? 'Billing', //here shipping is same as home //Billing, shipping  
                 "enforceFullAddress": true,
-                "line1": apiRequest.street_address_line1,
-                "line2": apiRequest.street_address_line2,
+                "line1": apiRequest.streetAddressLine1,
+                "line2": apiRequest.streetAddressLine2,
                 "city": apiRequest.city,
-                "postalZip": apiRequest.postal_code,
+                "postalZip": apiRequest.postalCode,
                 "country": apiRequest.country,
                 "state": apiRequest.state
               }
@@ -1689,7 +1698,7 @@ export class CorporateController {
           let packageFilter: any = {
             order: 'ordering ASC',
             where: {
-              published: true
+              published: { "type": "Buffer", "data": [1] }
             },
           }
           const packages: any = await this.insurancePackages.find(packageFilter)
@@ -1708,7 +1717,7 @@ export class CorporateController {
             let plansLevelFilter: any = {
               order: 'ordering ASC',
               where: {
-                "published": true,
+                "published": { "type": "Buffer", "data": [1] },
                 "requirePlanLevel": null
               }
             }
@@ -1869,15 +1878,15 @@ export class CorporateController {
             console.log("**************************************************")
             let fuseBillAddressData: any = {
               "customerAddressPreferenceId": fusebillCustomer.id,
-              "countryId": apiRequest.country_id,
-              "stateId": apiRequest.state_id,
-              //"addressType": apiRequest.address_type ?? 'Shipping',//here shipping is same as home //Billing, shipping    
-              "addressType": apiRequest.address_type ?? 'Billing', //here shipping is same as home //Billing, shipping  
+              "countryId": apiRequest.countryId,
+              "stateId": apiRequest.stateId,
+              //"addressType": apiRequest.addressType ?? 'Shipping',//here shipping is same as home //Billing, shipping    
+              "addressType": apiRequest.addressType ?? 'Billing', //here shipping is same as home //Billing, shipping  
               "enforceFullAddress": true,
-              "line1": apiRequest.street_address_line1,
-              "line2": apiRequest.street_address_line2,
+              "line1": apiRequest.streetAddressLine1,
+              "line2": apiRequest.streetAddressLine2,
               "city": apiRequest.city,
-              "postalZip": apiRequest.postal_code,
+              "postalZip": apiRequest.postalCode,
               "country": apiRequest.country,
               "state": apiRequest.state
             }
@@ -1989,20 +1998,65 @@ export class CorporateController {
         schema: {
           type: 'object',
           properties: {
+            configuration: {
+              type: 'object',
+              properties: {
+                tier: {
+                  type: 'boolean'
+                },
+                wallet: {
+                  type: 'boolean'
+                }
+              }
+            },
             //block1
             plansPaidByTheCompant: {
               type: 'array',
-              default: []
+              required: ['planLevelId'],
+              items: {
+                properties: {
+                  planLevelId: {
+                    type: 'number'
+                  },
+                  tierId: {
+                    type: 'number',
+                    default:0
+                  }
+                }
+              },
+              
             },
             //block 2
             upgradedPlans: {
               type: 'array',
-              default: []
+              required: ['planLevelId'],
+              items: {
+                properties: {
+                  planLevelId: {
+                    type: 'number',
+                  },
+                  tierId: {
+                    type: 'number',
+                   }
+                }
+              },
+              
             },
             //block 3
             employeePurchasePlans: {
               type: 'array',
-              default: []
+              required: ['planLevelId'],
+              items: {
+                properties: {
+                  planLevelId: {
+                    type: 'number'
+                  },
+                  tierId: {
+                    type: 'number',
+                  }
+                }
+              },
+              
             },
             //block 2 settings
             enableUpgradedPlans: {
@@ -2051,45 +2105,50 @@ export class CorporateController {
         return this.response;
       }
       else {
-        let corporate = await this.brokerRepository.findById(corporateId);
+        let corporate = await this.brokerRepository.findById(corporateId);        
         if (corporate) {
-          // && corporate.brokerType==CONST.BROKER.CORPORATE){
-          let corporateTier: CorporateTiers = new CorporateTiers();
-          corporateTier.brokerId = corporateId;
-          corporateTier.name = CONST.TIER.general;
-          corporateTier.published = 1;
-          corporateTier.tierType = CONST.TIER_TYPE.DEF
-          corporateTier.spendingLimit = CONST.SPENDING_LIMIT;
-          corporateDefaultTier = await this.corporateTiersRepository.create(corporateTier);
-          let corporateTiredPlanLevel: CorporateTieredPlanLevels = new CorporateTieredPlanLevels();
-          corporateTiredPlanLevel.tierId = corporateDefaultTier.id;
+          if(!apiRequest.configuration.tier){
+            let corporateTier: CorporateTiers = new CorporateTiers();
+            corporateTier.brokerId = corporateId;
+            corporateTier.name = CONST.TIER.general;
+            corporateTier.published = 1;
+            corporateTier.tierType = CONST.TIER_TYPE.DEF
+            corporateTier.spendingLimit = CONST.SPENDING_LIMIT;
+            corporateDefaultTier = await this.corporateTiersRepository.create(corporateTier);
+          }
+              
+          let corporateTiredPlanLevel: CorporateTieredPlanLevels = new CorporateTieredPlanLevels();          
           corporateTiredPlanLevel.spendingLimit = CONST.SPENDING_LIMIT;
           corporateTiredPlanLevel.coveredPercentage = 0;
           //block 1
           for (const planPaidByTheCompant of apiRequest.plansPaidByTheCompant) {
+            corporateTiredPlanLevel.tierId =apiRequest.configuration.tier?planPaidByTheCompant.tierId:corporateDefaultTier.id;
             corporateTiredPlanLevel.paidByCompany = 1;
             corporateTiredPlanLevel.coveredByCompany = 0;
             corporateTiredPlanLevel.paidByEmployee = 0;
-            corporateTiredPlanLevel.planId = planPaidByTheCompant;
+            corporateTiredPlanLevel.planLevelId = planPaidByTheCompant.planLevelId;
             await this.corporateTieredPlanLevelsRepository.create(corporateTiredPlanLevel);
           }
           if (apiRequest.enableUpgradedPlans && apiRequest.upgradedPlans.length > 0) {
             //block 2
             for (const enableUpgradedPlan of apiRequest.enableUpgradedPlans) {
+              corporateTiredPlanLevel.tierId =apiRequest.configuration.tier?enableUpgradedPlan.tierId:corporateDefaultTier.id;
               corporateTiredPlanLevel.paidByCompany = 0;
               corporateTiredPlanLevel.coveredByCompany = 1;
               corporateTiredPlanLevel.paidByEmployee = 0;
-              corporateTiredPlanLevel.planId = enableUpgradedPlan;
+              corporateTiredPlanLevel.planLevelId = enableUpgradedPlan.planLevelId;
               await this.corporateTieredPlanLevelsRepository.create(corporateTiredPlanLevel);
             }
           }
           if (apiRequest.enableEmployeePurchasePlans && apiRequest.employeePurchasePlans.length > 0) {
             //block 3
             for (const employeePurchasePlan of apiRequest.employeePurchasePlans) {
+              corporateTiredPlanLevel.tierId =apiRequest.configuration.tier?employeePurchasePlan.tierId:corporateDefaultTier.id;
               corporateTiredPlanLevel.paidByCompany = 0;
               corporateTiredPlanLevel.coveredByCompany = 0;
               corporateTiredPlanLevel.paidByEmployee = 1;
-              corporateTiredPlanLevel.planId = employeePurchasePlan;
+              corporateTiredPlanLevel.planLevelId=employeePurchasePlan.planLevelId
+              
               await this.corporateTieredPlanLevelsRepository.create(corporateTiredPlanLevel);
             }
           }
@@ -2121,23 +2180,65 @@ export class CorporateController {
       'application/json': {
         schema: {
           properties: {
-            allowGbWallet: {
-
+            walletType:{
+              //settings_group_benefitz_wallet_type
+              type:'string',
+              default:'Both',
+              enum:CONST.walletType
             },
-            allowGbWalletType: {
-
+            walletAllotment:{
+              //settings_health_spending_allotment
+              type:'string',
+              default:'FULL_YEAR',
+              enum:CONST.walletAllotment
             },
-            healthSpendingAccount: {
-
+            roolOverLimitToTheNextYear:{
+              //settings_rollover_employee_limit_next_year
+              type:'boolean',
             },
-            healthSpendingAmount: {
-
+            payForService:{
+              //settings_rollover_unused_wallet_funds
+              type:'string',
+              enum:CONST.rolloverUnusedWalletFunds
+            },
+            spendingLimit:{
+              type:'number',
+              default:1000
             }
           }
         }
       }
     }
-  }) apiRequest: any): Promise<any> { }
+  }) apiRequest: any): Promise<any> { 
+    let status, message, data: any = {};
+    try {
+      let corporate: any = await this.brokerRepository.findById(corporateId);    
+      if (corporate) {
+        await this.brokerRepository.updateById(corporateId,{
+          settingsGroupBenefitzWalletType:apiRequest.walletType,
+          settingsHealthSpendingAllotment:apiRequest.walletAllotment,
+          settingsRolloverEmployeeLimitNextYear:apiRequest.roolOverLimitToTheNextYear,
+          settingsRolloverUnusedWalletFunds:apiRequest.payForService
+        });
+        await this.corporateTiersRepository.updateAll({spendingLimit:apiRequest.spendingLimit},{brokerId:corporateId})
+        status=200;
+        message=MESSAGE.CORPORATE_MSG.WALLET_CONFIG_SUCCESS;
+      }
+      else {
+        status = 201;
+        message = MESSAGE.CORPORATE_MSG.NO_CORPORATE
+      }
+    } catch (error) {
+      status = 201;
+      message = MESSAGE.ERRORS.someThingwentWrong
+      console.log(error)
+    }
+    this.response.status(status).send({
+      status, message, data
+    })
+    return this.response;
+
+  }
   @post(CORPORATE.TIER)
   async corporateTiers(@param.path.number('corporateId') corporateId: number, @requestBody({
     description: 'corporate tiers',
@@ -2145,17 +2246,32 @@ export class CorporateController {
       'application/json': {
         schema: {
           properties: {
-            tierLevelAndCorresponding: {
+            default: {
               type: 'array',
-              default: [{ "tierName": "All", "walletAmount": 0 }]
+              required:['tierName','walletAmount'],
+              items:{
+                properties:{
+                  tierName:{type:'string'},walletAmount:{type:'number',default:1000}
+                }
+              },
+              // default: [{ "tierName": "All", "walletAmount": 0 }]
             },
-            lengthOfServiceAndCorresponding: {
+            lengthOfService: {
               type: 'array',
-              default: [{ "tierName": "New Joinee", "from": 0, "to": 2, "walletAmount": 0 }]
+              items:{
+                properties:{
+                  tierName:{type:'string'},from:{type:'number'},to:{type:'number'},walletAmount:{type:'number',default:1000}
+                }
+              },
             },
             annualIncome: {
               type: 'array',
-              default: [{ "tierName": "Income one", "Percentage": 1, "AnnualIncome": 50000, "walletAmount": 500 }]
+              items:{
+                properties:{
+                  tierName:{type:'string'},percentage:{type:'number'},annualIncome:{type:'number'},walletAmount:{type:'number',default:1000}
+                }
+              },
+              
             }
           }
         }
@@ -2164,10 +2280,38 @@ export class CorporateController {
   }) apiRequest: any): Promise<any> {
     let status, message, data: any = {};
     try {
-      let corporate: any = await this.brokerRepository.findById(corporateId);
-      if (corporate) {
-
+      let corporate: any = await this.brokerRepository.findById(corporateId);    
+      if (corporate) {        
+        let corporateTier:CorporateTiers=new CorporateTiers();
+      corporateTier.brokerId=corporate.id;
+      corporateTier.published=1;
+       if(apiRequest.default.length>0){
+        for(const defaultTier of apiRequest.default){
+          corporateTier.name=defaultTier.tierName;
+          corporateTier.tierType=CONST.TIER_TYPE.DEF;
+          corporateTier.spendingLimit=defaultTier.walletAmount
+         }
+       }
+       if(apiRequest.lengthOfService.length>0){
+        for(const lengthOfServiceTier of apiRequest.lengthOfService){
+          corporateTier.name=lengthOfServiceTier.tierName;
+          corporateTier.tierType=CONST.TIER_TYPE.LOS;
+          corporateTier.fromLength=lengthOfServiceTier.from;
+          corporateTier.toLength=lengthOfServiceTier.to;
+          corporateTier.spendingLimit=lengthOfServiceTier.walletAmount
+         }
+       }
+       if(apiRequest.annualIncome.length>0){
+        for(const annualIncomeTier of apiRequest.annualIncome){
+          corporateTier.name=annualIncomeTier.tierName;
+          corporateTier.tierType=CONST.TIER_TYPE.AI;
+          corporateTier.incomePercentage=annualIncomeTier.percentage;
+          corporateTier.annualIncome=annualIncomeTier.annualIncome
+          corporateTier.spendingLimit=annualIncomeTier.walletAmount
+         }
+       }
         status = 200;
+        message=MESSAGE.CORPORATE_MSG.TIER_CONFIG_SUCCESS
       }
       else {
         status = 201;
