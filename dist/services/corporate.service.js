@@ -61,7 +61,7 @@ let Corporate = class Corporate {
         }
         return returnPropertyName;
     }
-    async customerBankDetailsRegister(session, filenamets, ext, mimetype, customerName) {
+    async customerBankDetailsRegister(session, filenamets, ext, mimetype, customerName, fusebillCustomerId) {
         let message, status, data = {};
         let bankDetailsDecoded; // = atob(request.body.key)
         let bank_details = {}; // JSON.parse(bankDetailsDecoded);
@@ -91,7 +91,7 @@ let Corporate = class Corporate {
         if (!this.registrationService.validateAccountNo(bank_details.accountNumber)) {
             return false;
         }
-        let newFilename = paths_1.CUSTOMER_CHEQUES_FOLDER + '/' + filenamets + ext;
+        let newFilename = paths_1.CUSTOMER_CHEQUES_FOLDER + '/' + filenamets;
         console.log(newFilename);
         const checkFileBuffer = await (0, storage_helper_1.getFile)(newFilename, '');
         console.log(checkFileBuffer);
@@ -132,18 +132,19 @@ let Corporate = class Corporate {
             "nextBillingPrice": parseFloat(bank_details.amount),
             "customerName": customerName,
             //   "fusebillCustomerId": customer.fusebillCustomerId,
+            "fusebillCustomerId": fusebillCustomerId
         };
-        const customerRecord = await this.ach.createCustomer(input);
-        console.log(customerRecord);
-        if (customerRecord && customerRecord.data) {
-            (0, storage_helper_1.deleteFile)(newFilename);
-            data = customerRecord.data;
-            message = 'Customer Record(PAD) created';
-            status = '200';
-        }
-        else {
-            return false;
-        }
+        // commented 149-160  for testing uncomment after test
+        // const customerRecord = await this.ach.createCustomer(input)
+        // console.log(customerRecord)
+        // if (customerRecord && customerRecord.data) {
+        //   deleteFile(newFilename);
+        //   data = customerRecord.data
+        //   message = 'Customer Record(PAD) created'
+        //   status = '200'
+        // } else {
+        //   return false;
+        // }
         return true;
     }
     async addEmployee(data, corporateId) {

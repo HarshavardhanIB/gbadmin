@@ -52,7 +52,7 @@ export class CorporateTiers extends Entity {
     precision: 3,
     scale: 0,
     generated: 0,
-    mysql: { columnName: 'from_length', dataType: 'tinyint', dataLength: null, dataPrecision: 3, dataScale: 0, nullable: 'N', generated: 0 },
+    mysql: { columnName: 'from_length', dataType: 'tinyint', dataLength: null, dataPrecision: 3, dataScale: 0, nullable: 'Y', generated: 0 },
   })
   fromLength?: number;
   @property({
@@ -60,21 +60,19 @@ export class CorporateTiers extends Entity {
     precision: 3,
     scale: 0,
     generated: 0,
-    mysql: { columnName: 'to_length', dataType: 'tinyint', dataLength: null, dataPrecision: 3, dataScale: 0, nullable: 'N', generated: 0 },
+    mysql: { columnName: 'to_length', dataType: 'tinyint', dataLength: null, dataPrecision: 3, dataScale: 0, nullable: 'Y', generated: 0 },
   })
   toLength?: number;
   @property({
     type: 'number',
-    required: true,
     precision: 12,
-    mysql: { columnName: 'income_percentage', dataType: 'float', dataLength: null, dataPrecision: 12, dataScale: null, nullable: 'N' },
+    mysql: { columnName: 'income_percentage', dataType: 'float', dataLength: null, dataPrecision: 12, dataScale: null, nullable: 'Y' },
   })
   incomePercentage: number;
   @property({
     type: 'number',
-    required: true,
     precision: 12,
-    mysql: { columnName: 'annual_income', dataType: 'float', dataLength: null, dataPrecision: 12, dataScale: null, nullable: 'N' },
+    mysql: { columnName: 'annual_income', dataType: 'float', dataLength: null, dataPrecision: 12, dataScale: null, nullable: 'Y' },
   })
   annualIncome: number;
   @property({

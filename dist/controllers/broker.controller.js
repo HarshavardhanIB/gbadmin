@@ -30,7 +30,7 @@ let BrokerController = class BrokerController {
     constructor(brokerRepository, brokerLicensedStatesAndProvincesRepository, 
     // @repository(BrokerSignupFormsPlansRepository)
     // public BrokerSignupFormsPlansRepository: BrokerSignupFormsPlansRepository,
-    signupFormsPlanLevelMappingRepository, usersRepository, contactInformationRepository, signupFormsRepository, StatesAndProvincesRepository, customerSignupRepository, customerRepository, insurancePlansRepository, planLevelRepository, brokerEoInsuranceRepository, response, handler, http, img, bs, insurancePackages, plansAvalibility, brokerAdminsRepository) {
+    signupFormsPlanLevelMappingRepository, usersRepository, contactInformationRepository, signupFormsRepository, StatesAndProvincesRepository, customerSignupRepository, customerRepository, insurancePlansRepository, planLevelRepository, brokerEoInsuranceRepository, response, handler, http, img, bs, insurancePackages, plansAvalibility, brokerAdminsRepository, logs) {
         this.brokerRepository = brokerRepository;
         this.brokerLicensedStatesAndProvincesRepository = brokerLicensedStatesAndProvincesRepository;
         this.signupFormsPlanLevelMappingRepository = signupFormsPlanLevelMappingRepository;
@@ -51,10 +51,12 @@ let BrokerController = class BrokerController {
         this.insurancePackages = insurancePackages;
         this.plansAvalibility = plansAvalibility;
         this.brokerAdminsRepository = brokerAdminsRepository;
+        this.logs = logs;
     }
     async brokerCount() {
         let totalBrokers, TpaMga, brokaRage, advisor, association, corporate, status, message, data, date = {};
         try {
+            await this.logs.consoles("brokerCount", "condition", "ressss", "");
             status = 200;
             totalBrokers = await this.brokerRepository.count();
             TpaMga = await this.brokerRepository.count({ brokerType: 'TPA/MGA' });
@@ -2282,36 +2284,35 @@ let BrokerController = class BrokerController {
                     if (value.files) {
                         for (let file of value.files) {
                             if (file.fieldname == "logo") {
-                                if (value.files.length > 0) {
-                                    console.log(`file.originalname`);
-                                    let originalname = file.originalname;
-                                    console.log(originalname);
-                                    originalname = originalname.replace(/[\])}[{(]/g, '').replace(/ /g, '');
-                                    console.log(originalname);
-                                    let filename = originalname;
-                                    let modfilenameArr = filename.split(".");
-                                    let modfilename = modfilenameArr[0] + "0." + modfilenameArr[1];
-                                    // const broker = await this.BrokerRepository.findById(brokerId);
-                                    if (broker) {
-                                        let url = process.env.MAINAPI + `/api/customer/broker/${brokerId}/logo`;
-                                        let pathImg = paths_1.BROKERIMG_RESOURCES_FOLDER + "/" + filename;
-                                        const fetchStatus = await this.http.fetchMultipartFormdata(url, pathImg);
-                                        await this.brokerRepository.updateById(brokerId, {
-                                            logo: paths_1.BROKERPATH_STRING + filename,
-                                            link: paths_1.BROKERPATH_STRING + modfilename
-                                        });
-                                        message = 'Broker logo is set';
-                                        status = '200';
-                                    }
-                                    else {
-                                        console.log('no broker with given id');
-                                        message = 'No broker found';
-                                        status = '202';
-                                    }
+                                // if (value.files.length > 0) {
+                                console.log(`file.originalname`);
+                                let originalname = file.originalname;
+                                console.log(originalname);
+                                originalname = originalname.replace(/[\])}[{(]/g, '').replace(/ /g, '');
+                                console.log(originalname);
+                                let filename = originalname;
+                                let modfilenameArr = filename.split(".");
+                                let modfilename = modfilenameArr[0] + "0." + modfilenameArr[1];
+                                // const broker = await this.BrokerRepository.findById(brokerId);
+                                if (broker) {
+                                    let url = process.env.MAINAPI + `/api/customer/broker/${brokerId}/logo`;
+                                    let pathImg = paths_1.BROKERIMG_RESOURCES_FOLDER + "/" + filename;
+                                    const fetchStatus = await this.http.fetchMultipartFormdata(url, pathImg);
+                                    await this.brokerRepository.updateById(brokerId, {
+                                        logo: paths_1.BROKERPATH_STRING + filename,
+                                        link: paths_1.BROKERPATH_STRING + modfilename
+                                    });
+                                    message = 'Broker logo is set';
+                                    status = '200';
                                 }
                                 else {
-                                    console.log(`No logo needed`);
+                                    console.log('no broker with given id');
+                                    message = 'No broker found';
+                                    status = '202';
                                 }
+                                // } else {
+                                //   console.log(`No logo needed`)
+                                // }
                             }
                             else if (file.fieldname == 'disclosureAgreement') {
                                 let disClosureName = `disclosure-agreement-${apiRequest.name}.pdf`;
@@ -3690,6 +3691,7 @@ BrokerController = tslib_1.__decorate([
     tslib_1.__param(17, (0, repository_1.repository)(repositories_1.InsurancePackagesRepository)),
     tslib_1.__param(18, (0, repository_1.repository)(repositories_1.PlansAvailabilityRepository)),
     tslib_1.__param(19, (0, repository_1.repository)(broker_admins_repository_1.BrokerAdminsRepository)),
+    tslib_1.__param(20, (0, core_1.service)(services_1.LogService)),
     tslib_1.__metadata("design:paramtypes", [repositories_1.BrokerRepository,
         repositories_1.BrokerLicensedStatesAndProvincesRepository,
         repositories_1.SignupFormsPlanLevelMappingRepository,
@@ -3706,7 +3708,8 @@ BrokerController = tslib_1.__decorate([
         services_1.BrokerService,
         repositories_1.InsurancePackagesRepository,
         repositories_1.PlansAvailabilityRepository,
-        broker_admins_repository_1.BrokerAdminsRepository])
+        broker_admins_repository_1.BrokerAdminsRepository,
+        services_1.LogService])
 ], BrokerController);
 exports.BrokerController = BrokerController;
 //# sourceMappingURL=broker.controller.js.map

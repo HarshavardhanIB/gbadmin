@@ -43,7 +43,9 @@ exports.CORPORATE_MSG = {
     EMP_REGISTRATION_SUCCESS: 'Employee registration successfully',
     GROUP_ADMIN_DETAILS: 'Please atlease one company administrator details',
     TIER_CONFIG_SUCCESS: 'Tiers config set successfull',
-    WALLET_CONFIG_SUCCESS: 'Wallet config set successfull'
+    WALLET_CONFIG_SUCCESS: 'Wallet config set successfull',
+    OK: 'Ok',
+    TIER_LIST: 'List configured list'
 };
 exports.BROKER_MSG = {
     BROKERCOUNT: "The brokers count",

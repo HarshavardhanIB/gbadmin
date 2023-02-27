@@ -47,4 +47,5 @@ export declare class CorporateController {
     configureWallet(corporateId: number, apiRequest: any): Promise<any>;
     corporateTiers(corporateId: number, apiRequest: any): Promise<any>;
     uploadEmployeeExcel(request: any, response: Response): Promise<void>;
+    tierList(corporateId: number): Promise<Response>;
 }

@@ -24,7 +24,7 @@ const constants_1 = require("../constants");
 const model_extended_1 = require("../model_extended");
 const corporate_tiered_plan_levels_repository_1 = require("../repositories/corporate-tiered-plan-levels.repository");
 let fuseBillCustomerCreation = false;
-let fiseBill = 0;
+let fiseBill = 11;
 let CorporateController = class CorporateController {
     constructor(brokerRepository, response, corporateService, usersRepository, BrokerAdminsRepository, contactInformationRepository, customerRepository, handler, fusebill, registrationService, ach, banksCodesRepository, banksRepository, branchesRepository, statesAndProvincesRepository, insurancePlansRepository, plansAvailabilityRepository, insurancePackages, signupFormsRepository, planLevelRepository, corporateTiersRepository, corporateTieredPlanLevelsRepository, corporatePaidTieredPlanLevelsRepository, customerContactInfoRepository, excelService, excel2Service) {
         this.brokerRepository = brokerRepository;
@@ -83,6 +83,7 @@ let CorporateController = class CorporateController {
         let message, status, statusCode, data = [];
         let data1 = {};
         let groupAdminsUsers = [];
+        let brokerAdminsIds = [];
         let brokerId;
         let customerId;
         let userId;
@@ -125,15 +126,15 @@ let CorporateController = class CorporateController {
             //   });
             //   return this.response;
             // }      //email     
-            if (!this.registrationService.validateEmail(value.fields.email)) {
-                this.response.status(422).send({
-                    status: '422',
-                    error: `Invalid Email`,
-                    message: MESSAGE.ERRORS.email,
-                    date: new Date(),
-                });
-                return this.response;
-            } //phone      //dob      
+            // if (!this.registrationService.validateEmail(value.fields.email)) {
+            //   this.response.status(422).send({
+            //     status: '422',
+            //     error: `Invalid Email`,
+            //     message: MESSAGE.ERRORS.email,
+            //     date: new Date(),
+            //   });
+            //   return this.response;
+            // }      //phone      //dob      
             // const cdob = this.registrationService.validateCustomerDOB(apiRequest.dob)     
             //  if (!cdob.validation) {     
             //    this.response.status(422).send({      
@@ -198,7 +199,7 @@ let CorporateController = class CorporateController {
                         // corporateUserObj.registrationDate = moment().format('YYYY-MM-DD');
                         // let CorporateUser = await this.usersRepository.create(corporateUserObj);
                         // groupAdminsUsers.push(CorporateUser.id);
-                        data1['contactOInfo'] = contactInfo;
+                        data1['contactId'] = contactInfo.id;
                         // data.push({ "contactOInfo": contactInfo });
                         let brokerObj = new models_1.Broker();
                         brokerObj.name = apiRequest.corporationName;
@@ -218,10 +219,10 @@ let CorporateController = class CorporateController {
                         console.log(brokerObj);
                         let broker = await this.brokerRepository.create(brokerObj);
                         brokerId = broker.id;
-                        data1['broker'] = broker;
+                        data1['corporateId'] = broker.id;
                         // data.push({ "broker": broker });
                         console.log(apiRequest.gropupAdmin);
-                        data1['groupAdminstrators'] = groupAdminsArray;
+                        // data1['groupAdminstrators'] = groupAdminsArray
                         // data.push({ "groupAdmins": groupAdminsArray });
                         let brokerAdmin = new models_1.BrokerAdmins();
                         brokerAdmin.brokerId = broker.id;
@@ -237,8 +238,10 @@ let CorporateController = class CorporateController {
                         customerObj.userId = groupAdminsUsers[0];
                         let customer = await this.customerRepository.create(customerObj);
                         customerId = customer.id;
+                        data1['customerId'] = customerId;
                         var fusebillCustomer = {};
-                        if (apiRequest.fuseBillCustomerCreation) {
+                        if (JSON.parse(apiRequest.fuseBillCustomerCreation)) {
+                            console.log("if block >>>>>>>>>>>>>>>>>>>>>>");
                             const fusebillData = {};
                             fusebillData.firstName = customer.id;
                             fusebillData.lastName = 'CORPORATE';
@@ -249,7 +252,7 @@ let CorporateController = class CorporateController {
                             //fusebillData.companyName=apiRequest.company_name;     
                             fusebillData.currency = apiRequest.currency || 'CAD'; // || ' 
                             try {
-                                fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
+                                // fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
                                 console.log("**************************************************");
                                 // console.log(fusebillCustomer)
                                 console.log("**************************************************");
@@ -267,13 +270,14 @@ let CorporateController = class CorporateController {
                                     "country": apiRequest.country,
                                     "state": apiRequest.state
                                 };
-                                const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
+                                // const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
                             }
                             catch (error) {
                                 console.log(error.response.data.Errors);
                             }
                         }
                         else {
+                            console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> else block ");
                             fiseBill = fiseBill + 1;
                             fusebillCustomer = {
                                 firstName: 'Admin',
@@ -339,12 +343,13 @@ let CorporateController = class CorporateController {
                         //activationg fuse bill customer id
                         // bank details and void check service 
                         // data.push(customer);
-                        data1['customer'] = customer;
+                        // data1['customer'] = customer;
                         for (const user of groupAdminsUsers) {
                             console.log(user);
                             brokerAdmin.userId = user;
                             console.log(brokerAdmin);
-                            await this.BrokerAdminsRepository.create(brokerAdmin);
+                            let brokerAdmins = await this.BrokerAdminsRepository.create(brokerAdmin);
+                            brokerAdminsIds.push(brokerAdmins.id);
                         }
                         let signupFormData = new models_1.SignupForms();
                         signupFormData.brokerId = brokerId;
@@ -367,65 +372,69 @@ let CorporateController = class CorporateController {
                         signupFormData.isDemoForm = false;
                         const signupForm = await this.signupFormsRepository.create(signupFormData);
                         data1['signupForm'] = signupForm;
+                        data1['fuseBillId'] = fusebillCustomer.id;
                         // await mail("", groupAdmins[0].email, "", "", "", "")
                         if (value.files) {
                             console.log(value.files);
                             console.log(`Logo -${value.files.length}`);
-                            if (value.files.length > 0) {
-                                for (let file of value.files) {
-                                    if (file.fieldname == "logo") {
-                                        console.log(file.originalname);
-                                        console.log(`file.originalname`);
-                                        let originalname = file.originalname;
-                                        console.log(originalname);
-                                        originalname = originalname.replace(/[\])}[{(]/g, '').replace(/ /g, '');
-                                        console.log(originalname);
-                                        let filename = originalname;
-                                        // let modfilenameArr = filename.split(".")
-                                        // let modfilename = modfilenameArr[0] + "0." + modfilenameArr[1]
-                                        const fileAttr = (0, common_functions_1.getFileAttributes)(filename);
-                                        let modfilename = fileAttr.name + "0" + fileAttr.ext;
-                                        // const broker = await this.BrokerRepository.findById(brokerId);
-                                        if (broker) {
-                                            await this.brokerRepository.updateById(broker.id, {
-                                                logo: paths_1.BROKERPATH_STRING + filename,
-                                                link: paths_1.BROKERPATH_STRING + modfilename
-                                            });
-                                        }
-                                        else {
-                                            console.log('no broker with given id');
-                                            message = 'No broker found';
-                                            status = '202';
-                                        }
+                            // if (value.files) {
+                            for (let file of value.files) {
+                                if (file.fieldname == "logo") {
+                                    console.log(file.originalname);
+                                    console.log(`file.originalname`);
+                                    let originalname = file.originalname;
+                                    console.log(originalname);
+                                    originalname = originalname.replace(/[\])}[{(]/g, '').replace(/ /g, '');
+                                    console.log(originalname);
+                                    let filename = originalname;
+                                    // let modfilenameArr = filename.split(".")
+                                    // let modfilename = modfilenameArr[0] + "0." + modfilenameArr[1]
+                                    const fileAttr = (0, common_functions_1.getFileAttributes)(filename);
+                                    let modfilename = fileAttr.name + "0" + fileAttr.ext;
+                                    const brokerLogo = await this.brokerRepository.findById(brokerId);
+                                    if (brokerLogo) {
+                                        console.log("logo update ");
+                                        await this.brokerRepository.updateById(brokerId, {
+                                            logo: paths_1.BROKERPATH_STRING + filename,
+                                            link: paths_1.BROKERPATH_STRING + modfilename
+                                        });
                                     }
-                                    else if (file.fieldname == "voidCheck") {
-                                        let filename = file.originalname;
-                                        let mimetype = file.mimetype;
-                                        switch (mimetype) {
-                                            case 'image/png':
-                                            case 'image/jpg':
-                                            case 'image/jpeg':
-                                            case 'image/pjpeg':
-                                            case 'application/pdf':
-                                                mimetype = mimetype;
-                                                break;
-                                            default:
-                                                mimetype = "invalid";
-                                        }
-                                        const fileAttr = (0, common_functions_1.getFileAttributes)(filename);
-                                        let modfilename = fileAttr.name + "0" + fileAttr.ext;
-                                        console.log(mimetype);
-                                        let filenamets = value.fields.timestamp;
-                                        console.log(filenamets);
-                                        //let ext = filename.split(".")[1]
-                                        let ext = fileAttr.ext;
-                                        let bankDetails = await this.corporateService.customerBankDetailsRegister(value.fields.session, filenamets, ext, mimetype, customer.id);
+                                    else {
+                                        console.log('no broker with given id');
+                                        message = 'No broker found';
+                                        status = '202';
                                     }
                                 }
+                                else if (file.fieldname == "voidCheck") {
+                                    let filename = file.originalname;
+                                    let mimetype = file.mimetype;
+                                    switch (mimetype) {
+                                        case 'image/png':
+                                        case 'image/jpg':
+                                        case 'image/jpeg':
+                                        case 'image/pjpeg':
+                                        case 'application/pdf':
+                                            mimetype = mimetype;
+                                            break;
+                                        default:
+                                            mimetype = "invalid";
+                                    }
+                                    let originalname = file.originalname;
+                                    console.log(originalname);
+                                    originalname = originalname.replace(/[\])}[{(]/g, '').replace(/ /g, '');
+                                    console.log(originalname);
+                                    const fileAttr = (0, common_functions_1.getFileAttributes)(filename);
+                                    console.log(mimetype);
+                                    let filenamets = originalname;
+                                    console.log(filenamets);
+                                    //let ext = filename.split(".")[1]
+                                    let ext = fileAttr.ext;
+                                    let bankDetails = await this.corporateService.customerBankDetailsRegister(value.fields.session, filenamets, ext, mimetype, customer.id, fusebillCustomer.id);
+                                }
                             }
-                            else {
-                                console.log(`No logo needed`);
-                            }
+                            // } else {
+                            //   console.log(`No logo needed`)
+                            // }
                         }
                         this.response.status(200).send({
                             status: '200',
@@ -454,6 +463,9 @@ let CorporateController = class CorporateController {
                     await this.customerRepository.deleteById(customerId);
                     for (let groupAdminUser of groupAdminsUsers) {
                         await this.usersRepository.deleteById(groupAdminUser);
+                    }
+                    for (let brokerAdminsId of brokerAdminsIds) {
+                        await this.BrokerAdminsRepository.deleteById(brokerAdminsId);
                     }
                     await this.contactInformationRepository.deleteById(contId);
                     await this.brokerRepository.deleteById(brokerId);
@@ -927,6 +939,7 @@ let CorporateController = class CorporateController {
         let message, status, statusCode, data = [];
         let data1 = {};
         let responsplans = {};
+        let brokerAdminsIds = [];
         let groupAdminsUsers = [];
         let brokerId;
         let customerId;
@@ -943,7 +956,7 @@ let CorporateController = class CorporateController {
             });
         });
         p.then(async (value) => {
-            var _a, _b;
+            var _a, _b, _c, _d;
             if (!value.fields) {
                 this.response.status(422).send({
                     status: '422',
@@ -952,33 +965,33 @@ let CorporateController = class CorporateController {
                     date: new Date(),
                 });
             }
-            if (!this.registrationService.validateName(value.fields.firstName)) {
-                this.response.status(422).send({
-                    status: '422',
-                    error: `Invalid Firstname`,
-                    message: MESSAGE.ERRORS.firstName,
-                    date: new Date(),
-                });
-                return this.response;
-            }
-            if (!this.registrationService.validateName(value.fields.lastName)) {
-                this.response.status(422).send({
-                    status: '422',
-                    error: `Invalid Lastname`,
-                    message: MESSAGE.ERRORS.lastName,
-                    date: new Date(),
-                });
-                return this.response;
-            } //email     
-            if (!this.registrationService.validateEmail(value.fields.email)) {
-                this.response.status(422).send({
-                    status: '422',
-                    error: `Invalid Email`,
-                    message: MESSAGE.ERRORS.email,
-                    date: new Date(),
-                });
-                return this.response;
-            } //phone      //dob      
+            // if (!this.registrationService.validateName(value.fields.firstName)) {
+            //   this.response.status(422).send({
+            //     status: '422',
+            //     error: `Invalid Firstname`,
+            //     message: MESSAGE.ERRORS.firstName,
+            //     date: new Date(),
+            //   });
+            //   return this.response;
+            // }
+            // if (!this.registrationService.validateName(value.fields.lastName)) {
+            //   this.response.status(422).send({
+            //     status: '422',
+            //     error: `Invalid Lastname`,
+            //     message: MESSAGE.ERRORS.lastName,
+            //     date: new Date(),
+            //   });
+            //   return this.response;
+            // }      //email     
+            // if (!this.registrationService.validateEmail(value.fields.email)) {
+            //   this.response.status(422).send({
+            //     status: '422',
+            //     error: `Invalid Email`,
+            //     message: MESSAGE.ERRORS.email,
+            //     date: new Date(),
+            //   });
+            //   return this.response;
+            // }      //phone      //dob      
             // const cdob = this.registrationService.validateCustomerDOB(apiRequest.dob)     
             //  if (!cdob.validation) {     
             //    this.response.status(422).send({      
@@ -1004,218 +1017,226 @@ let CorporateController = class CorporateController {
                 console.log(requestFiles);
                 try {
                     console.log(apiRequest);
-                    // creating contact info
-                    let contactDetailsObj = new models_1.ContactInformation();
-                    contactDetailsObj.apt = apiRequest.apt;
-                    contactDetailsObj.city = apiRequest.city;
-                    contactDetailsObj.state = apiRequest.state;
-                    contactDetailsObj.country = apiRequest.country;
-                    contactDetailsObj.line1 = apiRequest.streetAddressLine1;
-                    contactDetailsObj.line2 = apiRequest.streetAddressLine2;
-                    contactDetailsObj.postalCode = apiRequest.postalCode;
-                    contactDetailsObj.contactType = 'COMPANY';
-                    contactDetailsObj.addressType = 'OFFICE_ADDRESS';
-                    contactDetailsObj.primaryEmail = apiRequest.email;
-                    contactDetailsObj.primaryPhone = apiRequest.phoneNum;
-                    let contactInfo = await this.contactInformationRepository.create(contactDetailsObj);
-                    contId = contactInfo.id;
-                    let corporateUserObj = new models_1.Users();
-                    corporateUserObj.username = apiRequest.email;
-                    let randomPswrd = await (0, common_functions_1.generateRandomPassword)();
-                    corporateUserObj.password = await (0, common_functions_1.encryptPassword)(randomPswrd);
-                    corporateUserObj.block = true;
-                    corporateUserObj.activation = await (0, common_functions_1.getActivationCode)();
-                    corporateUserObj.registrationDate = (0, moment_1.default)().format('YYYY-MM-DD');
-                    let CorporateUser = await this.usersRepository.create(corporateUserObj);
-                    groupAdminsUsers.push(CorporateUser.id);
-                    data1['contactOInfo'] = contactInfo;
-                    // data.push({ "contactOInfo": contactInfo });
-                    let brokerObj = new models_1.Broker();
-                    brokerObj.name = apiRequest.corporationName;
-                    brokerObj.brokerType = 'CORPORATE';
-                    brokerObj.salesTrackingCode = apiRequest.salesTrackingCode || "0000001";
-                    brokerObj.salesTrackingType = apiRequest.salesTrackingType || '';
-                    brokerObj.published = true;
-                    brokerObj.contactId = contactInfo.id;
-                    brokerObj.userId = CorporateUser.id;
-                    brokerObj.settingsAllowGroupBenefitsWallet = apiRequest.setupWallet ? 1 : 0;
-                    brokerObj.settingsEnableTieredHealthBenefits = apiRequest.setUplevelofCoverage ? 1 : 0;
-                    brokerObj.waitTime = apiRequest.waitTime;
-                    brokerObj.useCreditCardPaymentMethod = apiRequest.useCreditCard;
-                    brokerObj.useInvoicePaymentMethod = apiRequest.invoicePayment;
-                    brokerObj.usePadPaymentMethod = apiRequest.padPayment;
-                    brokerObj.policyStartDate = apiRequest.policyStartDate;
-                    console.log(brokerObj);
-                    let broker = await this.brokerRepository.create(brokerObj);
-                    brokerId = broker.id;
-                    data1['broker'] = broker;
-                    // data.push({ "broker": broker });
-                    console.log(apiRequest.gropupAdmin);
                     let groupAdmins = JSON.parse(apiRequest.gropupAdmin);
-                    let groupAdminsArray = [];
-                    for (const groupAdmin of groupAdmins) {
-                        let userObj = new models_1.Users();
-                        userObj.username = groupAdmin.email;
-                        let randomPswrd = await (0, common_functions_1.generateRandomPassword)();
-                        userObj.password = await (0, common_functions_1.encryptPassword)(randomPswrd);
-                        userObj.block = true;
-                        userObj.activation = await (0, common_functions_1.getActivationCode)();
-                        userObj.registrationDate = (0, moment_1.default)().format('YYYY-MM-DD');
-                        let groupAdminsUser = await this.usersRepository.create(userObj);
-                        groupAdminsArray.push(groupAdminsUser);
-                        groupAdminsUsers.push(groupAdminsUser.id);
-                    }
-                    data1['groupAdminstrators'] = groupAdminsArray;
-                    // data.push({ "groupAdmins": groupAdminsArray });
-                    let brokerAdmin = new models_1.BrokerAdmins();
-                    brokerAdmin.brokerId = broker.id;
-                    let customerObj = new models_1.Customer();
-                    customerObj.brokerId = broker.id;
-                    //firstname and last should be created in backend level
-                    customerObj.firstName = apiRequest.firstName;
-                    customerObj.lastName = apiRequest.lastName;
-                    customerObj.gender = CONST.GENDER.UNDISCLOSED;
-                    customerObj.companyName = apiRequest.corporationName;
-                    customerObj.isCorporateAccount = true;
-                    customerObj.registrationDate = (0, moment_1.default)().format('YYYY-MM-DD');
-                    customerObj.userId = CorporateUser.id;
-                    let customer = await this.customerRepository.create(customerObj);
-                    customerId = customer.id;
-                    var fusebillCustomer = {};
-                    if (apiRequest.fuseBillCustomerCreation) {
-                        const fusebillData = {};
-                        fusebillData.firstName = customer.id;
-                        fusebillData.lastName = 'CORPORATE';
-                        fusebillData.companyName = apiRequest.corporationName;
-                        fusebillData.primaryEmail = apiRequest.email;
-                        fusebillData.primaryPhone = apiRequest.phoneNum; //phone num is not mandatory
-                        fusebillData.reference = customer.id;
-                        //fusebillData.companyName=apiRequest.company_name;     
-                        fusebillData.currency = apiRequest.currency || 'CAD'; // || ' 
-                        try {
-                            fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
-                            console.log("**************************************************");
-                            // console.log(fusebillCustomer)
-                            console.log("**************************************************");
-                            let fuseBillAddressData = {
-                                "customerAddressPreferenceId": fusebillCustomer.id,
-                                "countryId": apiRequest.countryId,
-                                "stateId": apiRequest.stateId,
-                                //"addressType": apiRequest.addressType ?? 'Shipping',//here shipping is same as home //Billing, shipping    
-                                "addressType": (_a = apiRequest.addressType) !== null && _a !== void 0 ? _a : 'Billing',
-                                "enforceFullAddress": true,
-                                "line1": apiRequest.streetAddressLine1,
-                                "line2": apiRequest.streetAddressLine2,
-                                "city": apiRequest.city,
-                                "postalZip": apiRequest.postalCode,
-                                "country": apiRequest.country,
-                                "state": apiRequest.state
+                    // creating contact info
+                    if (groupAdmins.length > 0) {
+                        let groupAdminsArray = [];
+                        for (const groupAdmin of groupAdmins) {
+                            let userObj = new models_1.Users();
+                            userObj.username = groupAdmin.email;
+                            let randomPswrd = await (0, common_functions_1.generateRandomPassword)();
+                            userObj.password = await (0, common_functions_1.encryptPassword)(randomPswrd);
+                            userObj.block = true;
+                            userObj.activation = await (0, common_functions_1.getActivationCode)();
+                            userObj.registrationDate = (0, moment_1.default)().format('YYYY-MM-DD');
+                            let groupAdminsUser = await this.usersRepository.create(userObj);
+                            groupAdminsArray.push(groupAdminsUser);
+                            groupAdminsUsers.push(groupAdminsUser.id);
+                        }
+                        console.log(apiRequest);
+                        // creating contact info
+                        let contactDetailsObj = new models_1.ContactInformation();
+                        contactDetailsObj.apt = apiRequest.apt;
+                        contactDetailsObj.city = apiRequest.city;
+                        contactDetailsObj.state = apiRequest.state;
+                        contactDetailsObj.country = apiRequest.country;
+                        contactDetailsObj.line1 = apiRequest.streetAddressLine1;
+                        contactDetailsObj.line2 = apiRequest.streetAddressLine2;
+                        contactDetailsObj.postalCode = apiRequest.postalCode;
+                        contactDetailsObj.contactType = 'COMPANY';
+                        contactDetailsObj.addressType = 'OFFICE_ADDRESS';
+                        contactDetailsObj.primaryEmail = groupAdmins[0].email;
+                        contactDetailsObj.primaryPhone = groupAdmins[0].phoneNum;
+                        let contactInfo = await this.contactInformationRepository.create(contactDetailsObj);
+                        contId = contactInfo.id;
+                        // let corporateUserObj: Users = new Users();
+                        // corporateUserObj.username = apiRequest.email;
+                        // let randomPswrd = await generateRandomPassword();
+                        // corporateUserObj.password = await encryptPassword(randomPswrd);
+                        // corporateUserObj.block = true;
+                        // corporateUserObj.activation = await getActivationCode();
+                        // corporateUserObj.registrationDate = moment().format('YYYY-MM-DD');
+                        // let CorporateUser = await this.usersRepository.create(corporateUserObj);
+                        // groupAdminsUsers.push(CorporateUser.id);
+                        data1['contactId'] = contactInfo.id;
+                        // data.push({ "contactOInfo": contactInfo });
+                        let brokerObj = new models_1.Broker();
+                        brokerObj.name = apiRequest.corporationName;
+                        brokerObj.brokerType = 'CORPORATE';
+                        brokerObj.salesTrackingCode = apiRequest.salesTrackingCode || "0000001";
+                        brokerObj.salesTrackingType = apiRequest.salesTrackingType || '';
+                        brokerObj.published = true;
+                        brokerObj.contactId = contactInfo.id;
+                        brokerObj.userId = groupAdminsUsers[0];
+                        brokerObj.settingsAllowGroupBenefitsWallet = apiRequest.setupWallet ? 1 : 0;
+                        brokerObj.settingsEnableTieredHealthBenefits = apiRequest.setUplevelofCoverage ? 1 : 0;
+                        brokerObj.waitTime = apiRequest.waitTime;
+                        brokerObj.useCreditCardPaymentMethod = apiRequest.useCreditCard;
+                        brokerObj.useInvoicePaymentMethod = apiRequest.invoicePayment;
+                        brokerObj.usePadPaymentMethod = apiRequest.padPayment;
+                        brokerObj.policyStartDate = apiRequest.policyStartDate;
+                        console.log(brokerObj);
+                        let broker = await this.brokerRepository.create(brokerObj);
+                        brokerId = broker.id;
+                        data1['corporateId'] = broker.id;
+                        // data.push({ "broker": broker });
+                        console.log(apiRequest.gropupAdmin);
+                        data1['groupAdminstrators'] = groupAdminsArray;
+                        // data.push({ "groupAdmins": groupAdminsArray });
+                        let brokerAdmin = new models_1.BrokerAdmins();
+                        brokerAdmin.brokerId = broker.id;
+                        let customerObj = new models_1.Customer();
+                        customerObj.brokerId = broker.id;
+                        //firstname and last should be created in backend level
+                        customerObj.firstName = (_a = apiRequest.firstName) !== null && _a !== void 0 ? _a : "CORPORATE " + brokerId;
+                        customerObj.lastName = (_b = apiRequest.lastName) !== null && _b !== void 0 ? _b : 'CORPORATE';
+                        customerObj.gender = CONST.GENDER.UNDISCLOSED;
+                        customerObj.companyName = apiRequest.corporationName;
+                        customerObj.isCorporateAccount = true;
+                        customerObj.registrationDate = (0, moment_1.default)().format('YYYY-MM-DD');
+                        customerObj.userId = groupAdminsUsers[0];
+                        let customer = await this.customerRepository.create(customerObj);
+                        customerId = customer.id;
+                        data1['customerId'] = customerId;
+                        var fusebillCustomer = {};
+                        if (JSON.parse(apiRequest.fuseBillCustomerCreation)) {
+                            console.log("if block >>>>>>>>>>>>>>>>>>>>>>");
+                            const fusebillData = {};
+                            fusebillData.firstName = customer.id;
+                            fusebillData.lastName = 'CORPORATE';
+                            fusebillData.companyName = apiRequest.corporationName;
+                            fusebillData.primaryEmail = apiRequest.email;
+                            fusebillData.primaryPhone = apiRequest.phoneNum; //phone num is not mandatory
+                            fusebillData.reference = customer.id;
+                            //fusebillData.companyName=apiRequest.company_name;     
+                            fusebillData.currency = apiRequest.currency || 'CAD'; // || ' 
+                            try {
+                                // fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
+                                console.log("**************************************************");
+                                // console.log(fusebillCustomer)
+                                console.log("**************************************************");
+                                let fuseBillAddressData = {
+                                    "customerAddressPreferenceId": fusebillCustomer.id,
+                                    "countryId": apiRequest.countryId,
+                                    "stateId": apiRequest.stateId,
+                                    //"addressType": apiRequest.addressType ?? 'Shipping',//here shipping is same as home //Billing, shipping    
+                                    "addressType": (_c = apiRequest.addressType) !== null && _c !== void 0 ? _c : 'Billing',
+                                    "enforceFullAddress": true,
+                                    "line1": apiRequest.streetAddressLine1,
+                                    "line2": apiRequest.streetAddressLine2,
+                                    "city": apiRequest.city,
+                                    "postalZip": apiRequest.postalCode,
+                                    "country": apiRequest.country,
+                                    "state": apiRequest.state
+                                };
+                                // const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
+                            }
+                            catch (error) {
+                                console.log(error.response.data.Errors);
+                            }
+                        }
+                        else {
+                            console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> else block ");
+                            fiseBill = fiseBill + 1;
+                            fusebillCustomer = {
+                                firstName: 'Admin',
+                                middleName: null,
+                                lastName: 'Ideabytes',
+                                companyName: 'Ideabytes',
+                                suffix: null,
+                                primaryEmail: null,
+                                primaryPhone: null,
+                                secondaryEmail: null,
+                                secondaryPhone: null,
+                                title: '',
+                                reference: '1844',
+                                status: 'Draft',
+                                customerAccountStatus: 'Good',
+                                currency: 'CAD',
+                                canChangeCurrency: true,
+                                customerReference: {
+                                    reference1: null,
+                                    reference2: null,
+                                    reference3: null,
+                                    salesTrackingCodes: [],
+                                    id: 11673101,
+                                    uri: 'https://secure.fusebill.com/v1/customers/11673101'
+                                },
+                                customerAcquisition: {
+                                    adContent: null,
+                                    campaign: null,
+                                    keyword: null,
+                                    landingPage: null,
+                                    medium: null,
+                                    source: null,
+                                    id: 11673101,
+                                    uri: 'https://secure.fusebill.com/v1/customers/11673101'
+                                },
+                                monthlyRecurringRevenue: 0,
+                                netMonthlyRecurringRevenue: 0,
+                                salesforceId: null,
+                                salesforceAccountType: null,
+                                salesforceSynchStatus: 'Enabled',
+                                netsuiteId: null,
+                                netsuiteSynchStatus: 'Enabled',
+                                netsuiteCustomerType: '',
+                                portalUserName: null,
+                                parentId: null,
+                                isParent: false,
+                                quickBooksLatchType: null,
+                                quickBooksId: null,
+                                quickBooksSyncToken: null,
+                                hubSpotId: null,
+                                hubSpotCompanyId: null,
+                                geotabId: null,
+                                digitalRiverId: null,
+                                modifiedTimestamp: '2023-02-01T11:36:16.0432031Z',
+                                createdTimestamp: '2023-02-01T11:36:15.9442038Z',
+                                requiresProjectedInvoiceGeneration: false,
+                                requiresFinancialCalendarGeneration: false,
+                                id: 11673101 + fiseBill,
+                                uri: 'https://secure.fusebill.com/v1/customers/11673101'
                             };
-                            const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
                         }
-                        catch (error) {
-                            console.log(error.response.data.Errors);
+                        await this.customerRepository.updateById(customerId, { fusebillCustomerId: fusebillCustomer.id });
+                        //activationg fuse bill customer id
+                        // bank details and void check service 
+                        // data.push(customer);
+                        data1['customer'] = customer;
+                        for (const user of groupAdminsUsers) {
+                            console.log(user);
+                            brokerAdmin.userId = user;
+                            console.log(brokerAdmin);
+                            let brokerAdmins = await this.BrokerAdminsRepository.create(brokerAdmin);
+                            brokerAdminsIds.push(brokerAdmins.id);
                         }
-                    }
-                    else {
-                        fiseBill = fiseBill + 1;
-                        fusebillCustomer = {
-                            firstName: 'Admin',
-                            middleName: null,
-                            lastName: 'Ideabytes',
-                            companyName: 'Ideabytes',
-                            suffix: null,
-                            primaryEmail: null,
-                            primaryPhone: null,
-                            secondaryEmail: null,
-                            secondaryPhone: null,
-                            title: '',
-                            reference: '1844',
-                            status: 'Draft',
-                            customerAccountStatus: 'Good',
-                            currency: 'CAD',
-                            canChangeCurrency: true,
-                            customerReference: {
-                                reference1: null,
-                                reference2: null,
-                                reference3: null,
-                                salesTrackingCodes: [],
-                                id: 11673101,
-                                uri: 'https://secure.fusebill.com/v1/customers/11673101'
-                            },
-                            customerAcquisition: {
-                                adContent: null,
-                                campaign: null,
-                                keyword: null,
-                                landingPage: null,
-                                medium: null,
-                                source: null,
-                                id: 11673101,
-                                uri: 'https://secure.fusebill.com/v1/customers/11673101'
-                            },
-                            monthlyRecurringRevenue: 0,
-                            netMonthlyRecurringRevenue: 0,
-                            salesforceId: null,
-                            salesforceAccountType: null,
-                            salesforceSynchStatus: 'Enabled',
-                            netsuiteId: null,
-                            netsuiteSynchStatus: 'Enabled',
-                            netsuiteCustomerType: '',
-                            portalUserName: null,
-                            parentId: null,
-                            isParent: false,
-                            quickBooksLatchType: null,
-                            quickBooksId: null,
-                            quickBooksSyncToken: null,
-                            hubSpotId: null,
-                            hubSpotCompanyId: null,
-                            geotabId: null,
-                            digitalRiverId: null,
-                            modifiedTimestamp: '2023-02-01T11:36:16.0432031Z',
-                            createdTimestamp: '2023-02-01T11:36:15.9442038Z',
-                            requiresProjectedInvoiceGeneration: false,
-                            requiresFinancialCalendarGeneration: false,
-                            id: 11673101 + fiseBill,
-                            uri: 'https://secure.fusebill.com/v1/customers/11673101'
-                        };
-                    }
-                    await this.customerRepository.updateById(customerId, { fusebillCustomerId: fusebillCustomer.id });
-                    //activationg fuse bill customer id
-                    // bank details and void check service 
-                    // data.push(customer);
-                    data1['customer'] = customer;
-                    for (const user of groupAdminsUsers) {
-                        console.log(user);
-                        brokerAdmin.userId = user;
-                        console.log(brokerAdmin);
-                        await this.BrokerAdminsRepository.create(brokerAdmin);
-                    }
-                    let signupFormData = new models_1.SignupForms();
-                    signupFormData.brokerId = brokerId;
-                    let link = await (0, common_functions_1.generateFormLink)(broker.userId || 0);
-                    signupFormData.link = await this.checkAndGenerateNewFormLink(link, CorporateUser.id || 0);
-                    let aliasLink = "/" + ((_b = broker.name) === null || _b === void 0 ? void 0 : _b.toLowerCase().split(" ")[0]);
-                    signupFormData.alias = aliasLink;
-                    signupFormData.name = CONST.signupForm.name;
-                    signupFormData.description = CONST.signupForm.description;
-                    signupFormData.title = CONST.signupForm.title;
-                    signupFormData.formType = CONST.signupForm.formType;
-                    signupFormData.keywords = CONST.signupForm.keywords;
-                    signupFormData.inelligibilityPeriod = CONST.signupForm.ineligibilityPeriod;
-                    signupFormData.published = CONST.signupForm.published;
-                    signupFormData.requireDentalHealthCoverage = true;
-                    signupFormData.requireSpouseEmail = false;
-                    signupFormData.warnRequiredDependantMedicalExam = false;
-                    signupFormData.useCreditCardPaymentMethod = true;
-                    signupFormData.usePadPaymentMethod = true;
-                    signupFormData.isDemoForm = false;
-                    const signupForm = await this.signupFormsRepository.create(signupFormData);
-                    data1['signupForm'] = signupForm;
-                    // await mail("", groupAdmins[0].email, "", "", "", "")
-                    if (value.files) {
-                        console.log(value.files);
-                        console.log(`Logo -${value.files.length}`);
-                        if (value.files.length > 0) {
+                        let signupFormData = new models_1.SignupForms();
+                        signupFormData.brokerId = brokerId;
+                        let link = await (0, common_functions_1.generateFormLink)(broker.userId || 0);
+                        signupFormData.link = await this.checkAndGenerateNewFormLink(link, groupAdminsUsers[0] || 0);
+                        let aliasLink = "/" + ((_d = broker.name) === null || _d === void 0 ? void 0 : _d.toLowerCase().split(" ")[0]);
+                        signupFormData.alias = aliasLink;
+                        signupFormData.name = CONST.signupForm.name;
+                        signupFormData.description = CONST.signupForm.description;
+                        signupFormData.title = CONST.signupForm.title;
+                        signupFormData.formType = CONST.signupForm.formType;
+                        signupFormData.keywords = CONST.signupForm.keywords;
+                        signupFormData.inelligibilityPeriod = CONST.signupForm.ineligibilityPeriod;
+                        signupFormData.published = CONST.signupForm.published;
+                        signupFormData.requireDentalHealthCoverage = true;
+                        signupFormData.requireSpouseEmail = false;
+                        signupFormData.warnRequiredDependantMedicalExam = false;
+                        signupFormData.useCreditCardPaymentMethod = true;
+                        signupFormData.usePadPaymentMethod = true;
+                        signupFormData.isDemoForm = false;
+                        const signupForm = await this.signupFormsRepository.create(signupFormData);
+                        data1['signupForm'] = signupForm;
+                        data1['fuseBillId'] = fusebillCustomer.id;
+                        // await mail("", groupAdmins[0].email, "", "", "", "")
+                        if (value.files) {
+                            console.log(value.files);
+                            console.log(`Logo -${value.files.length}`);
+                            // if (value.files) {
                             for (let file of value.files) {
                                 if (file.fieldname == "logo") {
                                     console.log(file.originalname);
@@ -1229,9 +1250,10 @@ let CorporateController = class CorporateController {
                                     // let modfilename = modfilenameArr[0] + "0." + modfilenameArr[1]
                                     const fileAttr = (0, common_functions_1.getFileAttributes)(filename);
                                     let modfilename = fileAttr.name + "0" + fileAttr.ext;
-                                    // const broker = await this.BrokerRepository.findById(brokerId);
-                                    if (broker) {
-                                        await this.brokerRepository.updateById(broker.id, {
+                                    const brokerLogo = await this.brokerRepository.findById(brokerId);
+                                    if (brokerLogo) {
+                                        console.log("logo update ");
+                                        await this.brokerRepository.updateById(brokerId, {
                                             logo: paths_1.BROKERPATH_STRING + filename,
                                             link: paths_1.BROKERPATH_STRING + modfilename
                                         });
@@ -1256,89 +1278,100 @@ let CorporateController = class CorporateController {
                                         default:
                                             mimetype = "invalid";
                                     }
+                                    let originalname = file.originalname;
+                                    console.log(originalname);
+                                    originalname = originalname.replace(/[\])}[{(]/g, '').replace(/ /g, '');
+                                    console.log(originalname);
                                     const fileAttr = (0, common_functions_1.getFileAttributes)(filename);
-                                    let modfilename = fileAttr.name + "0" + fileAttr.ext;
                                     console.log(mimetype);
-                                    let filenamets = value.fields.timestamp;
+                                    let filenamets = originalname;
                                     console.log(filenamets);
                                     //let ext = filename.split(".")[1]
                                     let ext = fileAttr.ext;
-                                    let bankDetails = await this.corporateService.customerBankDetailsRegister(value.fields.session, filenamets, ext, mimetype, customer.firstName);
+                                    let bankDetails = await this.corporateService.customerBankDetailsRegister(value.fields.session, filenamets, ext, mimetype, customer.id, fusebillCustomer.id);
                                 }
                             }
+                            // } else {
+                            //   console.log(`No logo needed`)
+                            // }
                         }
-                        else {
-                            console.log(`No logo needed`);
-                        }
-                    }
-                    let packageFilter = {
-                        order: 'ordering ASC',
-                        where: {
-                            published: { "type": "Buffer", "data": [1] }
-                        },
-                    };
-                    const packages = await this.insurancePackages.find(packageFilter);
-                    const packagesArray = [];
-                    for (const pckg of packages) {
-                        const packageObject = {};
-                        packageObject["description"] = pckg.description;
-                        packageObject["id"] = pckg.id;
-                        packageObject["logo"] = pckg.logo;
-                        packageObject["name"] = pckg.name;
-                        packageObject["published"] = pckg.published;
-                        packageObject["ordering"] = pckg.ordering;
-                        packageObject["allowMultiple"] = pckg.allowMultiple;
-                        packageObject["applyFilters"] = pckg.applyFilters;
-                        packageObject["optIn"] = pckg.optIn;
-                        let plansLevelFilter = {
+                        let packageFilter = {
                             order: 'ordering ASC',
                             where: {
-                                "published": { "type": "Buffer", "data": [1] },
-                                "requirePlanLevel": null
-                            }
+                                published: { "type": "Buffer", "data": [1] }
+                            },
                         };
-                        const planLevels = await this.insurancePackages.planGroups(pckg.id).find(plansLevelFilter);
-                        let groups = [];
-                        let subGroups = [];
-                        const parentIds = Array.from(new Set(planLevels.map(planLevels => planLevels.parentId)));
-                        for (const parentId of parentIds) {
-                            if (parentId != null) {
-                                const parentDetailsObj = {};
-                                const parentDetails = await this.planLevelRepository.findById(parentId);
-                                const subGroups = await this.planLevelRepository.find({ where: { parentId: parentId } });
-                                parentDetailsObj.id = parentDetails.id;
-                                parentDetailsObj.name = parentDetails.name;
-                                parentDetailsObj.subGroups = subGroups;
-                                parentDetails['subGroups'] = subGroups;
-                                console.log(parentDetails);
-                                groups.push(parentDetailsObj);
+                        const packages = await this.insurancePackages.find(packageFilter);
+                        const packagesArray = [];
+                        for (const pckg of packages) {
+                            const packageObject = {};
+                            packageObject["description"] = pckg.description;
+                            packageObject["id"] = pckg.id;
+                            packageObject["logo"] = pckg.logo;
+                            packageObject["name"] = pckg.name;
+                            packageObject["published"] = pckg.published;
+                            packageObject["ordering"] = pckg.ordering;
+                            packageObject["allowMultiple"] = pckg.allowMultiple;
+                            packageObject["applyFilters"] = pckg.applyFilters;
+                            packageObject["optIn"] = pckg.optIn;
+                            let plansLevelFilter = {
+                                order: 'ordering ASC',
+                                where: {
+                                    "published": { "type": "Buffer", "data": [1] },
+                                    "requirePlanLevel": null
+                                }
+                            };
+                            const planLevels = await this.insurancePackages.planGroups(pckg.id).find(plansLevelFilter);
+                            let groups = [];
+                            let subGroups = [];
+                            const parentIds = Array.from(new Set(planLevels.map(planLevels => planLevels.parentId)));
+                            for (const parentId of parentIds) {
+                                if (parentId != null) {
+                                    const parentDetailsObj = {};
+                                    const parentDetails = await this.planLevelRepository.findById(parentId);
+                                    const subGroups = await this.planLevelRepository.find({ where: { parentId: parentId } });
+                                    parentDetailsObj.id = parentDetails.id;
+                                    parentDetailsObj.name = parentDetails.name;
+                                    parentDetailsObj.subGroups = subGroups;
+                                    parentDetails['subGroups'] = subGroups;
+                                    console.log(parentDetails);
+                                    groups.push(parentDetailsObj);
+                                }
                             }
-                        }
-                        for (const pl of planLevels) {
-                            if (pl.parentId == undefined || pl.parentId == null) {
-                                const parentDetailsObj = {};
-                                parentDetailsObj.id = pl.id;
-                                parentDetailsObj.name = pl.name;
-                                parentDetailsObj.subGroups = [pl];
-                                groups.push(parentDetailsObj);
+                            for (const pl of planLevels) {
+                                if (pl.parentId == undefined || pl.parentId == null) {
+                                    const parentDetailsObj = {};
+                                    parentDetailsObj.id = pl.id;
+                                    parentDetailsObj.name = pl.name;
+                                    parentDetailsObj.subGroups = [pl];
+                                    groups.push(parentDetailsObj);
+                                }
                             }
+                            // for (const pl of planLevels) {
+                            //   groupsArray.push(pl);                 
+                            // }
+                            packageObject["groups"] = groups; //planLevels
+                            //console.log("-->" + packageObject.groups.length)
+                            if (groups.length > 0)
+                                packagesArray.push(packageObject);
                         }
-                        // for (const pl of planLevels) {
-                        //   groupsArray.push(pl);                 
-                        // }
-                        packageObject["groups"] = groups; //planLevels
-                        //console.log("-->" + packageObject.groups.length)
-                        if (groups.length > 0)
-                            packagesArray.push(packageObject);
+                        responsplans.packages = packagesArray; //packages;
+                        this.response.status(200).send({
+                            status: '200',
+                            message: messages_1.CORPORATE_MSG.REGISTRATION_SUCCESS,
+                            date: new Date(),
+                            data: data1,
+                            plans: responsplans
+                        });
                     }
-                    responsplans.packages = packagesArray; //packages;
-                    this.response.status(200).send({
-                        status: '200',
-                        message: messages_1.CORPORATE_MSG.REGISTRATION_SUCCESS,
-                        date: new Date(),
-                        data: data1,
-                        plans: responsplans
-                    });
+                    else {
+                        this.response.status(200).send({
+                            status: '201',
+                            message: messages_1.CORPORATE_MSG.GROUP_ADMIN_DETAILS,
+                            date: new Date(),
+                            data: data1
+                        });
+                    }
                 }
                 catch (error) {
                     console.log(error);
@@ -1375,7 +1408,8 @@ let CorporateController = class CorporateController {
         let status, message, data = {};
         try {
             // user creation, customer.role=
-            let corporate = await this.brokerRepository.findById(corporateId, { include: [{ relation: 'customer' }] });
+            let corporate = await this.brokerRepository.findById(corporateId, { include: [{ relation: 'contactInfo' }] });
+            console.log(corporate);
             if (corporate) {
                 let employeeUserObj = new models_1.Users();
                 employeeUserObj.username = apiRequest.emailId;
@@ -1407,6 +1441,7 @@ let CorporateController = class CorporateController {
                 customerContactInfoObj.primaryEmail = apiRequest.emailId;
                 customerContactInfoObj.primaryPhone = apiRequest.phoneNum.toString();
                 customerContactInfoObj.state = apiRequest.provienceName;
+                console.log(customerContactInfoObj);
                 let contcatInfo = await this.contactInformationRepository.create(customerContactInfoObj);
                 let customerContact = new models_1.CustomerContactInfo();
                 customerContactInfoObj.customerId = customer.id;
@@ -1426,7 +1461,7 @@ let CorporateController = class CorporateController {
                     //fusebillData.companyName=apiRequest.company_name;     
                     fusebillData.currency = apiRequest.currency || 'CAD'; // || ' 
                     try {
-                        fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
+                        // fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
                         console.log("**************************************************");
                         // console.log(fusebillCustomer)
                         console.log("**************************************************");
@@ -1444,7 +1479,7 @@ let CorporateController = class CorporateController {
                             "country": apiRequest.country,
                             "state": apiRequest.state
                         };
-                        const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
+                        // const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
                     }
                     catch (error) {
                         console.log(error.response.data.Errors);
@@ -1665,32 +1700,37 @@ let CorporateController = class CorporateController {
         try {
             let corporate = await this.brokerRepository.findById(corporateId);
             if (corporate) {
-                let corporateTier = new models_1.CorporateTiers();
-                corporateTier.brokerId = corporate.id;
-                corporateTier.published = 1;
+                let corporateTierObj = new models_1.CorporateTiers();
+                corporateTierObj.brokerId = corporate.id;
+                corporateTierObj.published = 1;
                 if (apiRequest.default.length > 0) {
                     for (const defaultTier of apiRequest.default) {
-                        corporateTier.name = defaultTier.tierName;
-                        corporateTier.tierType = CONST.TIER_TYPE.DEF;
-                        corporateTier.spendingLimit = defaultTier.walletAmount;
+                        console.log(defaultTier);
+                        corporateTierObj.name = defaultTier.tierName;
+                        corporateTierObj.tierType = CONST.TIER_TYPE.DEF;
+                        corporateTierObj.spendingLimit = defaultTier.walletAmount;
+                        console.log(corporateTierObj);
+                        let corporateTier = await this.corporateTiersRepository.create(corporateTierObj);
                     }
                 }
                 if (apiRequest.lengthOfService.length > 0) {
                     for (const lengthOfServiceTier of apiRequest.lengthOfService) {
-                        corporateTier.name = lengthOfServiceTier.tierName;
-                        corporateTier.tierType = CONST.TIER_TYPE.LOS;
-                        corporateTier.fromLength = lengthOfServiceTier.from;
-                        corporateTier.toLength = lengthOfServiceTier.to;
-                        corporateTier.spendingLimit = lengthOfServiceTier.walletAmount;
+                        corporateTierObj.name = lengthOfServiceTier.tierName;
+                        corporateTierObj.tierType = CONST.TIER_TYPE.LOS;
+                        corporateTierObj.fromLength = lengthOfServiceTier.from;
+                        corporateTierObj.toLength = lengthOfServiceTier.to;
+                        corporateTierObj.spendingLimit = lengthOfServiceTier.walletAmount;
+                        let corporateTier = await this.corporateTiersRepository.create(corporateTierObj);
                     }
                 }
                 if (apiRequest.annualIncome.length > 0) {
                     for (const annualIncomeTier of apiRequest.annualIncome) {
-                        corporateTier.name = annualIncomeTier.tierName;
-                        corporateTier.tierType = CONST.TIER_TYPE.AI;
-                        corporateTier.incomePercentage = annualIncomeTier.percentage;
-                        corporateTier.annualIncome = annualIncomeTier.annualIncome;
-                        corporateTier.spendingLimit = annualIncomeTier.walletAmount;
+                        corporateTierObj.name = annualIncomeTier.tierName;
+                        corporateTierObj.tierType = CONST.TIER_TYPE.AI;
+                        corporateTierObj.incomePercentage = annualIncomeTier.percentage;
+                        corporateTierObj.annualIncome = annualIncomeTier.annualIncome;
+                        corporateTierObj.spendingLimit = annualIncomeTier.walletAmount;
+                        let corporateTier = await this.corporateTiersRepository.create(corporateTierObj);
                     }
                 }
                 status = 200;
@@ -1707,7 +1747,7 @@ let CorporateController = class CorporateController {
             console.log(error);
         }
         this.response.status(status).send({
-            status, message, data
+            status, message, data, date: new data()
         });
         return this.response;
     }
@@ -1727,6 +1767,25 @@ let CorporateController = class CorporateController {
             // let addingEmployee=await this.corporateService.
             //  console.log(excelDatainJson);
         });
+    }
+    async tierList(corporateId) {
+        let status, message, data = {};
+        let corporate = await this.brokerRepository.findById(corporateId);
+        if (corporate) {
+            status = 200;
+            message = MESSAGE.CORPORATE_MSG.TIER_LIST;
+            let corporateTiers = await this.corporateTiersRepository.find({ where: { brokerId: corporateId } });
+            console.log(corporateTiers);
+            data = corporateTiers;
+        }
+        else {
+            status = 201;
+            message = MESSAGE.CORPORATE_MSG.NO_CORPORATE;
+        }
+        this.response.status(status).send({
+            status, message, data, date: new Date()
+        });
+        return this.response;
     }
 };
 tslib_1.__decorate([
@@ -1992,14 +2051,18 @@ tslib_1.__decorate([
                             type: 'string',
                             default: 'CORPORATE'
                         },
-                        firstName: { type: 'string', default: '', },
-                        lastName: { type: 'string', default: '', },
-                        email: { type: 'string', default: 'abc@gmail.com', },
-                        phoneNum: { type: 'number', default: 9999999999, },
+                        // firstName: { type: 'string', default: '', },
+                        // lastName: { type: 'string', default: '', },
+                        // email: { type: 'string', default: 'abc@gmail.com', },
+                        // phoneNum: { type: 'number', default: 9999999999, },
                         policyStartDate: { type: 'string', default: new Date().toISOString().slice(0, 10) },
                         logo: {
                             type: 'string',
                             format: 'binary'
+                        },
+                        fuseBillCustomerCreation: {
+                            type: 'boolean',
+                            default: false
                         },
                         voidCheck: {
                             type: 'string',
@@ -2089,10 +2152,6 @@ tslib_1.__decorate([
                             type: 'string',
                             default: '',
                         },
-                        fuseBillCustomerCreation: {
-                            type: 'boolean',
-                            default: false
-                        }
                     }
                 },
             },
@@ -2310,6 +2369,16 @@ tslib_1.__decorate([
 ], CorporateController.prototype, "corporateTiers", null);
 tslib_1.__decorate([
     (0, rest_1.post)(paths_1.CORPORATE.EXCEL),
+    (0, rest_1.response)(200, {
+        description: 'upload the excel file and insert employyes in the database',
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object'
+                }
+            }
+        }
+    }),
     tslib_1.__param(0, (0, rest_1.requestBody)({
         description: 'excel file',
         content: {
@@ -2332,6 +2401,22 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:paramtypes", [Object, Object]),
     tslib_1.__metadata("design:returntype", Promise)
 ], CorporateController.prototype, "uploadEmployeeExcel", null);
+tslib_1.__decorate([
+    (0, rest_1.get)(paths_1.CORPORATE.TIER),
+    (0, rest_1.response)(200, {
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object'
+                }
+            }
+        }
+    }),
+    tslib_1.__param(0, rest_1.param.path.number('corporateId')),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Number]),
+    tslib_1.__metadata("design:returntype", Promise)
+], CorporateController.prototype, "tierList", null);
 CorporateController = tslib_1.__decorate([
     (0, rest_1.api)({ basePath: 'admin' })
     // @authenticate('jwt')

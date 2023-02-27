@@ -22,7 +22,7 @@ import { MessageChannel } from "worker_threads";
 import { Stats, readFile } from "fs";
 import * as validation from '../services/validation.services'
 import path, { parse } from "path";
-import { BrokerService, HttpService, intersection, ResizeimgService } from "../services";
+import { BrokerService, HttpService, intersection, LogService, ResizeimgService } from "../services";
 import { FORMERR } from "dns";
 import { authorize } from "@loopback/authorization";
 import { basicAuthorization } from "../middlewares/auth.middleware";
@@ -75,7 +75,8 @@ export class BrokerController {
     @repository(PlansAvailabilityRepository)
     public plansAvalibility: PlansAvailabilityRepository,
     @repository(BrokerAdminsRepository)
-    public brokerAdminsRepository: BrokerAdminsRepository
+    public brokerAdminsRepository: BrokerAdminsRepository,
+    @service(LogService)public logs:LogService
   ) { }
   @get(BROKER.COUNT, {
     responses: {
@@ -94,6 +95,7 @@ export class BrokerController {
   async brokerCount(): Promise<Response> {
     let totalBrokers, TpaMga, brokaRage, advisor, association, corporate, status, message, data, date: any = {};
     try {
+      await this.logs.consoles("brokerCount","condition","ressss","");
       status = 200;
       totalBrokers = await this.brokerRepository.count();
       TpaMga = await this.brokerRepository.count({ brokerType: 'TPA/MGA' });
@@ -3460,7 +3462,7 @@ export class BrokerController {
           if (value.files) {
             for (let file of value.files) {
               if (file.fieldname == "logo") {
-                if (value.files.length > 0) {
+                // if (value.files.length > 0) {
 
                   console.log(`file.originalname`);
                   let originalname = file.originalname;
@@ -3486,9 +3488,9 @@ export class BrokerController {
                     message = 'No broker found'
                     status = '202'
                   }
-                } else {
-                  console.log(`No logo needed`)
-                }
+                // } else {
+                //   console.log(`No logo needed`)
+                // }
 
               }
               else if (file.fieldname == 'disclosureAgreement') {

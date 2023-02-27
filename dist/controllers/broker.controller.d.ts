@@ -3,7 +3,7 @@ import { Request, Response } from "@loopback/rest";
 import { BrokerRepository, BrokerLicensedStatesAndProvincesRepository, InsurancePlansRepository, SignupFormsRepository, StatesAndProvincesRepository, SignupFormsPlanLevelMappingRepository, UsersRepository, ContactInformationRepository, CustomerSignupRepository, CustomerRepository, PlanLevelRepository, BrokerEoInsuranceRepository, InsurancePackagesRepository, PlansAvailabilityRepository } from '../repositories';
 import { FileUploadHandler } from "../types";
 import { BrokerEoInsurance, ContactInformation } from "../models";
-import { BrokerService, HttpService, ResizeimgService } from "../services";
+import { BrokerService, HttpService, LogService, ResizeimgService } from "../services";
 import { BrokerAdminsRepository } from "../repositories/broker-admins.repository";
 export declare class BrokerController {
     brokerRepository: BrokerRepository;
@@ -26,7 +26,8 @@ export declare class BrokerController {
     insurancePackages: InsurancePackagesRepository;
     plansAvalibility: PlansAvailabilityRepository;
     brokerAdminsRepository: BrokerAdminsRepository;
-    constructor(brokerRepository: BrokerRepository, brokerLicensedStatesAndProvincesRepository: BrokerLicensedStatesAndProvincesRepository, signupFormsPlanLevelMappingRepository: SignupFormsPlanLevelMappingRepository, usersRepository: UsersRepository, contactInformationRepository: ContactInformationRepository, signupFormsRepository: SignupFormsRepository, StatesAndProvincesRepository: StatesAndProvincesRepository, customerSignupRepository: CustomerSignupRepository, customerRepository: CustomerRepository, insurancePlansRepository: InsurancePlansRepository, planLevelRepository: PlanLevelRepository, brokerEoInsuranceRepository: BrokerEoInsuranceRepository, response: Response, handler: FileUploadHandler, http: HttpService, img: ResizeimgService, bs: BrokerService, insurancePackages: InsurancePackagesRepository, plansAvalibility: PlansAvailabilityRepository, brokerAdminsRepository: BrokerAdminsRepository);
+    logs: LogService;
+    constructor(brokerRepository: BrokerRepository, brokerLicensedStatesAndProvincesRepository: BrokerLicensedStatesAndProvincesRepository, signupFormsPlanLevelMappingRepository: SignupFormsPlanLevelMappingRepository, usersRepository: UsersRepository, contactInformationRepository: ContactInformationRepository, signupFormsRepository: SignupFormsRepository, StatesAndProvincesRepository: StatesAndProvincesRepository, customerSignupRepository: CustomerSignupRepository, customerRepository: CustomerRepository, insurancePlansRepository: InsurancePlansRepository, planLevelRepository: PlanLevelRepository, brokerEoInsuranceRepository: BrokerEoInsuranceRepository, response: Response, handler: FileUploadHandler, http: HttpService, img: ResizeimgService, bs: BrokerService, insurancePackages: InsurancePackagesRepository, plansAvalibility: PlansAvailabilityRepository, brokerAdminsRepository: BrokerAdminsRepository, logs: LogService);
     brokerCount(): Promise<Response>;
     getBroker(): Promise<any>;
     brokerDetailsBasedonId(id: number): Promise<any>;

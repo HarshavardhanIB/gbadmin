@@ -49,6 +49,7 @@ let FilesController = class FilesController {
     static async getFilesAndFields(request, method, others) {
         // if method is disclouserAgreementUpdate need to send brokerName in others
         const uploadedFiles = request.files;
+        console.log(uploadedFiles);
         const uploadedFields = request.body;
         //console.log(uploadedFields)
         const mapper = (f) => ({

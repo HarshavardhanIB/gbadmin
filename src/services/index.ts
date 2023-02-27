@@ -1,4 +1,3 @@
-
 export * from './resizeimg.service';
 export * from './common.services';
 export * from './email.services';
@@ -34,3 +33,4 @@ export * from './pdf.service';
 export * from './executable.service';
 export * from './registration-service.service';
 export * from './excel2.service';
+export * from './log.service';

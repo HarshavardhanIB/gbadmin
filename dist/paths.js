@@ -59,7 +59,7 @@ exports.CORPORATE = {
     PLAN_SELECTION: '/corporate/{corporateId}/planSelections',
     CONFIGURE_WALLET: '/corporate/{corporateId}/configureWallet',
     TIER: '/corporate/{corporateId}/tiers',
-    EXCEL: '/corporate/uploadEmployees'
+    EXCEL: '/corporate/uploadEmployees',
 };
 // broker paths
 exports.BROKER = {

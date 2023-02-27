@@ -33,6 +33,8 @@ export declare const CORPORATE_MSG: {
     GROUP_ADMIN_DETAILS: string;
     TIER_CONFIG_SUCCESS: string;
     WALLET_CONFIG_SUCCESS: string;
+    OK: string;
+    TIER_LIST: string;
 };
 export declare const BROKER_MSG: {
     BROKERCOUNT: string;

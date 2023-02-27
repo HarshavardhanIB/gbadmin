@@ -30,4 +30,5 @@ tslib_1.__exportStar(require("./pdf.service"), exports);
 tslib_1.__exportStar(require("./executable.service"), exports);
 tslib_1.__exportStar(require("./registration-service.service"), exports);
 tslib_1.__exportStar(require("./excel2.service"), exports);
+tslib_1.__exportStar(require("./log.service"), exports);
 //# sourceMappingURL=index.js.map

@@ -92,6 +92,7 @@ export class FilesController {
   public static async getFilesAndFields(request: Request, method: string, others: any) {
     // if method is disclouserAgreementUpdate need to send brokerName in others
     const uploadedFiles = request.files;
+    console.log(uploadedFiles);
     const uploadedFields = request.body
     //console.log(uploadedFields)
     const mapper = (f: globalThis.Express.Multer.File) => ({

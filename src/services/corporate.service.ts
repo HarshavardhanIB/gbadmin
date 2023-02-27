@@ -64,7 +64,7 @@ export class Corporate {
     return returnPropertyName;
   }
 
-  async customerBankDetailsRegister(session: any, filenamets: any, ext: any, mimetype: any, customerName: any): Promise<any> {
+  async customerBankDetailsRegister(session: any, filenamets: any, ext: any, mimetype: any, customerName: any,fusebillCustomerId:any): Promise<any> {
 
     let message: string, status: string, data: any = {};
     let bankDetailsDecoded;// = atob(request.body.key)
@@ -98,7 +98,7 @@ export class Corporate {
     if (!this.registrationService.validateAccountNo(bank_details.accountNumber)) {
       return false;
     }
-    let newFilename = CUSTOMER_CHEQUES_FOLDER + '/' + filenamets + ext
+    let newFilename = CUSTOMER_CHEQUES_FOLDER + '/' + filenamets
     console.log(newFilename)
     const checkFileBuffer = await getFile(newFilename, '');
     console.log(checkFileBuffer)
@@ -144,19 +144,21 @@ enrollmentDate: "2022-10-01"
       "nextBillingPrice": parseFloat(bank_details.amount),
       "customerName": customerName,
       //   "fusebillCustomerId": customer.fusebillCustomerId,
+      "fusebillCustomerId":fusebillCustomerId
     }
-    const customerRecord = await this.ach.createCustomer(input)
-    console.log(customerRecord)
-    if (customerRecord && customerRecord.data) {
+    // commented 149-160  for testing uncomment after test
+    // const customerRecord = await this.ach.createCustomer(input)
+    // console.log(customerRecord)
+    // if (customerRecord && customerRecord.data) {
 
-      deleteFile(newFilename);
+    //   deleteFile(newFilename);
 
-      data = customerRecord.data
-      message = 'Customer Record(PAD) created'
-      status = '200'
-    } else {
-      return false;
-    }
+    //   data = customerRecord.data
+    //   message = 'Customer Record(PAD) created'
+    //   status = '200'
+    // } else {
+    //   return false;
+    // }
     return true;
   }
   async addEmployee(data: any, corporateId: number) {
@@ -310,7 +312,7 @@ enrollmentDate: "2022-10-01"
       return false;
     }
     return true
-  }
+  } 
 }
 const btoa = function (str: string) { return Buffer.from(str).toString('base64'); }
 const atob = function (b64Encoded: string) { return Buffer.from(b64Encoded, 'base64').toString() }
