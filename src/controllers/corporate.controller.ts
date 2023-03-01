@@ -8,7 +8,7 @@ import { nextTick } from 'process';
 import { Broker, BrokerAdmins, ContactInformation, CorporatePaidTieredPlanLevels, CorporateTieredPlanLevels, CorporateTiers, Customer, CustomerContactInfo, InsurancePlans, SignupForms, SignupFormsPlanLevelMapping, Users } from '../models';
 import * as CONST from '../constants'
 import { BankCodesRepository, BrokerRepository, ContactInformationRepository, CorporatePaidTieredPlanLevelsRepository, CorporateTiersRepository, CustomerContactInfoRepository, CustomerRepository, FinancialInstitutionsRepository, FinancialInstitutionsRoutingNumbersRepository, InsurancePackagesRepository, InsurancePlansRepository, PlanLevelRepository, PlansAvailabilityRepository, SignupFormsPlanLevelMappingRepository, SignupFormsRepository, StatesAndProvincesRepository, UsersRepository, } from '../repositories'
-import { AchService, Corporate, Excel2Service, ExcelService, FusebillService, mail, moments, RegistrationServiceService } from '../services';
+import { AchService, Corporate, Excel2Service, ExcelService, FusebillService, HttpService, mail, moments, RegistrationServiceService } from '../services';
 import { FILE_UPLOAD_SERVICE } from '../keys';
 import { FileUploadHandler } from "../types";
 import { FilesController } from './files.controller';
@@ -18,7 +18,7 @@ import * as PATHS from '../paths';
 import { encryptPassword, generateFormLink, generateRandomPassword, getActivationCode, getFileAttributes } from '../common-functions';
 import moment from 'moment';
 import { BrokerAdminsRepository } from '../repositories/broker-admins.repository';
-import { BROKERPATH_STRING, CORPORATE, CUSTOMER_CHEQUES_FOLDER } from '../paths';
+import { BROKERIMG_RESOURCES_FOLDER, BROKERPATH_STRING, CORPORATE, CUSTOMER_CHEQUES_FOLDER } from '../paths';
 import { CORPORATE_MSG } from '../messages'
 import { deleteFile, getFile } from '../storage.helper';
 import { dateFormat1 } from '../constants';
@@ -30,7 +30,7 @@ import { basicAuthorization } from '../middlewares/auth.middleware';
 import { Employee } from '../model_extended'
 import { CorporateTieredPlanLevelsRepository } from '../repositories/corporate-tiered-plan-levels.repository';
 import { Console } from 'console';
-let fuseBillCustomerCreation = false;
+let fuseBillCustomerCreation = true;
 let fiseBill = 11;
 @api({ basePath: 'admin' })
 // @authenticate('jwt')
@@ -40,6 +40,7 @@ let fiseBill = 11;
 // })
 export class CorporateController {
   constructor(
+    @service(HttpService) public http: HttpService,
     @repository(BrokerRepository)
     public brokerRepository: BrokerRepository,
     @inject(RestBindings.Http.RESPONSE) private response: Response,
@@ -411,7 +412,7 @@ export class CorporateController {
               fusebillData.currency = apiRequest.currency || 'CAD';// || ' 
               try {
 
-                // fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
+                fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
                 console.log("**************************************************")
                 // console.log(fusebillCustomer)
                 console.log("**************************************************")
@@ -429,7 +430,7 @@ export class CorporateController {
                   "country": apiRequest.country,
                   "state": apiRequest.state
                 }
-                // const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
+                const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
 
               } catch (error) {
                 console.log(error.response.data.Errors)
@@ -557,6 +558,9 @@ export class CorporateController {
                       logo: BROKERPATH_STRING + filename,
                       link: BROKERPATH_STRING + modfilename
                     })
+                    let url = process.env.MAINAPI + `/api/customer/broker/${brokerId}/logo`;
+                    let pathImg = BROKERIMG_RESOURCES_FOLDER + "/" + filename;
+                    const fetchStatus = await this.http.fetchMultipartFormdata(url, pathImg);
                   } else {
                     console.log('no broker with given id');
                     message = 'No broker found'
@@ -581,7 +585,6 @@ export class CorporateController {
                   console.log(originalname)
                   originalname = originalname.replace(/[\])}[{(]/g, '').replace(/ /g, '')
                   console.log(originalname)
-
                   const fileAttr = getFileAttributes(filename)
                   console.log(mimetype);
                   let filenamets = originalname
@@ -1540,7 +1543,7 @@ export class CorporateController {
               fusebillData.currency = apiRequest.currency || 'CAD';// || ' 
               try {
 
-                // fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
+                fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
                 console.log("**************************************************")
                 // console.log(fusebillCustomer)
                 console.log("**************************************************")
@@ -1558,7 +1561,7 @@ export class CorporateController {
                   "country": apiRequest.country,
                   "state": apiRequest.state
                 }
-                // const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
+                const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
 
               } catch (error) {
                 console.log(error.response.data.Errors)
@@ -1917,7 +1920,7 @@ export class CorporateController {
           fusebillData.currency = apiRequest.currency || 'CAD';// || ' 
           try {
 
-            // fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
+            fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
             console.log("**************************************************")
             // console.log(fusebillCustomer)
             console.log("**************************************************")
@@ -1935,7 +1938,7 @@ export class CorporateController {
               "country": apiRequest.country ||'Canada',
               "state": apiRequest.provienceName
             }
-            // const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
+            const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
 
           } catch (error) {
             console.log(error.response.data.Errors)

@@ -19,7 +19,7 @@ const broker_admins_repository_1 = require("../repositories/broker-admins.reposi
 const corporate_tiered_plan_levels_repository_1 = require("../repositories/corporate-tiered-plan-levels.repository");
 const CONST = tslib_1.__importStar(require("../constants"));
 const fusebill_service_1 = require("./fusebill.service");
-let fuseBillCustomerCreation = false;
+let fuseBillCustomerCreation = true;
 let fiseBill = 0;
 let Corporate = class Corporate {
     constructor(/* Add @inject to inject parameters */ fusebill, handler, registrationService, ach, banksCodesRepository, banksRepository, branchesRepository, StatesAndProvincesRepository, BrokerRepository, usersRepository, BrokerAdminsRepository, ContactInformationRepository, CustomerRepository, InsurancePlansRepository, PlansAvailabilityRepository, insurancePackages, SignupFormsRepository, PlanLevelRepository, CorporateTiersRepository, CorporateTieredPlanLevelsRepository, CorporatePaidTieredPlanLevelsRepository, CustomerContactInfoRepository) {
@@ -135,16 +135,17 @@ let Corporate = class Corporate {
             "fusebillCustomerId": fusebillCustomerId
         };
         // commented 149-160  for testing uncomment after test
-        // const customerRecord = await this.ach.createCustomer(input)
-        // console.log(customerRecord)
-        // if (customerRecord && customerRecord.data) {
-        //   deleteFile(newFilename);
-        //   data = customerRecord.data
-        //   message = 'Customer Record(PAD) created'
-        //   status = '200'
-        // } else {
-        //   return false;
-        // }
+        const customerRecord = await this.ach.createCustomer(input);
+        console.log(customerRecord);
+        if (customerRecord && customerRecord.data) {
+            (0, storage_helper_1.deleteFile)(newFilename);
+            data = customerRecord.data;
+            message = 'Customer Record(PAD) created';
+            status = '200';
+        }
+        else {
+            return false;
+        }
         return true;
     }
     async addEmployee(data, corporateId) {
@@ -214,7 +215,7 @@ let Corporate = class Corporate {
                             // "line1": data.streetAddressLine1,
                             // "line2": data.streetAddressLine2,
                             "city": data.residentIn,
-                            "postalZip": data.postalCode,
+                            // "postalZip": data.postalCode,
                             "country": data.country || 'Canada',
                             "state": data.provinceName
                         };

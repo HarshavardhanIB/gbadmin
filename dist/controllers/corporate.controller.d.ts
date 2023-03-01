@@ -1,12 +1,13 @@
 /// <reference types="express" />
 import { Request, Response } from '@loopback/rest';
 import { BankCodesRepository, BrokerRepository, ContactInformationRepository, CorporatePaidTieredPlanLevelsRepository, CorporateTiersRepository, CustomerContactInfoRepository, CustomerRepository, FinancialInstitutionsRepository, FinancialInstitutionsRoutingNumbersRepository, InsurancePackagesRepository, InsurancePlansRepository, PlanLevelRepository, PlansAvailabilityRepository, SignupFormsPlanLevelMappingRepository, SignupFormsRepository, StatesAndProvincesRepository, UsersRepository } from '../repositories';
-import { AchService, Corporate, Excel2Service, ExcelService, FusebillService, RegistrationServiceService } from '../services';
+import { AchService, Corporate, Excel2Service, ExcelService, FusebillService, HttpService, RegistrationServiceService } from '../services';
 import { FileUploadHandler } from "../types";
 import { BrokerAdminsRepository } from '../repositories/broker-admins.repository';
 import { Employee } from '../model_extended';
 import { CorporateTieredPlanLevelsRepository } from '../repositories/corporate-tiered-plan-levels.repository';
 export declare class CorporateController {
+    http: HttpService;
     brokerRepository: BrokerRepository;
     private response;
     corporateService: Corporate;
@@ -34,7 +35,7 @@ export declare class CorporateController {
     excelService: ExcelService;
     excel2Service: Excel2Service;
     signupFormsPlanLevelMappingRepository: SignupFormsPlanLevelMappingRepository;
-    constructor(brokerRepository: BrokerRepository, response: Response, corporateService: Corporate, usersRepository: UsersRepository, BrokerAdminsRepository: BrokerAdminsRepository, contactInformationRepository: ContactInformationRepository, customerRepository: CustomerRepository, handler: FileUploadHandler, fusebill: FusebillService, registrationService: RegistrationServiceService, ach: AchService, banksCodesRepository: BankCodesRepository, banksRepository: FinancialInstitutionsRepository, branchesRepository: FinancialInstitutionsRoutingNumbersRepository, statesAndProvincesRepository: StatesAndProvincesRepository, insurancePlansRepository: InsurancePlansRepository, plansAvailabilityRepository: PlansAvailabilityRepository, insurancePackages: InsurancePackagesRepository, signupFormsRepository: SignupFormsRepository, planLevelRepository: PlanLevelRepository, corporateTiersRepository: CorporateTiersRepository, corporateTieredPlanLevelsRepository: CorporateTieredPlanLevelsRepository, corporatePaidTieredPlanLevelsRepository: CorporatePaidTieredPlanLevelsRepository, customerContactInfoRepository: CustomerContactInfoRepository, excelService: ExcelService, excel2Service: Excel2Service, signupFormsPlanLevelMappingRepository: SignupFormsPlanLevelMappingRepository);
+    constructor(http: HttpService, brokerRepository: BrokerRepository, response: Response, corporateService: Corporate, usersRepository: UsersRepository, BrokerAdminsRepository: BrokerAdminsRepository, contactInformationRepository: ContactInformationRepository, customerRepository: CustomerRepository, handler: FileUploadHandler, fusebill: FusebillService, registrationService: RegistrationServiceService, ach: AchService, banksCodesRepository: BankCodesRepository, banksRepository: FinancialInstitutionsRepository, branchesRepository: FinancialInstitutionsRoutingNumbersRepository, statesAndProvincesRepository: StatesAndProvincesRepository, insurancePlansRepository: InsurancePlansRepository, plansAvailabilityRepository: PlansAvailabilityRepository, insurancePackages: InsurancePackagesRepository, signupFormsRepository: SignupFormsRepository, planLevelRepository: PlanLevelRepository, corporateTiersRepository: CorporateTiersRepository, corporateTieredPlanLevelsRepository: CorporateTieredPlanLevelsRepository, corporatePaidTieredPlanLevelsRepository: CorporatePaidTieredPlanLevelsRepository, customerContactInfoRepository: CustomerContactInfoRepository, excelService: ExcelService, excel2Service: Excel2Service, signupFormsPlanLevelMappingRepository: SignupFormsPlanLevelMappingRepository);
     brokerDetailsBasedonId(company: string): Promise<Response>;
     signup(request: Request, response: Response): Promise<any>;
     corporateFormConfig(): Promise<Response<any, Record<string, any>>>;

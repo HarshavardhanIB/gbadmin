@@ -23,10 +23,11 @@ const storage_helper_1 = require("../storage.helper");
 const constants_1 = require("../constants");
 const model_extended_1 = require("../model_extended");
 const corporate_tiered_plan_levels_repository_1 = require("../repositories/corporate-tiered-plan-levels.repository");
-let fuseBillCustomerCreation = false;
+let fuseBillCustomerCreation = true;
 let fiseBill = 11;
 let CorporateController = class CorporateController {
-    constructor(brokerRepository, response, corporateService, usersRepository, BrokerAdminsRepository, contactInformationRepository, customerRepository, handler, fusebill, registrationService, ach, banksCodesRepository, banksRepository, branchesRepository, statesAndProvincesRepository, insurancePlansRepository, plansAvailabilityRepository, insurancePackages, signupFormsRepository, planLevelRepository, corporateTiersRepository, corporateTieredPlanLevelsRepository, corporatePaidTieredPlanLevelsRepository, customerContactInfoRepository, excelService, excel2Service, signupFormsPlanLevelMappingRepository) {
+    constructor(http, brokerRepository, response, corporateService, usersRepository, BrokerAdminsRepository, contactInformationRepository, customerRepository, handler, fusebill, registrationService, ach, banksCodesRepository, banksRepository, branchesRepository, statesAndProvincesRepository, insurancePlansRepository, plansAvailabilityRepository, insurancePackages, signupFormsRepository, planLevelRepository, corporateTiersRepository, corporateTieredPlanLevelsRepository, corporatePaidTieredPlanLevelsRepository, customerContactInfoRepository, excelService, excel2Service, signupFormsPlanLevelMappingRepository) {
+        this.http = http;
         this.brokerRepository = brokerRepository;
         this.response = response;
         this.corporateService = corporateService;
@@ -253,7 +254,7 @@ let CorporateController = class CorporateController {
                             //fusebillData.companyName=apiRequest.company_name;     
                             fusebillData.currency = apiRequest.currency || 'CAD'; // || ' 
                             try {
-                                // fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
+                                fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
                                 console.log("**************************************************");
                                 // console.log(fusebillCustomer)
                                 console.log("**************************************************");
@@ -271,7 +272,7 @@ let CorporateController = class CorporateController {
                                     "country": apiRequest.country,
                                     "state": apiRequest.state
                                 };
-                                // const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
+                                const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
                             }
                             catch (error) {
                                 console.log(error.response.data.Errors);
@@ -399,6 +400,9 @@ let CorporateController = class CorporateController {
                                             logo: paths_1.BROKERPATH_STRING + filename,
                                             link: paths_1.BROKERPATH_STRING + modfilename
                                         });
+                                        let url = process.env.MAINAPI + `/api/customer/broker/${brokerId}/logo`;
+                                        let pathImg = paths_1.BROKERIMG_RESOURCES_FOLDER + "/" + filename;
+                                        const fetchStatus = await this.http.fetchMultipartFormdata(url, pathImg);
                                     }
                                     else {
                                         console.log('no broker with given id');
@@ -1112,7 +1116,7 @@ let CorporateController = class CorporateController {
                             //fusebillData.companyName=apiRequest.company_name;     
                             fusebillData.currency = apiRequest.currency || 'CAD'; // || ' 
                             try {
-                                // fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
+                                fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
                                 console.log("**************************************************");
                                 // console.log(fusebillCustomer)
                                 console.log("**************************************************");
@@ -1130,7 +1134,7 @@ let CorporateController = class CorporateController {
                                     "country": apiRequest.country,
                                     "state": apiRequest.state
                                 };
-                                // const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
+                                const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
                             }
                             catch (error) {
                                 console.log(error.response.data.Errors);
@@ -1465,7 +1469,7 @@ let CorporateController = class CorporateController {
                     //fusebillData.companyName=apiRequest.company_name;     
                     fusebillData.currency = apiRequest.currency || 'CAD'; // || ' 
                     try {
-                        // fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
+                        fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
                         console.log("**************************************************");
                         // console.log(fusebillCustomer)
                         console.log("**************************************************");
@@ -1483,7 +1487,7 @@ let CorporateController = class CorporateController {
                             "country": apiRequest.country || 'Canada',
                             "state": apiRequest.provienceName
                         };
-                        // const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
+                        const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
                     }
                     catch (error) {
                         console.log(error.response.data.Errors);
@@ -2462,34 +2466,36 @@ CorporateController = tslib_1.__decorate([
     //   voters: [basicAuthorization]
     // })
     ,
-    tslib_1.__param(0, (0, repository_1.repository)(repositories_1.BrokerRepository)),
-    tslib_1.__param(1, (0, core_1.inject)(rest_1.RestBindings.Http.RESPONSE)),
-    tslib_1.__param(2, (0, core_1.service)(services_1.Corporate)),
-    tslib_1.__param(3, (0, repository_1.repository)(repositories_1.UsersRepository)),
-    tslib_1.__param(4, (0, repository_1.repository)(broker_admins_repository_1.BrokerAdminsRepository)),
-    tslib_1.__param(5, (0, repository_1.repository)(repositories_1.ContactInformationRepository)),
-    tslib_1.__param(6, (0, repository_1.repository)(repositories_1.CustomerRepository)),
-    tslib_1.__param(7, (0, core_1.inject)(keys_1.FILE_UPLOAD_SERVICE)),
-    tslib_1.__param(8, (0, core_1.service)(services_1.FusebillService)),
-    tslib_1.__param(9, (0, core_1.service)(services_1.RegistrationServiceService)),
-    tslib_1.__param(10, (0, core_1.service)(services_1.AchService)),
-    tslib_1.__param(11, (0, repository_1.repository)(repositories_1.BankCodesRepository)),
-    tslib_1.__param(12, (0, repository_1.repository)(repositories_1.FinancialInstitutionsRepository)),
-    tslib_1.__param(13, (0, repository_1.repository)(repositories_1.FinancialInstitutionsRoutingNumbersRepository)),
-    tslib_1.__param(14, (0, repository_1.repository)(repositories_1.StatesAndProvincesRepository)),
-    tslib_1.__param(15, (0, repository_1.repository)(repositories_1.InsurancePlansRepository)),
-    tslib_1.__param(16, (0, repository_1.repository)(repositories_1.PlansAvailabilityRepository)),
-    tslib_1.__param(17, (0, repository_1.repository)(repositories_1.InsurancePackagesRepository)),
-    tslib_1.__param(18, (0, repository_1.repository)(repositories_1.SignupFormsRepository)),
-    tslib_1.__param(19, (0, repository_1.repository)(repositories_1.PlanLevelRepository)),
-    tslib_1.__param(20, (0, repository_1.repository)(repositories_1.CorporateTiersRepository)),
-    tslib_1.__param(21, (0, repository_1.repository)(corporate_tiered_plan_levels_repository_1.CorporateTieredPlanLevelsRepository)),
-    tslib_1.__param(22, (0, repository_1.repository)(repositories_1.CorporatePaidTieredPlanLevelsRepository)),
-    tslib_1.__param(23, (0, repository_1.repository)(repositories_1.CustomerContactInfoRepository)),
-    tslib_1.__param(24, (0, core_1.service)(services_1.ExcelService)),
-    tslib_1.__param(25, (0, core_1.service)(services_1.Excel2Service)),
-    tslib_1.__param(26, (0, repository_1.repository)(repositories_1.SignupFormsPlanLevelMappingRepository)),
-    tslib_1.__metadata("design:paramtypes", [repositories_1.BrokerRepository, Object, services_1.Corporate,
+    tslib_1.__param(0, (0, core_1.service)(services_1.HttpService)),
+    tslib_1.__param(1, (0, repository_1.repository)(repositories_1.BrokerRepository)),
+    tslib_1.__param(2, (0, core_1.inject)(rest_1.RestBindings.Http.RESPONSE)),
+    tslib_1.__param(3, (0, core_1.service)(services_1.Corporate)),
+    tslib_1.__param(4, (0, repository_1.repository)(repositories_1.UsersRepository)),
+    tslib_1.__param(5, (0, repository_1.repository)(broker_admins_repository_1.BrokerAdminsRepository)),
+    tslib_1.__param(6, (0, repository_1.repository)(repositories_1.ContactInformationRepository)),
+    tslib_1.__param(7, (0, repository_1.repository)(repositories_1.CustomerRepository)),
+    tslib_1.__param(8, (0, core_1.inject)(keys_1.FILE_UPLOAD_SERVICE)),
+    tslib_1.__param(9, (0, core_1.service)(services_1.FusebillService)),
+    tslib_1.__param(10, (0, core_1.service)(services_1.RegistrationServiceService)),
+    tslib_1.__param(11, (0, core_1.service)(services_1.AchService)),
+    tslib_1.__param(12, (0, repository_1.repository)(repositories_1.BankCodesRepository)),
+    tslib_1.__param(13, (0, repository_1.repository)(repositories_1.FinancialInstitutionsRepository)),
+    tslib_1.__param(14, (0, repository_1.repository)(repositories_1.FinancialInstitutionsRoutingNumbersRepository)),
+    tslib_1.__param(15, (0, repository_1.repository)(repositories_1.StatesAndProvincesRepository)),
+    tslib_1.__param(16, (0, repository_1.repository)(repositories_1.InsurancePlansRepository)),
+    tslib_1.__param(17, (0, repository_1.repository)(repositories_1.PlansAvailabilityRepository)),
+    tslib_1.__param(18, (0, repository_1.repository)(repositories_1.InsurancePackagesRepository)),
+    tslib_1.__param(19, (0, repository_1.repository)(repositories_1.SignupFormsRepository)),
+    tslib_1.__param(20, (0, repository_1.repository)(repositories_1.PlanLevelRepository)),
+    tslib_1.__param(21, (0, repository_1.repository)(repositories_1.CorporateTiersRepository)),
+    tslib_1.__param(22, (0, repository_1.repository)(corporate_tiered_plan_levels_repository_1.CorporateTieredPlanLevelsRepository)),
+    tslib_1.__param(23, (0, repository_1.repository)(repositories_1.CorporatePaidTieredPlanLevelsRepository)),
+    tslib_1.__param(24, (0, repository_1.repository)(repositories_1.CustomerContactInfoRepository)),
+    tslib_1.__param(25, (0, core_1.service)(services_1.ExcelService)),
+    tslib_1.__param(26, (0, core_1.service)(services_1.Excel2Service)),
+    tslib_1.__param(27, (0, repository_1.repository)(repositories_1.SignupFormsPlanLevelMappingRepository)),
+    tslib_1.__metadata("design:paramtypes", [services_1.HttpService,
+        repositories_1.BrokerRepository, Object, services_1.Corporate,
         repositories_1.UsersRepository,
         broker_admins_repository_1.BrokerAdminsRepository,
         repositories_1.ContactInformationRepository,

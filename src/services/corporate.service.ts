@@ -19,7 +19,7 @@ import { BrokerAdminsRepository } from '../repositories/broker-admins.repository
 import { CorporateTieredPlanLevelsRepository } from '../repositories/corporate-tiered-plan-levels.repository';
 import * as CONST from '../constants'
 import { FusebillService } from './fusebill.service';
-let fuseBillCustomerCreation = false;
+let fuseBillCustomerCreation = true;
 let fiseBill = 0;
 @injectable({ scope: BindingScope.TRANSIENT })
 export class Corporate {
@@ -46,7 +46,6 @@ export class Corporate {
     @repository(CorporateTieredPlanLevelsRepository) public CorporateTieredPlanLevelsRepository: CorporateTieredPlanLevelsRepository,
     @repository(CorporatePaidTieredPlanLevelsRepository) public CorporatePaidTieredPlanLevelsRepository: CorporatePaidTieredPlanLevelsRepository,
     @repository(CustomerContactInfoRepository) public CustomerContactInfoRepository: CustomerContactInfoRepository,
-
   ) { }
   async encryptPswrd(password: string) {
     let encryptedPasswrd = await hash(password, await genSalt());
@@ -147,18 +146,18 @@ enrollmentDate: "2022-10-01"
       "fusebillCustomerId": fusebillCustomerId
     }
     // commented 149-160  for testing uncomment after test
-    // const customerRecord = await this.ach.createCustomer(input)
-    // console.log(customerRecord)
-    // if (customerRecord && customerRecord.data) {
+    const customerRecord = await this.ach.createCustomer(input)
+    console.log(customerRecord)
+    if (customerRecord && customerRecord.data) {
 
-    //   deleteFile(newFilename);
+      deleteFile(newFilename);
 
-    //   data = customerRecord.data
-    //   message = 'Customer Record(PAD) created'
-    //   status = '200'
-    // } else {
-    //   return false;
-    // }
+      data = customerRecord.data
+      message = 'Customer Record(PAD) created'
+      status = '200'
+    } else {
+      return false;
+    }
     return true;
   }
   async addEmployee(data: any, corporateId: number) {
@@ -228,7 +227,7 @@ enrollmentDate: "2022-10-01"
               // "line1": data.streetAddressLine1,
               // "line2": data.streetAddressLine2,
               "city": data.residentIn,
-              "postalZip": data.postalCode,
+              // "postalZip": data.postalCode,
               "country": data.country || 'Canada',
               "state": data.provinceName
             }
