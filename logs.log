@@ -1,0 +1,53 @@
+[2023-02-27T21:01:52.094] [FATAL] brokerController - brokerDetailsBasedonId  ^ 4 ^ Broker details based on broker id  ^broker id :4
+[2023-02-27T21:03:09.717] [FATAL] brokerController - brokerDetailsBasedonId  ^ 45 ^ Broker details based on broker id  ^broker id :45
+[2023-02-27T21:13:59.141] [FATAL] brokerController - brokerDetailsBasedonId  ^ broker name : Shannon Hughes ^ Broker licence status ^ brokerid :15
+[2023-02-27T21:13:59.144] [FATAL] brokerController - brokerDetailsBasedonId  ^ broker name : Shannon Hughes ^ Broker licence status ^ No Licences
+[2023-02-27T21:14:47.882] [FATAL] brokerController - brokerDetailsBasedonId  ^ broker name : Conor Ryan ^ Broker licence status ^ brokerid :20
+[2023-02-27T21:14:47.883] [FATAL] brokerController - brokerDetailsBasedonId  ^ broker name : Conor Ryan ^ Broker licence status ^ No Licences
+[2023-02-27T21:16:06.611] [FATAL] brokerController - brokerDetailsBasedonId  ^ broker name : Stacey Aarssen
+ ^ Broker licence status ^ brokerid :65
+[2023-02-27T21:16:06.612] [FATAL] brokerController - brokerDetailsBasedonId  ^ broker name : Stacey Aarssen
+ ^ Broker licence status ^ Licences are found
+[2023-02-27T21:19:59.304] [ERROR] brokerController - brokerDetailsBasedonId  ^ 70 ^ Broker details based on id ^ Entity not found: ContactInformation with id 3664
+[2023-02-27T21:22:23.322] [FATAL] brokerController - brokerDetailsBasedonId  ^ broker name : Michael Greenwood
+ ^ Broker licence status ^ brokerid :67
+[2023-02-27T21:22:23.323] [FATAL] brokerController - brokerDetailsBasedonId  ^ broker name : Michael Greenwood
+ ^ Broker licence status ^ 123456 expired123456
+[2023-02-27T21:37:18.352] [FATAL] brokerController - brokerDetailsBasedonId  ^ broker name : Michael Greenwood
+ ^ Broker licence status ^ brokerid :67
+[2023-02-27T21:37:18.353] [FATAL] brokerController - brokerDetailsBasedonId  ^ broker name : Michael Greenwood
+ ^ Broker licence status ^ 123456 expired   123456
+[2023-02-27T21:46:24.879] [FATAL] brokerController - brokerDetailsBasedonId  ^ broker name : Michael Greenwood
+ ^ Broker licence status ^ brokerid :67
+[2023-02-27T21:46:24.881] [FATAL] brokerController - brokerDetailsBasedonId  ^ broker name : Michael Greenwood
+ ^ Broker licence status ^ 123456 expired id 123456
+[2023-02-27T21:48:14.935] [FATAL] brokerController - brokerDetailsBasedonId  ^ broker name : Michael Greenwood
+ ^ Broker licence status ^ brokerid :67
+[2023-02-27T21:48:14.938] [FATAL] brokerController - brokerDetailsBasedonId  ^ broker name : Michael Greenwood
+ ^ Broker licence status ^ 123456 expired id: 123456
+[2023-02-27T21:49:52.289] [FATAL] brokerController - brokerDetailsBasedonId  ^ broker name : Michael Greenwood
+ ^ Broker licence status ^ brokerid :67
+[2023-02-27T21:49:52.291] [FATAL] brokerController - brokerDetailsBasedonId  ^ broker name : Michael Greenwood
+ ^ Broker licence status ^ 123456 expired id:123456
+[2023-02-27T22:07:20.059] [FATAL] brokerController - brokerDetailsBasedonId  ^ broker name : William Snodgrass ^ Broker licence status ^ brokerid :33
+[2023-02-27T22:07:20.071] [ERROR] brokerController - brokerDetailsBasedonId  ^ 33 ^ Broker details based on id ^ Cannot read properties of undefined (reading 'licenseNumber')
+[2023-02-27T22:08:00.166] [FATAL] brokerController - brokerDetailsBasedonId  ^ broker name : Shawn Perryman ^ Broker licence status ^ brokerid :56
+[2023-02-27T22:08:00.171] [ERROR] brokerController - brokerDetailsBasedonId  ^ 56 ^ Broker details based on id ^ Cannot read properties of undefined (reading 'licenseNumber')
+[2023-02-27T22:08:52.721] [FATAL] brokerController - brokerDetailsBasedonId  ^ broker name : Derek Szeto ^ Broker licence status ^ brokerid :22
+[2023-02-27T22:08:52.728] [ERROR] brokerController - brokerDetailsBasedonId  ^ 22 ^ Broker details based on id ^ Cannot read properties of undefined (reading 'licenseNumber')
+[2023-02-27T22:10:34.866] [FATAL] brokerController - brokerDetailsBasedonId  ^ broker name : Derek Szeto ^ Broker licence status ^ brokerid :22
+[2023-02-27T22:10:34.886] [ERROR] brokerController - brokerDetailsBasedonId  ^ 22 ^ Broker details based on id ^ Cannot read properties of undefined (reading 'licenseNumber')
+[2023-02-27T22:10:39.954] [FATAL] brokerController - brokerDetailsBasedonId  ^ broker name : Group Benefitz ^ Broker licence status ^ brokerid :1
+[2023-02-27T22:10:39.963] [ERROR] brokerController - brokerDetailsBasedonId  ^ 1 ^ Broker details based on id ^ Cannot read properties of undefined (reading 'licenseNumber')
+[2023-02-27T22:13:33.728] [FATAL] brokerController - brokerDetailsBasedonId  ^ broker name : Group Benefitz ^ Broker licence status ^ brokerid :1
+[2023-02-27T22:13:33.741] [ERROR] brokerController - brokerDetailsBasedonId  ^ 1 ^ Broker details based on id ^ Cannot read properties of undefined (reading 'licenseNumber')
+[2023-02-27T22:14:59.007] [FATAL] brokerController - brokerDetailsBasedonId  ^ broker name : Group Benefitz ^ Broker licence status ^ brokerid :1
+[2023-02-27T22:14:59.043] [ERROR] brokerController - brokerDetailsBasedonId  ^ 1 ^ Broker details based on id ^ Cannot read properties of undefined (reading 'licenseNumber')
+[2023-02-27T22:16:43.098] [FATAL] brokerController - brokerDetailsBasedonId  ^ broker name : Group Benefitz ^ Broker licence status ^ brokerid :1
+[2023-02-27T22:16:43.109] [ERROR] brokerController - brokerDetailsBasedonId  ^ 1 ^ Broker details based on id ^ Cannot read properties of undefined (reading 'licenseNumber')
+[2023-02-27T22:24:02.244] [FATAL] brokerController - brokerDetailsBasedonId  ^ broker name : Steven Cohen ^ Broker licence status ^ No Licences
+[2023-02-27T22:24:02.260] [FATAL] brokerController - brokerDetailsBasedonId  ^ broker name : Steven Cohen ^ Broker licence status ^ brokerid :12
+[2023-02-27T22:24:49.627] [FATAL] brokerController - brokerDetailsBasedonId  ^ broker name : Stacey Aarssen
+ ^ Broker licence status ^ Licences are found Licence num:undefined province Id :12
+[2023-02-27T22:24:49.643] [FATAL] brokerController - brokerDetailsBasedonId  ^ broker name : Stacey Aarssen
+ ^ Broker licence status ^ brokerid :65

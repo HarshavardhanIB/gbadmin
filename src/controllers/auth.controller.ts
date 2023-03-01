@@ -177,69 +177,69 @@ export class AuthController {
     console.log(currentUserProfile);
     return currentUserProfile[securityId];
   }
-  @post(AUTH.SIGNUP, {
-    responses: {
-      '200': {
-        description: 'User',
-        content: {
-          'application/json': {
-            schema: {
-              'x-ts-type': User,
-            },
-          },
-        },
-      },
-    },
-  })
-  async signUp(
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: getModelSchemaRef(NewUserRequest, {
-            title: 'NewUser',
-            exclude: ['id']
-          }),
-        },
-      },
-    })
-    newUserRequest: NewUserRequest,
-  ): Promise<any> {
-    let role = "BROKER";
-    let res: any = {};
-    let emailCount = await this.usersRepository.count({ username: newUserRequest.email });
-    console.log(emailCount);
-    if (emailCount.count <= 0) {
-      console.log(newUserRequest.password);
-      const password = await hash(newUserRequest.password, await genSalt());
-      // const savedUser = await this.userRepository.create(
-      //   _.omit(newUserRequest, 'password'),
-      // );
-      // await this.userRepository.userCredentials(savedUser.id).create({ password });
-      // const saveAdmin = await this.usersRepository.create(newUserRequest);
-      const newUser: Users = new Users();
-      console.log(newUserRequest);
-      let userModel = newUserRequest;
-      newUser.registrationDate = moment().format('YYYY-MM-DD')
-      newUser.activation = await randomString(10, 'abcde');
-      newUser.username = newUserRequest.email;
-      newUser.password = password;
-      const saveusers = await this.usersRepository.create(newUser);
-      await this.usersRepository.updateById(saveusers.id, { password: password, role: role });
-      // await this.adminRepository.updateById(saveAdmin.id, { "password": password });
-      res = {
-        "statusCode": 200,
-        "message": "Registration successfully done",
-        "email": saveusers.username
-      };
-    }
-    else {
-      res = {
-        "statusCode": 201,
-        "message": "email already exits"
-      };
-    }
-    return res;
-  }
+  // @post(AUTH.SIGNUP, {
+  //   responses: {
+  //     '200': {
+  //       description: 'User',
+  //       content: {
+  //         'application/json': {
+  //           schema: {
+  //             'x-ts-type': User,
+  //           },
+  //         },
+  //       },
+  //     },
+  //   },
+  // })
+  // async signUp(
+  //   @requestBody({
+  //     content: {
+  //       'application/json': {
+  //         schema: getModelSchemaRef(NewUserRequest, {
+  //           title: 'NewUser',
+  //           exclude: ['id']
+  //         }),
+  //       },
+  //     },
+  //   })
+  //   newUserRequest: NewUserRequest,
+  // ): Promise<any> {
+  //   let role = "BROKER";
+  //   let res: any = {};
+  //   let emailCount = await this.usersRepository.count({ username: newUserRequest.email });
+  //   console.log(emailCount);
+  //   if (emailCount.count <= 0) {
+  //     console.log(newUserRequest.password);
+  //     const password = await hash(newUserRequest.password, await genSalt());
+  //     // const savedUser = await this.userRepository.create(
+  //     //   _.omit(newUserRequest, 'password'),
+  //     // );
+  //     // await this.userRepository.userCredentials(savedUser.id).create({ password });
+  //     // const saveAdmin = await this.usersRepository.create(newUserRequest);
+  //     const newUser: Users = new Users();
+  //     console.log(newUserRequest);
+  //     let userModel = newUserRequest;
+  //     newUser.registrationDate = moment().format('YYYY-MM-DD')
+  //     newUser.activation = await randomString(10, 'abcde');
+  //     newUser.username = newUserRequest.email;
+  //     newUser.password = password;
+  //     const saveusers = await this.usersRepository.create(newUser);
+  //     await this.usersRepository.updateById(saveusers.id, { password: password, role: role });
+  //     // await this.adminRepository.updateById(saveAdmin.id, { "password": password });
+  //     res = {
+  //       "statusCode": 200,
+  //       "message": "Registration successfully done",
+  //       "email": saveusers.username
+  //     };
+  //   }
+  //   else {
+  //     res = {
+  //       "statusCode": 201,
+  //       "message": "email already exits"
+  //     };
+  //   }
+  //   return res;
+  // }
   @post(AUTH.SIGNIN)
   async userLogin(@requestBody(CredentialsRequestBody) credentials: Credentials,): Promise<any> {
     let response: any;
@@ -473,33 +473,29 @@ export class AuthController {
     let responseData =
     {
       "statusCode": 200,
-      "message": "The project details",
+      "message": "GroupBenefitz CorporatePortal application details",
       "AppData": data
     };
     return responseData;
   }
-  @get(AUTH.IP)
-  async ip(): Promise<any> {
-    let req = this.request;
-    let headers = req.headers;
-    // console.log(headers);
-    let xForwardFor = headers['X-Forwarded-For'];
-    console.log(req.ip);
-    // console.log(req.socket.);
-    let data = { "userIp": req.ip, "socketAddress": req.socket.address, "socketRemoteAddress": req.socket.remoteAddress, "xForwardFor": xForwardFor }
-    let responseData =
-    {
-      "statusCode": 200,
-      "message": "The project details",
-      "userConfig": data
-    };
-    return responseData;
-  }
-  @get('/user')
-  async userss(): Promise<any> {
-    let user = await this.usersRepository.find();
-    return user;
-  }
+  // @get(AUTH.IP)
+  // async ip(): Promise<any> {
+  //   let req = this.request;
+  //   let headers = req.headers;
+  //   // console.log(headers);
+  //   let xForwardFor = headers['X-Forwarded-For'];
+  //   console.log(req.ip);
+  //   // console.log(req.socket.);
+  //   let data = { "userIp": req.ip, "socketAddress": req.socket.address, "socketRemoteAddress": req.socket.remoteAddress, "xForwardFor": xForwardFor }
+  //   let responseData =
+  //   {
+  //     "statusCode": 200,
+  //     "message": "The project details",
+  //     "userConfig": data
+  //   };
+  //   return responseData;
+  // }
+ 
   
 }
 

@@ -19,7 +19,7 @@ import { BrokerAdminsRepository } from '../repositories/broker-admins.repository
 import { CorporateTieredPlanLevelsRepository } from '../repositories/corporate-tiered-plan-levels.repository';
 import * as CONST from '../constants'
 import { FusebillService } from './fusebill.service';
-let fuseBillCustomerCreation = true;
+let fuseBillCustomerCreation = false;
 let fiseBill = 0;
 @injectable({ scope: BindingScope.TRANSIENT })
 export class Corporate {
@@ -64,7 +64,7 @@ export class Corporate {
     return returnPropertyName;
   }
 
-  async customerBankDetailsRegister(session: any, filenamets: any, ext: any, mimetype: any, customerName: any,fusebillCustomerId:any): Promise<any> {
+  async customerBankDetailsRegister(session: any, filenamets: any, ext: any, mimetype: any, customerName: any, fusebillCustomerId: any): Promise<any> {
 
     let message: string, status: string, data: any = {};
     let bankDetailsDecoded;// = atob(request.body.key)
@@ -143,8 +143,8 @@ enrollmentDate: "2022-10-01"
       "nextBillingDate": moment(bank_details.enrollmentDate).format(dateFormat1),
       "nextBillingPrice": parseFloat(bank_details.amount),
       "customerName": customerName,
-      //   "fusebillCustomerId": customer.fusebillCustomerId,
-      "fusebillCustomerId":fusebillCustomerId
+      //  "fusebillCustomerId": customer.fusebillCustomerId,
+      "fusebillCustomerId": fusebillCustomerId
     }
     // commented 149-160  for testing uncomment after test
     // const customerRecord = await this.ach.createCustomer(input)
@@ -196,9 +196,9 @@ enrollmentDate: "2022-10-01"
         customerContactInfoObj.state = data.provienceName;
         let contcatInfo: any = await this.ContactInformationRepository.create(customerContactInfoObj);
         let customerContact: CustomerContactInfo = new CustomerContactInfo();
-        customerContactInfoObj.customerId = customer.id;
-        customerContactInfoObj.contactId = customerContact.id;
-        let customerContactInfo = await this.CustomerContactInfoRepository.create(customerContactInfoObj);
+        customerContact.customerId = customer.id;
+        customerContact.contactId = customerContact.id;
+        let customerContactInfo = await this.CustomerContactInfoRepository.create(customerContact);
         // customerId = customer.id;
         var fusebillCustomer: any = {};
         if (fuseBillCustomerCreation) {
@@ -207,7 +207,7 @@ enrollmentDate: "2022-10-01"
           fusebillData.lastName = customer.lastName;
           // fusebillData.parent = broker.fusebillCustomerId;
           fusebillData.companyName = corporate.name;
-          fusebillData.primaryEmail = data.email;
+          fusebillData.primaryEmail = data.emailId;
           fusebillData.primaryPhone = data.phoneNum;//phone num is not mandatory
           fusebillData.reference = customer.id;
           //fusebillData.companyName=apiRequest.company_name;     
@@ -220,17 +220,17 @@ enrollmentDate: "2022-10-01"
             console.log("**************************************************")
             let fuseBillAddressData: any = {
               "customerAddressPreferenceId": fusebillCustomer.id,
-              "countryId": data.country_id,
-              "stateId": data.state_id,
-              //"addressType": apiRequest.address_type ?? 'Shipping',//here shipping is same as home //Billing, shipping    
-              "addressType": data.address_type ?? 'Billing', //here shipping is same as home //Billing, shipping  
+              "countryId": data.countryId || '1',
+              "stateId": data.provienceId,
+              //"addressType": apiRequest.addressType ?? 'Shipping',//here shipping is same as home //Billing, shipping    
+              "addressType": data.addressType ?? 'Billing', //here shipping is same as home //Billing, shipping  
               "enforceFullAddress": true,
-              "line1": data.street_address_line1,
-              "line2": data.street_address_line2,
-              "city": data.city,
-              "postalZip": data.postal_code,
-              "country": data.country,
-              "state": data.state
+              // "line1": data.streetAddressLine1,
+              // "line2": data.streetAddressLine2,
+              "city": data.residentIn,
+              "postalZip": data.postalCode,
+              "country": data.country || 'Canada',
+              "state": data.provinceName
             }
             const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
 
@@ -239,7 +239,7 @@ enrollmentDate: "2022-10-01"
           }
         }
         else {
-          fiseBill = fiseBill + 1;
+          fiseBill = fiseBill + 123;
           fusebillCustomer = {
             firstName: 'Admin',
             middleName: null,
@@ -312,7 +312,37 @@ enrollmentDate: "2022-10-01"
       return false;
     }
     return true
-  } 
+  }
+  async getEnrollmentPlanDates() {
+    let today = moment().format("MM-DD-YYYY");
+    //new Date(); //Date.now(); 
+    //console.log(today) 
+    let months;
+    let dates = []
+    if (parseInt(moment(today, "MM-DD-YYYY").format('D')) == 1) {
+      //this month..  
+      dates.push(today);
+      //next month.. 
+      //next of next moth  
+       months = 2
+    } else {
+      //next month..   //next of next month..   //next of next next month
+      months = 3
+    }
+    let year, month, date;
+    let tempdate;
+    for (let m = 1; m <= months; m++) {
+      /* year = moment().year();   month = moment().month() + m */
+      //date = "1".padLeft(2, '0'); 
+      tempdate = moment(today, "MM-DD-YYYY").add(m, "months").format("MM-DD-YYYY")
+      var day = moment(tempdate, "MM-DD-YYYY").startOf('month').format("MM-DD-YYYY");
+      //console.log(day); 
+      dates.push(day);
+    }
+    //console.log(dates)  
+    return dates;
+    
+  }
 }
 const btoa = function (str: string) { return Buffer.from(str).toString('base64'); }
 const atob = function (b64Encoded: string) { return Buffer.from(b64Encoded, 'base64').toString() }

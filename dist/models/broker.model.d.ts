@@ -2,6 +2,7 @@ import { Entity } from '@loopback/repository';
 import { BrokerEoInsurance } from './broker-eo-insurance.model';
 import { BrokerLicensedStatesAndProvinces } from './broker-licensed-states-and-provinces.model';
 import { SignupForms } from './signup-forms.model';
+import { Customer } from './customer.model';
 export declare class Broker extends Entity {
     id?: number;
     brokerType: string;
@@ -42,6 +43,7 @@ export declare class Broker extends Entity {
     subBrokers: Broker[];
     parent_id: number;
     user_id: number;
+    customers: Customer[];
     [prop: string]: any;
     constructor(data?: Partial<Broker>);
 }

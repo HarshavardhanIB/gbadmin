@@ -104,9 +104,10 @@ export const EOI={
 EXPIRE:"E&O insurece is expired",
 }
 export const LICENCE={
-  EXPIRE:"expired",
+  EXPIRE:"expired id:",
   FOUND:"Licences are found",
   NOLICENCES:"No Licences",
+  NO_EXPIRE_DATA:"No expire date"
 }
 export const MIN="Min"  
 export const MAX="Max"

@@ -21,6 +21,13 @@ const services_1 = require("../services");
 const moment_1 = tslib_1.__importDefault(require("moment"));
 const paths_2 = require("../paths");
 const broker_admins_repository_1 = require("../repositories/broker-admins.repository");
+const log4js = require("log4js");
+log4js.configure({
+    appenders: { brokerController: { type: "file", filename: "logs.log" } },
+    categories: { default: { appenders: ["brokerController"], level: "error" } },
+});
+const logger = log4js.getLogger("brokerController");
+let timestamp = (0, moment_1.default)().format('YYYY-MM-DD mm-hh-ss');
 // @authenticate('jwt')
 // @authorize({
 //   allowedRoles: ['BROKER', 'ADMINISTRATOR'],
@@ -109,7 +116,7 @@ let BrokerController = class BrokerController {
             });
             for (let i = 0; i < Brokers.length; i++) {
                 let broker = Brokers[i];
-                let EOIStatus, contactStatus, LicecncesStatus;
+                let EOIStatus, contactStatus, licecncesStatus = " ";
                 let today = (0, moment_1.default)(new Date(), "YYYY-MM-DD").toDate();
                 let brokerId = broker.id;
                 let contactId = broker.contactId;
@@ -119,12 +126,15 @@ let BrokerController = class BrokerController {
                 if (licences.length > 0) {
                     for (let licence of licences) {
                         if (licence.expiryDate != undefined) {
-                            new Date(licence.expiryDate) < today ? LicecncesStatus = licence.licenseNumber + " " + CONST.LICENCE.EXPIRE : LicecncesStatus = CONST.LICENCE.FOUND;
+                            new Date(licence.expiryDate) < today ? licecncesStatus += licence.licenseNumber + " " + CONST.LICENCE.EXPIRE : licecncesStatus += CONST.LICENCE.FOUND;
+                        }
+                        else {
+                            licecncesStatus += licence.licenseNumber + " : " + CONST.LICENCE.NO_EXPIRE_DATA + " ";
                         }
                     }
                 }
                 else {
-                    LicecncesStatus = CONST.LICENCE.NOLICENCES;
+                    licecncesStatus = CONST.LICENCE.NOLICENCES;
                 }
                 if (contactId) {
                     let contactDetails = await this.contactInformationRepository.findById(contactId);
@@ -139,9 +149,11 @@ let BrokerController = class BrokerController {
                 else {
                     contactStatus = CONST.NONE;
                 }
-                broker.LicecncesStatus = LicecncesStatus;
+                broker.LicecncesStatus = licecncesStatus;
                 broker.EOIStatus = EOIStatus;
-                let status = { "broker": broker, "LicecncesStatus": LicecncesStatus, "EOIStatus": EOIStatus, "contactStatus": contactStatus };
+                // const status = { "broker": broker, "licecncesStatus": licecncesStatus, "EOIStatus": EOIStatus, "contactStatus": contactStatus };
+                var status = { "broker": broker, "EOIStatus": EOIStatus, "contactStatus": contactStatus };
+                status['licecncesStatus'] = licecncesStatus;
                 brokerList.push(status);
                 statusCode = 200;
                 message = MESSAGE.BROKER_MSG.BROKERS_PRMARY_DETAILS;
@@ -156,6 +168,7 @@ let BrokerController = class BrokerController {
         return this.response;
     }
     async brokerDetailsBasedonId(id) {
+        // logger.fatal("brokerDetailsBasedonId  ^ broker id:"+id+" ^ "+"Broker details based on broker id  ^"+"broker id :"+id);
         let final = [];
         let responseObject, brokerStatus, status;
         try {
@@ -196,11 +209,13 @@ let BrokerController = class BrokerController {
                     for (let licence of licences) {
                         if (licence.expiryDate != undefined) {
                             new Date(licence.expiryDate) < today ? LicecncesStatus = licence.licenseNumber + " " + CONST.LICENCE.EXPIRE : LicecncesStatus = CONST.LICENCE.FOUND;
+                            logger.fatal("brokerDetailsBasedonId  ^ broker name : " + data.name + " ^ " + "Broker licence status ^ " + LicecncesStatus + " Licence num:" + licences.licenseNumber + " province Id :" + licence.stateId);
                         }
                     }
                 }
                 else {
                     LicecncesStatus = CONST.LICENCE.NOLICENCES;
+                    logger.fatal("brokerDetailsBasedonId  ^ broker name : " + data.name + " ^ " + "Broker licence status ^ " + LicecncesStatus);
                 }
                 if (contactId && contactId != 0) {
                     let contactDetails = await this.contactInformationRepository.findById(contactId);
@@ -220,6 +235,7 @@ let BrokerController = class BrokerController {
                     contactStatus = CONST.NONE;
                 }
                 brokerStatus = { "LicecncesStatus": LicecncesStatus, "EOIStatus": EOIStatus, "contactinfoStatus": contactStatus };
+                logger.fatal("brokerDetailsBasedonId  ^ broker name : " + data.name + " ^ " + "Broker licence status ^ " + "brokerid :" + id);
             }
             if (!data) {
                 status = 201;
@@ -251,6 +267,7 @@ let BrokerController = class BrokerController {
         }
         catch (error) {
             console.log(error);
+            logger.error("brokerDetailsBasedonId  ^ " + id + " ^ " + "Broker details based on id ^ " + error.message);
         }
     }
     async custmerCount(id) {
@@ -2318,6 +2335,10 @@ let BrokerController = class BrokerController {
                                 let disClosureName = `disclosure-agreement-${apiRequest.name}.pdf`;
                                 disClosureName = disClosureName.replace(/[\])}[{(]/g, '').replace(/ /g, '');
                                 await this.brokerRepository.updateById(brokerId, { disclosureAgreement: paths_1.DISCLOSUREPATH_STRING + disClosureName });
+                                let url = process.env.MAINAPI + `/broker/${brokerId}/disclosureAgreement`;
+                                let pathImg = paths_1.BROKER_DISCLOSURES_FOLDER + "/" + disClosureName;
+                                const fetchStatus = await this.http.fetchMultipartFormdata(url, pathImg);
+                                console.log("fetchStatus >> status", fetchStatus);
                             }
                         }
                     }
@@ -2416,6 +2437,10 @@ let BrokerController = class BrokerController {
                                 originalname = originalname.replace(/[\])}[{(]/g, '').replace(/ /g, '');
                                 let filename = originalname;
                                 await this.signupFormsRepository.updateById(formId, { logo: paths_1.BROKERPATH_STRING + filename });
+                                let url = process.env.MAINAPI + `/broker/form/${formId}/logo`;
+                                let pathImg = paths_1.BROKERIMG_RESOURCES_FOLDER + "/" + filename;
+                                const fetchStatus = await this.http.fetchMultipartFormdata(url, pathImg);
+                                console.log("fetchStatus >> status", fetchStatus);
                                 message = 'Form logo is set';
                                 status = 200;
                             }
@@ -2498,6 +2523,10 @@ let BrokerController = class BrokerController {
                                 let disClosureName = `disclosure-agreement-${brokerAndForm.broker.name}.pdf`;
                                 disClosureName = disClosureName.replace(/[\])}[{(]/g, '').replace(/ /g, '');
                                 await this.signupFormsRepository.updateById(formId, { disclosureAgreement: paths_1.DISCLOSUREPATH_STRING + disClosureName });
+                                let url = process.env.MAINAPI + `/broker/form/${formId}/disclosureAgreement`;
+                                let pathImg = paths_1.BROKER_DISCLOSURES_FOLDER + "/" + disClosureName;
+                                const fetchStatus = await this.http.fetchMultipartFormdata(url, pathImg);
+                                console.log("fetchStatus >> status", fetchStatus);
                                 message = 'Disclouser is set';
                                 status = 200;
                             }
@@ -2582,6 +2611,10 @@ let BrokerController = class BrokerController {
                                 let disClosureName = `disclosure-agreement-${broker.name}.pdf`;
                                 disClosureName = disClosureName.replace(/[\])}[{(]/g, '').replace(/ /g, '');
                                 await this.brokerRepository.updateById(brokerId, { disclosureAgreement: paths_1.DISCLOSUREPATH_STRING + disClosureName });
+                                let url = process.env.MAINAPI + `/broker/${brokerId}/disclosureAgreement`;
+                                let pathImg = paths_1.BROKER_DISCLOSURES_FOLDER + "/" + disClosureName;
+                                const fetchStatus = await this.http.fetchMultipartFormdata(url, pathImg);
+                                console.log("fetchStatus >> status", fetchStatus);
                                 message = 'Disclouser is set';
                                 status = 200;
                             }

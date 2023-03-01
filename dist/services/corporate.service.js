@@ -19,7 +19,7 @@ const broker_admins_repository_1 = require("../repositories/broker-admins.reposi
 const corporate_tiered_plan_levels_repository_1 = require("../repositories/corporate-tiered-plan-levels.repository");
 const CONST = tslib_1.__importStar(require("../constants"));
 const fusebill_service_1 = require("./fusebill.service");
-let fuseBillCustomerCreation = true;
+let fuseBillCustomerCreation = false;
 let fiseBill = 0;
 let Corporate = class Corporate {
     constructor(/* Add @inject to inject parameters */ fusebill, handler, registrationService, ach, banksCodesRepository, banksRepository, branchesRepository, StatesAndProvincesRepository, BrokerRepository, usersRepository, BrokerAdminsRepository, ContactInformationRepository, CustomerRepository, InsurancePlansRepository, PlansAvailabilityRepository, insurancePackages, SignupFormsRepository, PlanLevelRepository, CorporateTiersRepository, CorporateTieredPlanLevelsRepository, CorporatePaidTieredPlanLevelsRepository, CustomerContactInfoRepository) {
@@ -131,7 +131,7 @@ let Corporate = class Corporate {
             "nextBillingDate": (0, moment_1.default)(bank_details.enrollmentDate).format(constants_1.dateFormat1),
             "nextBillingPrice": parseFloat(bank_details.amount),
             "customerName": customerName,
-            //   "fusebillCustomerId": customer.fusebillCustomerId,
+            //  "fusebillCustomerId": customer.fusebillCustomerId,
             "fusebillCustomerId": fusebillCustomerId
         };
         // commented 149-160  for testing uncomment after test
@@ -183,9 +183,9 @@ let Corporate = class Corporate {
                 customerContactInfoObj.state = data.provienceName;
                 let contcatInfo = await this.ContactInformationRepository.create(customerContactInfoObj);
                 let customerContact = new models_1.CustomerContactInfo();
-                customerContactInfoObj.customerId = customer.id;
-                customerContactInfoObj.contactId = customerContact.id;
-                let customerContactInfo = await this.CustomerContactInfoRepository.create(customerContactInfoObj);
+                customerContact.customerId = customer.id;
+                customerContact.contactId = customerContact.id;
+                let customerContactInfo = await this.CustomerContactInfoRepository.create(customerContact);
                 // customerId = customer.id;
                 var fusebillCustomer = {};
                 if (fuseBillCustomerCreation) {
@@ -194,7 +194,7 @@ let Corporate = class Corporate {
                     fusebillData.lastName = customer.lastName;
                     // fusebillData.parent = broker.fusebillCustomerId;
                     fusebillData.companyName = corporate.name;
-                    fusebillData.primaryEmail = data.email;
+                    fusebillData.primaryEmail = data.emailId;
                     fusebillData.primaryPhone = data.phoneNum; //phone num is not mandatory
                     fusebillData.reference = customer.id;
                     //fusebillData.companyName=apiRequest.company_name;     
@@ -206,17 +206,17 @@ let Corporate = class Corporate {
                         console.log("**************************************************");
                         let fuseBillAddressData = {
                             "customerAddressPreferenceId": fusebillCustomer.id,
-                            "countryId": data.country_id,
-                            "stateId": data.state_id,
-                            //"addressType": apiRequest.address_type ?? 'Shipping',//here shipping is same as home //Billing, shipping    
-                            "addressType": (_a = data.address_type) !== null && _a !== void 0 ? _a : 'Billing',
+                            "countryId": data.countryId || '1',
+                            "stateId": data.provienceId,
+                            //"addressType": apiRequest.addressType ?? 'Shipping',//here shipping is same as home //Billing, shipping    
+                            "addressType": (_a = data.addressType) !== null && _a !== void 0 ? _a : 'Billing',
                             "enforceFullAddress": true,
-                            "line1": data.street_address_line1,
-                            "line2": data.street_address_line2,
-                            "city": data.city,
-                            "postalZip": data.postal_code,
-                            "country": data.country,
-                            "state": data.state
+                            // "line1": data.streetAddressLine1,
+                            // "line2": data.streetAddressLine2,
+                            "city": data.residentIn,
+                            "postalZip": data.postalCode,
+                            "country": data.country || 'Canada',
+                            "state": data.provinceName
                         };
                         const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
                     }
@@ -225,7 +225,7 @@ let Corporate = class Corporate {
                     }
                 }
                 else {
-                    fiseBill = fiseBill + 1;
+                    fiseBill = fiseBill + 123;
                     fusebillCustomer = {
                         firstName: 'Admin',
                         middleName: null,
@@ -298,6 +298,36 @@ let Corporate = class Corporate {
             return false;
         }
         return true;
+    }
+    async getEnrollmentPlanDates() {
+        let today = (0, moment_1.default)().format("MM-DD-YYYY");
+        //new Date(); //Date.now(); 
+        //console.log(today) 
+        let months;
+        let dates = [];
+        if (parseInt((0, moment_1.default)(today, "MM-DD-YYYY").format('D')) == 1) {
+            //this month..  
+            dates.push(today);
+            //next month.. 
+            //next of next moth  
+            months = 2;
+        }
+        else {
+            //next month..   //next of next month..   //next of next next month
+            months = 3;
+        }
+        let year, month, date;
+        let tempdate;
+        for (let m = 1; m <= months; m++) {
+            /* year = moment().year();   month = moment().month() + m */
+            //date = "1".padLeft(2, '0'); 
+            tempdate = (0, moment_1.default)(today, "MM-DD-YYYY").add(m, "months").format("MM-DD-YYYY");
+            var day = (0, moment_1.default)(tempdate, "MM-DD-YYYY").startOf('month').format("MM-DD-YYYY");
+            //console.log(day); 
+            dates.push(day);
+        }
+        //console.log(dates)  
+        return dates;
     }
 };
 Corporate = tslib_1.__decorate([

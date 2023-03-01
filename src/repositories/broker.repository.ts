@@ -1,12 +1,13 @@
 import { inject, Getter } from '@loopback/core';
 import { DefaultCrudRepository, repository, HasOneRepositoryFactory, BelongsToAccessor, HasManyRepositoryFactory} from '@loopback/repository';
 import { GroupBenefitzDataSource } from '../datasources';
-import { Broker, BrokerRelations, Users, ContactInformation, BrokerEoInsurance, BrokerLicensedStatesAndProvinces, SignupForms} from '../models';
+import { Broker, BrokerRelations, Users, ContactInformation, BrokerEoInsurance, BrokerLicensedStatesAndProvinces, SignupForms, Customer} from '../models';
 import { UsersRepository } from './users.repository';
 import {ContactInformationRepository} from './contact-information.repository';
 import {BrokerEoInsuranceRepository} from './broker-eo-insurance.repository';
 import {BrokerLicensedStatesAndProvincesRepository} from './broker-licensed-states-and-provinces.repository';
 import {SignupFormsRepository} from './signup-forms.repository';
+import {CustomerRepository} from './customer.repository';
 
 export class BrokerRepository extends DefaultCrudRepository<
   Broker,
@@ -25,8 +26,9 @@ export class BrokerRepository extends DefaultCrudRepository<
 
   public readonly brokerEoInsurance: HasOneRepositoryFactory<BrokerEoInsurance, typeof Broker.prototype.id>;
 
-  //public readonly brokerLicensedStatesAndProvinces: HasManyRepositoryFactory<BrokerLicensedStatesAndProvinces, typeof Broker.prototype.id>;
 
+  //public readonly brokerLicensedStatesAndProvinces: HasManyRepositoryFactory<BrokerLicensedStatesAndProvinces, typeof Broker.prototype.id>;
+  public readonly customers: HasManyRepositoryFactory<Customer, typeof Broker.prototype.id>;
   public readonly signupForms: HasManyRepositoryFactory<SignupForms, typeof Broker.prototype.id>;
   public readonly user: BelongsToAccessor<Users, typeof Broker.prototype.id>;
   constructor(
@@ -36,9 +38,11 @@ export class BrokerRepository extends DefaultCrudRepository<
     @repository.getter('ContactInformationRepository') protected contactInformationRepositoryGetter: Getter<ContactInformationRepository>, 
     @repository.getter('BrokerEoInsuranceRepository') protected brokerEoInsuranceRepositoryGetter: Getter<BrokerEoInsuranceRepository>, 
     @repository.getter('BrokerLicensedStatesAndProvincesRepository') protected brokerLicensedStatesAndProvincesRepositoryGetter: Getter<BrokerLicensedStatesAndProvincesRepository>, 
-    @repository.getter('SignupFormsRepository') protected signupFormsRepositoryGetter: Getter<SignupFormsRepository>,
+    @repository.getter('SignupFormsRepository') protected signupFormsRepositoryGetter: Getter<SignupFormsRepository>, @repository.getter('CustomerRepository') protected customerRepositoryGetter: Getter<CustomerRepository>,
   ) {
     super(Broker, dataSource);
+    this.customers = this.createHasManyRepositoryFactoryFor('customers', customerRepositoryGetter,);
+    this.registerInclusionResolver('customers', this.customers.inclusionResolver);
     
       this.parent = this.createBelongsToAccessorFor('parent', Getter.fromValue(this),);
     this.registerInclusionResolver('parent', this.parent.inclusionResolver);

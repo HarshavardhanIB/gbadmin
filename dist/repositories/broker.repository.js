@@ -7,13 +7,16 @@ const repository_1 = require("@loopback/repository");
 const datasources_1 = require("../datasources");
 const models_1 = require("../models");
 let BrokerRepository = class BrokerRepository extends repository_1.DefaultCrudRepository {
-    constructor(dataSource, usersRepositoryGetter, contactInformationRepositoryGetter, brokerEoInsuranceRepositoryGetter, brokerLicensedStatesAndProvincesRepositoryGetter, signupFormsRepositoryGetter) {
+    constructor(dataSource, usersRepositoryGetter, contactInformationRepositoryGetter, brokerEoInsuranceRepositoryGetter, brokerLicensedStatesAndProvincesRepositoryGetter, signupFormsRepositoryGetter, customerRepositoryGetter) {
         super(models_1.Broker, dataSource);
         this.usersRepositoryGetter = usersRepositoryGetter;
         this.contactInformationRepositoryGetter = contactInformationRepositoryGetter;
         this.brokerEoInsuranceRepositoryGetter = brokerEoInsuranceRepositoryGetter;
         this.brokerLicensedStatesAndProvincesRepositoryGetter = brokerLicensedStatesAndProvincesRepositoryGetter;
         this.signupFormsRepositoryGetter = signupFormsRepositoryGetter;
+        this.customerRepositoryGetter = customerRepositoryGetter;
+        this.customers = this.createHasManyRepositoryFactoryFor('customers', customerRepositoryGetter);
+        this.registerInclusionResolver('customers', this.customers.inclusionResolver);
         this.parent = this.createBelongsToAccessorFor('parent', core_1.Getter.fromValue(this));
         this.registerInclusionResolver('parent', this.parent.inclusionResolver);
         this.subBrokers = this.createHasManyRepositoryFactoryFor('subBrokers', core_1.Getter.fromValue(this));
@@ -39,7 +42,8 @@ BrokerRepository = tslib_1.__decorate([
     tslib_1.__param(3, repository_1.repository.getter('BrokerEoInsuranceRepository')),
     tslib_1.__param(4, repository_1.repository.getter('BrokerLicensedStatesAndProvincesRepository')),
     tslib_1.__param(5, repository_1.repository.getter('SignupFormsRepository')),
-    tslib_1.__metadata("design:paramtypes", [datasources_1.GroupBenefitzDataSource, Function, Function, Function, Function, Function])
+    tslib_1.__param(6, repository_1.repository.getter('CustomerRepository')),
+    tslib_1.__metadata("design:paramtypes", [datasources_1.GroupBenefitzDataSource, Function, Function, Function, Function, Function, Function])
 ], BrokerRepository);
 exports.BrokerRepository = BrokerRepository;
 //# sourceMappingURL=broker.repository.js.map

@@ -36,7 +36,7 @@ if (require.main === module) {
     rest: {
       port: +(process.env.PORT ?? 3002),
       host: process.env.HOST,
-      basePath: '/api/ap',
+      basePath: '/api/cp',
 
       gracePeriodForClose: 5000, // 5 seconds
       openApiSpec: {

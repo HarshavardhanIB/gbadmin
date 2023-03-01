@@ -72,7 +72,7 @@ export const CORPORATE={
     EMPLOYEE:'/corporate/{corporateId}/employee',
     PLAN_SELECTION:'/corporate/{corporateId}/planSelections',
     CONFIGURE_WALLET:'/corporate/{corporateId}/configureWallet',
-    TIER:'/corporate/{corporateId}/tiers',
+    TIER:'/corporate/{corporateId}/configureTiers',
     EXCEL:'/corporate/uploadEmployees',
     
 }
@@ -118,7 +118,7 @@ export const AUTH={
     FORGOTPASSWORD:'/auth/forgotPassword',
     USER_ACTIVATION:'/auth/userActivation/{key}',
     CHANGE_PASSWORD:'/user/changePassword',
-    APP:'/auth/app',
+    APP:'/admin/app',
     IP:'/userIp',
     
 }

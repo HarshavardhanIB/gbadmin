@@ -41,7 +41,6 @@ export declare class AuthController {
         token: string;
     }>;
     whoAmI(currentUserProfile: UserProfile): Promise<string>;
-    signUp(newUserRequest: NewUserRequest): Promise<any>;
     userLogin(credentials: Credentials): Promise<any>;
     forgotPassword(email: mailId): Promise<any>;
     activeuser(key: string): Promise<any>;
@@ -50,6 +49,4 @@ export declare class AuthController {
         newpassword: string;
     }, currentUserProfile: UserProfile): Promise<any>;
     app(): Promise<any>;
-    ip(): Promise<any>;
-    userss(): Promise<any>;
 }

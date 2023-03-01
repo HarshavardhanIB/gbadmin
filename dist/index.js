@@ -37,7 +37,7 @@ if (require.main === module) {
         rest: {
             port: +((_a = process.env.PORT) !== null && _a !== void 0 ? _a : 3002),
             host: process.env.HOST,
-            basePath: '/api/ap',
+            basePath: '/api/cp',
             gracePeriodForClose: 5000,
             openApiSpec: {
                 // useful when used with OpenAPI-to-GraphQL to locate your application

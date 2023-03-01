@@ -97,9 +97,10 @@ exports.EOI = {
     EXPIRE: "E&O insurece is expired",
 };
 exports.LICENCE = {
-    EXPIRE: "expired",
+    EXPIRE: "expired id:",
     FOUND: "Licences are found",
     NOLICENCES: "No Licences",
+    NO_EXPIRE_DATA: "No expire date"
 };
 exports.MIN = "Min";
 exports.MAX = "Max";

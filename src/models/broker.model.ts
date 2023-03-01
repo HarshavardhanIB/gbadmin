@@ -4,6 +4,7 @@ import { BrokerLicensedStatesAndProvinces } from './broker-licensed-states-and-p
 import { ContactInformation } from './contact-information.model';
 import { SignupForms } from './signup-forms.model';
 import { Users } from './users.model';
+import {Customer} from './customer.model';
 
 @model({
   settings: {
@@ -315,6 +316,9 @@ export class Broker extends Entity {
 
   @belongsTo(() => Users, {name: 'user'})
   user_id: number;
+
+  @hasMany(() => Customer, {keyTo: 'broker_id'})
+  customers: Customer[];
   // Define well-known properties here
 
   // Indexer property to allow additional data

@@ -26,7 +26,7 @@ const corporate_tiered_plan_levels_repository_1 = require("../repositories/corpo
 let fuseBillCustomerCreation = false;
 let fiseBill = 11;
 let CorporateController = class CorporateController {
-    constructor(brokerRepository, response, corporateService, usersRepository, BrokerAdminsRepository, contactInformationRepository, customerRepository, handler, fusebill, registrationService, ach, banksCodesRepository, banksRepository, branchesRepository, statesAndProvincesRepository, insurancePlansRepository, plansAvailabilityRepository, insurancePackages, signupFormsRepository, planLevelRepository, corporateTiersRepository, corporateTieredPlanLevelsRepository, corporatePaidTieredPlanLevelsRepository, customerContactInfoRepository, excelService, excel2Service) {
+    constructor(brokerRepository, response, corporateService, usersRepository, BrokerAdminsRepository, contactInformationRepository, customerRepository, handler, fusebill, registrationService, ach, banksCodesRepository, banksRepository, branchesRepository, statesAndProvincesRepository, insurancePlansRepository, plansAvailabilityRepository, insurancePackages, signupFormsRepository, planLevelRepository, corporateTiersRepository, corporateTieredPlanLevelsRepository, corporatePaidTieredPlanLevelsRepository, customerContactInfoRepository, excelService, excel2Service, signupFormsPlanLevelMappingRepository) {
         this.brokerRepository = brokerRepository;
         this.response = response;
         this.corporateService = corporateService;
@@ -53,6 +53,7 @@ let CorporateController = class CorporateController {
         this.customerContactInfoRepository = customerContactInfoRepository;
         this.excelService = excelService;
         this.excel2Service = excel2Service;
+        this.signupFormsPlanLevelMappingRepository = signupFormsPlanLevelMappingRepository;
     }
     async brokerDetailsBasedonId(company) {
         let message, status, statusCode, data = {};
@@ -99,7 +100,7 @@ let CorporateController = class CorporateController {
             });
         });
         p.then(async (value) => {
-            var _a, _b, _c, _d;
+            var _a, _b, _c;
             if (!value.fields) {
                 this.response.status(422).send({
                     status: '422',
@@ -210,7 +211,7 @@ let CorporateController = class CorporateController {
                         brokerObj.contactId = contactInfo.id;
                         brokerObj.userId = groupAdminsUsers[0];
                         brokerObj.settingsAllowGroupBenefitsWallet = apiRequest.setupWallet ? 1 : 0;
-                        brokerObj.settingsEnableTieredHealthBenefits = apiRequest.setUplevelofCoverage ? 1 : 0;
+                        brokerObj.settingsEnableTieredHealthBenefits = apiRequest.setupTiers ? 1 : 0;
                         brokerObj.waitTime = apiRequest.waitTime;
                         brokerObj.useCreditCardPaymentMethod = apiRequest.useCreditCard;
                         brokerObj.useInvoicePaymentMethod = apiRequest.invoicePayment;
@@ -351,27 +352,27 @@ let CorporateController = class CorporateController {
                             let brokerAdmins = await this.BrokerAdminsRepository.create(brokerAdmin);
                             brokerAdminsIds.push(brokerAdmins.id);
                         }
-                        let signupFormData = new models_1.SignupForms();
-                        signupFormData.brokerId = brokerId;
-                        let link = await (0, common_functions_1.generateFormLink)(broker.userId || 0);
-                        signupFormData.link = await this.checkAndGenerateNewFormLink(link, groupAdminsUsers[0] || 0);
-                        let aliasLink = "/" + ((_d = broker.name) === null || _d === void 0 ? void 0 : _d.toLowerCase().split(" ")[0]);
-                        signupFormData.alias = aliasLink;
-                        signupFormData.name = CONST.signupForm.name;
-                        signupFormData.description = CONST.signupForm.description;
-                        signupFormData.title = CONST.signupForm.title;
-                        signupFormData.formType = CONST.signupForm.formType;
-                        signupFormData.keywords = CONST.signupForm.keywords;
-                        signupFormData.inelligibilityPeriod = CONST.signupForm.ineligibilityPeriod;
-                        signupFormData.published = CONST.signupForm.published;
-                        signupFormData.requireDentalHealthCoverage = true;
-                        signupFormData.requireSpouseEmail = false;
-                        signupFormData.warnRequiredDependantMedicalExam = false;
-                        signupFormData.useCreditCardPaymentMethod = true;
-                        signupFormData.usePadPaymentMethod = true;
-                        signupFormData.isDemoForm = false;
-                        const signupForm = await this.signupFormsRepository.create(signupFormData);
-                        data1['signupForm'] = signupForm;
+                        // let signupFormData: SignupForms = new SignupForms();
+                        // signupFormData.brokerId = brokerId;
+                        // let link = await generateFormLink(broker.userId || 0)
+                        // signupFormData.link = await this.checkAndGenerateNewFormLink(link, groupAdminsUsers[0] || 0)
+                        // let aliasLink = "/" + broker.name?.toLowerCase().split(" ")[0]
+                        // signupFormData.alias = aliasLink
+                        // signupFormData.name = CONST.signupForm.name;
+                        // signupFormData.description = CONST.signupForm.description
+                        // signupFormData.title = CONST.signupForm.title
+                        // signupFormData.formType = CONST.signupForm.formType
+                        // signupFormData.keywords = CONST.signupForm.keywords
+                        // signupFormData.inelligibilityPeriod = CONST.signupForm.ineligibilityPeriod
+                        // signupFormData.published = CONST.signupForm.published
+                        // signupFormData.requireDentalHealthCoverage = true
+                        // signupFormData.requireSpouseEmail = false
+                        // signupFormData.warnRequiredDependantMedicalExam = false
+                        // signupFormData.useCreditCardPaymentMethod = true
+                        // signupFormData.usePadPaymentMethod = true
+                        // signupFormData.isDemoForm = false
+                        // const signupForm = await this.signupFormsRepository.create(signupFormData);
+                        // data1['signupForm'] = signupForm;
                         data1['fuseBillId'] = fusebillCustomer.id;
                         // await mail("", groupAdmins[0].email, "", "", "", "")
                         if (value.files) {
@@ -956,7 +957,7 @@ let CorporateController = class CorporateController {
             });
         });
         p.then(async (value) => {
-            var _a, _b, _c, _d;
+            var _a, _b, _c;
             if (!value.fields) {
                 this.response.status(422).send({
                     status: '422',
@@ -1210,27 +1211,27 @@ let CorporateController = class CorporateController {
                             let brokerAdmins = await this.BrokerAdminsRepository.create(brokerAdmin);
                             brokerAdminsIds.push(brokerAdmins.id);
                         }
-                        let signupFormData = new models_1.SignupForms();
-                        signupFormData.brokerId = brokerId;
-                        let link = await (0, common_functions_1.generateFormLink)(broker.userId || 0);
-                        signupFormData.link = await this.checkAndGenerateNewFormLink(link, groupAdminsUsers[0] || 0);
-                        let aliasLink = "/" + ((_d = broker.name) === null || _d === void 0 ? void 0 : _d.toLowerCase().split(" ")[0]);
-                        signupFormData.alias = aliasLink;
-                        signupFormData.name = CONST.signupForm.name;
-                        signupFormData.description = CONST.signupForm.description;
-                        signupFormData.title = CONST.signupForm.title;
-                        signupFormData.formType = CONST.signupForm.formType;
-                        signupFormData.keywords = CONST.signupForm.keywords;
-                        signupFormData.inelligibilityPeriod = CONST.signupForm.ineligibilityPeriod;
-                        signupFormData.published = CONST.signupForm.published;
-                        signupFormData.requireDentalHealthCoverage = true;
-                        signupFormData.requireSpouseEmail = false;
-                        signupFormData.warnRequiredDependantMedicalExam = false;
-                        signupFormData.useCreditCardPaymentMethod = true;
-                        signupFormData.usePadPaymentMethod = true;
-                        signupFormData.isDemoForm = false;
-                        const signupForm = await this.signupFormsRepository.create(signupFormData);
-                        data1['signupForm'] = signupForm;
+                        // let signupFormData: SignupForms = new SignupForms();
+                        // signupFormData.brokerId = brokerId;
+                        // let link = await generateFormLink(broker.userId || 0)
+                        // signupFormData.link = await this.checkAndGenerateNewFormLink(link, groupAdminsUsers[0] || 0)
+                        // let aliasLink = "/" + broker.name?.toLowerCase().split(" ")[0]
+                        // signupFormData.alias = aliasLink
+                        // signupFormData.name = CONST.signupForm.name;
+                        // signupFormData.description = CONST.signupForm.description
+                        // signupFormData.title = CONST.signupForm.title
+                        // signupFormData.formType = CONST.signupForm.formType
+                        // signupFormData.keywords = CONST.signupForm.keywords
+                        // signupFormData.inelligibilityPeriod = CONST.signupForm.ineligibilityPeriod
+                        // signupFormData.published = CONST.signupForm.published
+                        // signupFormData.requireDentalHealthCoverage = true
+                        // signupFormData.requireSpouseEmail = false
+                        // signupFormData.warnRequiredDependantMedicalExam = false
+                        // signupFormData.useCreditCardPaymentMethod = true
+                        // signupFormData.usePadPaymentMethod = true
+                        // signupFormData.isDemoForm = false
+                        // const signupForm = await this.signupFormsRepository.create(signupFormData);
+                        // data1['signupForm'] = signupForm;
                         data1['fuseBillId'] = fusebillCustomer.id;
                         // await mail("", groupAdmins[0].email, "", "", "", "")
                         if (value.files) {
@@ -1404,11 +1405,11 @@ let CorporateController = class CorporateController {
         return this.response;
     }
     async employeeSignup(corporateId, apiRequest) {
-        var _a;
+        var _a, _b, _c, _d;
         let status, message, data = {};
         try {
             // user creation, customer.role=
-            let corporate = await this.brokerRepository.findById(corporateId, { include: [{ relation: 'contactInfo' }] });
+            let corporate = await this.brokerRepository.findById(corporateId, { include: [{ relation: 'customers' }] });
             console.log(corporate);
             if (corporate) {
                 let employeeUserObj = new models_1.Users();
@@ -1423,7 +1424,7 @@ let CorporateController = class CorporateController {
                 let employeeUser = await this.usersRepository.create(employeeUserObj);
                 let customerObj = new models_1.Customer();
                 customerObj.brokerId = corporateId;
-                customerObj.parentId = corporate.customerId;
+                customerObj.parentId = corporate.customers[0].id;
                 customerObj.firstName = apiRequest.firstName;
                 customerObj.lastName = apiRequest.lastName;
                 customerObj.gender = apiRequest.sex;
@@ -1434,19 +1435,22 @@ let CorporateController = class CorporateController {
                 customerObj.employeeId = apiRequest.employeeId;
                 let customer = await this.customerRepository.create(customerObj);
                 let customerContactInfoObj = new models_1.ContactInformation();
+                customerContactInfoObj.apt = (_a = apiRequest.apt) !== null && _a !== void 0 ? _a : '';
+                customerContactInfoObj.line1 = (_b = apiRequest.line1) !== null && _b !== void 0 ? _b : '';
+                customerContactInfoObj.line2 = (_c = apiRequest.line2) !== null && _c !== void 0 ? _c : '';
                 customerContactInfoObj.city = apiRequest.residentIn;
-                customerContactInfoObj.state = CONST.DEFAULT_COUNTRY.name;
+                customerContactInfoObj.primaryEmail = apiRequest.emailId;
+                customerContactInfoObj.country = CONST.DEFAULT_COUNTRY.name;
                 customerContactInfoObj.contactType = CONST.USER_ROLE.CUSTOMER;
                 customerContactInfoObj.addressType = CONST.ADDRESS_TYPE.HOME_ADDRESS;
-                customerContactInfoObj.primaryEmail = apiRequest.emailId;
                 customerContactInfoObj.primaryPhone = apiRequest.phoneNum.toString();
                 customerContactInfoObj.state = apiRequest.provienceName;
                 console.log(customerContactInfoObj);
                 let contcatInfo = await this.contactInformationRepository.create(customerContactInfoObj);
                 let customerContact = new models_1.CustomerContactInfo();
-                customerContactInfoObj.customerId = customer.id;
-                customerContactInfoObj.contactId = customerContact.id;
-                let customerContactInfo = await this.customerContactInfoRepository.create(customerContactInfoObj);
+                customerContact.customerId = customer.id;
+                customerContact.contactId = customerContact.id;
+                let customerContactInfo = await this.customerContactInfoRepository.create(customerContact);
                 // customerId = customer.id;
                 var fusebillCustomer = {};
                 if (apiRequest.fuseBillCustomerCreation) {
@@ -1455,7 +1459,7 @@ let CorporateController = class CorporateController {
                     fusebillData.lastName = customer.lastName;
                     // fusebillData.parent = broker.fusebillCustomerId;
                     fusebillData.companyName = corporate.name;
-                    fusebillData.primaryEmail = apiRequest.email;
+                    fusebillData.primaryEmail = apiRequest.emailId;
                     fusebillData.primaryPhone = apiRequest.phoneNum; //phone num is not mandatory
                     fusebillData.reference = customer.id;
                     //fusebillData.companyName=apiRequest.company_name;     
@@ -1467,17 +1471,17 @@ let CorporateController = class CorporateController {
                         console.log("**************************************************");
                         let fuseBillAddressData = {
                             "customerAddressPreferenceId": fusebillCustomer.id,
-                            "countryId": apiRequest.countryId,
-                            "stateId": apiRequest.stateId,
+                            "countryId": apiRequest.countryId || '1',
+                            "stateId": apiRequest.provienceId,
                             //"addressType": apiRequest.addressType ?? 'Shipping',//here shipping is same as home //Billing, shipping    
-                            "addressType": (_a = apiRequest.addressType) !== null && _a !== void 0 ? _a : 'Billing',
+                            "addressType": (_d = apiRequest.addressType) !== null && _d !== void 0 ? _d : 'Billing',
                             "enforceFullAddress": true,
                             "line1": apiRequest.streetAddressLine1,
                             "line2": apiRequest.streetAddressLine2,
-                            "city": apiRequest.city,
+                            "city": apiRequest.residentIn,
                             "postalZip": apiRequest.postalCode,
-                            "country": apiRequest.country,
-                            "state": apiRequest.state
+                            "country": apiRequest.country || 'Canada',
+                            "state": apiRequest.provienceName
                         };
                         // const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
                     }
@@ -1486,7 +1490,7 @@ let CorporateController = class CorporateController {
                     }
                 }
                 else {
-                    fiseBill = fiseBill + 1;
+                    fiseBill = fiseBill + 123;
                     fusebillCustomer = {
                         firstName: 'Admin',
                         middleName: null,
@@ -1547,7 +1551,9 @@ let CorporateController = class CorporateController {
                         uri: 'https://secure.fusebill.com/v1/customers/11673101'
                     };
                 }
-                await this.customerRepository.updateById(customerContactInfo.id, { fusebillCustomerId: fusebillCustomer.id });
+                await this.customerRepository.updateById(customer.id, { fusebillCustomerId: fusebillCustomer.id });
+                data['customerId'] = customer.id;
+                data['fusebillCustomerId'] = fusebillCustomer.id;
                 status = 200;
                 message = MESSAGE.CORPORATE_MSG.EMP_REGISTRATION_SUCCESS;
             }
@@ -1567,6 +1573,7 @@ let CorporateController = class CorporateController {
         return this.response;
     }
     async planSelctions(corporateId, apiRequest) {
+        var _a;
         let status, message, data = {};
         let corporateDefaultTier;
         try {
@@ -1609,6 +1616,29 @@ let CorporateController = class CorporateController {
                         corporateTier.spendingLimit = CONST.SPENDING_LIMIT;
                         corporateDefaultTier = await this.corporateTiersRepository.create(corporateTier);
                     }
+                    let signupFormData = new models_1.SignupForms();
+                    signupFormData.brokerId = corporateId;
+                    let link = await (0, common_functions_1.generateFormLink)(corporate.userId || 0);
+                    signupFormData.link = await this.checkAndGenerateNewFormLink(link, corporate.userId);
+                    let aliasLink = "/" + ((_a = corporate.name) === null || _a === void 0 ? void 0 : _a.toLowerCase().split(" ")[0]);
+                    signupFormData.alias = aliasLink;
+                    signupFormData.name = CONST.SIGNUP_FORM.CUSTOM;
+                    signupFormData.description = CONST.signupForm.description;
+                    signupFormData.title = CONST.signupForm.title;
+                    signupFormData.formType = CONST.signupForm.formType;
+                    signupFormData.keywords = CONST.signupForm.keywords;
+                    signupFormData.inelligibilityPeriod = CONST.signupForm.ineligibilityPeriod;
+                    signupFormData.published = CONST.signupForm.published;
+                    signupFormData.requireDentalHealthCoverage = true;
+                    signupFormData.requireSpouseEmail = false;
+                    signupFormData.warnRequiredDependantMedicalExam = false;
+                    signupFormData.useCreditCardPaymentMethod = true;
+                    signupFormData.usePadPaymentMethod = true;
+                    signupFormData.isDemoForm = false;
+                    const signupForm = await this.signupFormsRepository.create(signupFormData);
+                    data['signupForm'] = signupForm;
+                    let signupforPlanLveleMappingObj = new models_1.SignupFormsPlanLevelMapping();
+                    signupforPlanLveleMappingObj.formId = signupForm.id;
                     let corporateTiredPlanLevel = new models_1.CorporateTieredPlanLevels();
                     corporateTiredPlanLevel.spendingLimit = CONST.SPENDING_LIMIT;
                     corporateTiredPlanLevel.coveredPercentage = 0;
@@ -1620,6 +1650,8 @@ let CorporateController = class CorporateController {
                         corporateTiredPlanLevel.paidByEmployee = 0;
                         corporateTiredPlanLevel.planLevelId = planPaidByTheCompant.planLevelId;
                         await this.corporateTieredPlanLevelsRepository.create(corporateTiredPlanLevel);
+                        signupforPlanLveleMappingObj.planLevelId = planPaidByTheCompant.planLevelId;
+                        await this.signupFormsPlanLevelMappingRepository.create(signupforPlanLveleMappingObj);
                     }
                     if (apiRequest.enableUpgradedPlans && apiRequest.upgradedPlans.length > 0) {
                         //block 2
@@ -1630,6 +1662,8 @@ let CorporateController = class CorporateController {
                             corporateTiredPlanLevel.paidByEmployee = 0;
                             corporateTiredPlanLevel.planLevelId = enableUpgradedPlan.planLevelId;
                             await this.corporateTieredPlanLevelsRepository.create(corporateTiredPlanLevel);
+                            signupforPlanLveleMappingObj.planLevelId = enableUpgradedPlan.planLevelId;
+                            await this.signupFormsPlanLevelMappingRepository.create(signupforPlanLveleMappingObj);
                         }
                     }
                     if (apiRequest.enableEmployeePurchasePlans && apiRequest.employeePurchasePlans.length > 0) {
@@ -1641,6 +1675,8 @@ let CorporateController = class CorporateController {
                             corporateTiredPlanLevel.paidByEmployee = 1;
                             corporateTiredPlanLevel.planLevelId = employeePurchasePlan.planLevelId;
                             await this.corporateTieredPlanLevelsRepository.create(corporateTiredPlanLevel);
+                            signupforPlanLveleMappingObj.planLevelId = employeePurchasePlan.planLevelId;
+                            await this.signupFormsPlanLevelMappingRepository.create(signupforPlanLveleMappingObj);
                         }
                     }
                     status = 200;
@@ -1661,6 +1697,7 @@ let CorporateController = class CorporateController {
         this.response.status(409).send({
             status,
             message,
+            data,
             date: new Date(),
         });
         return this.response;
@@ -1876,7 +1913,7 @@ tslib_1.__decorate([
                             type: 'boolean',
                             default: false
                         },
-                        setUplevelofCoverage: {
+                        setupTiers: {
                             type: 'boolean',
                             default: false
                         },
@@ -2104,7 +2141,7 @@ tslib_1.__decorate([
                             type: 'boolean',
                             default: false
                         },
-                        setUplevelofCoverage: {
+                        setupTier: {
                             type: 'boolean',
                             default: false
                         },
@@ -2451,6 +2488,7 @@ CorporateController = tslib_1.__decorate([
     tslib_1.__param(23, (0, repository_1.repository)(repositories_1.CustomerContactInfoRepository)),
     tslib_1.__param(24, (0, core_1.service)(services_1.ExcelService)),
     tslib_1.__param(25, (0, core_1.service)(services_1.Excel2Service)),
+    tslib_1.__param(26, (0, repository_1.repository)(repositories_1.SignupFormsPlanLevelMappingRepository)),
     tslib_1.__metadata("design:paramtypes", [repositories_1.BrokerRepository, Object, services_1.Corporate,
         repositories_1.UsersRepository,
         broker_admins_repository_1.BrokerAdminsRepository,
@@ -2472,7 +2510,8 @@ CorporateController = tslib_1.__decorate([
         repositories_1.CorporatePaidTieredPlanLevelsRepository,
         repositories_1.CustomerContactInfoRepository,
         services_1.ExcelService,
-        services_1.Excel2Service])
+        services_1.Excel2Service,
+        repositories_1.SignupFormsPlanLevelMappingRepository])
 ], CorporateController);
 exports.CorporateController = CorporateController;
 //# sourceMappingURL=corporate.controller.js.map

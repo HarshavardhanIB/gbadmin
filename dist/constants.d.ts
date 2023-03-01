@@ -38,6 +38,7 @@ export declare const LICENCE: {
     EXPIRE: string;
     FOUND: string;
     NOLICENCES: string;
+    NO_EXPIRE_DATA: string;
 };
 export declare const MIN = "Min";
 export declare const MAX = "Max";

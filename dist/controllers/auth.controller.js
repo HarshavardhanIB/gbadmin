@@ -9,7 +9,6 @@ const tslib_1 = require("tslib");
 const authentication_1 = require("@loopback/authentication");
 const messages = tslib_1.__importStar(require("../constants/messages.constants"));
 const authentication_jwt_1 = require("@loopback/authentication-jwt");
-const moment_1 = tslib_1.__importDefault(require("moment"));
 const repositories_1 = require("../repositories");
 const core_1 = require("@loopback/core");
 const repository_1 = require("@loopback/repository");
@@ -22,7 +21,6 @@ const common_services_1 = require("../services/common.services");
 const email_services_1 = require("../services/email.services");
 const constants = tslib_1.__importStar(require("../services/constants"));
 const jwt_service_1 = require("../services/jwt.service");
-const models_1 = require("../models");
 const services_1 = require("../services");
 const paths_1 = require("../paths");
 const MSGS = tslib_1.__importStar(require("../messages"));
@@ -106,43 +104,69 @@ let AuthController = class AuthController {
         console.log(currentUserProfile);
         return currentUserProfile[security_1.securityId];
     }
-    async signUp(newUserRequest) {
-        let role = "BROKER";
-        let res = {};
-        let emailCount = await this.usersRepository.count({ username: newUserRequest.email });
-        console.log(emailCount);
-        if (emailCount.count <= 0) {
-            console.log(newUserRequest.password);
-            const password = await (0, bcryptjs_1.hash)(newUserRequest.password, await (0, bcryptjs_1.genSalt)());
-            // const savedUser = await this.userRepository.create(
-            //   _.omit(newUserRequest, 'password'),
-            // );
-            // await this.userRepository.userCredentials(savedUser.id).create({ password });
-            // const saveAdmin = await this.usersRepository.create(newUserRequest);
-            const newUser = new models_1.Users();
-            console.log(newUserRequest);
-            let userModel = newUserRequest;
-            newUser.registrationDate = (0, moment_1.default)().format('YYYY-MM-DD');
-            newUser.activation = await (0, common_services_1.randomString)(10, 'abcde');
-            newUser.username = newUserRequest.email;
-            newUser.password = password;
-            const saveusers = await this.usersRepository.create(newUser);
-            await this.usersRepository.updateById(saveusers.id, { password: password, role: role });
-            // await this.adminRepository.updateById(saveAdmin.id, { "password": password });
-            res = {
-                "statusCode": 200,
-                "message": "Registration successfully done",
-                "email": saveusers.username
-            };
-        }
-        else {
-            res = {
-                "statusCode": 201,
-                "message": "email already exits"
-            };
-        }
-        return res;
-    }
+    // @post(AUTH.SIGNUP, {
+    //   responses: {
+    //     '200': {
+    //       description: 'User',
+    //       content: {
+    //         'application/json': {
+    //           schema: {
+    //             'x-ts-type': User,
+    //           },
+    //         },
+    //       },
+    //     },
+    //   },
+    // })
+    // async signUp(
+    //   @requestBody({
+    //     content: {
+    //       'application/json': {
+    //         schema: getModelSchemaRef(NewUserRequest, {
+    //           title: 'NewUser',
+    //           exclude: ['id']
+    //         }),
+    //       },
+    //     },
+    //   })
+    //   newUserRequest: NewUserRequest,
+    // ): Promise<any> {
+    //   let role = "BROKER";
+    //   let res: any = {};
+    //   let emailCount = await this.usersRepository.count({ username: newUserRequest.email });
+    //   console.log(emailCount);
+    //   if (emailCount.count <= 0) {
+    //     console.log(newUserRequest.password);
+    //     const password = await hash(newUserRequest.password, await genSalt());
+    //     // const savedUser = await this.userRepository.create(
+    //     //   _.omit(newUserRequest, 'password'),
+    //     // );
+    //     // await this.userRepository.userCredentials(savedUser.id).create({ password });
+    //     // const saveAdmin = await this.usersRepository.create(newUserRequest);
+    //     const newUser: Users = new Users();
+    //     console.log(newUserRequest);
+    //     let userModel = newUserRequest;
+    //     newUser.registrationDate = moment().format('YYYY-MM-DD')
+    //     newUser.activation = await randomString(10, 'abcde');
+    //     newUser.username = newUserRequest.email;
+    //     newUser.password = password;
+    //     const saveusers = await this.usersRepository.create(newUser);
+    //     await this.usersRepository.updateById(saveusers.id, { password: password, role: role });
+    //     // await this.adminRepository.updateById(saveAdmin.id, { "password": password });
+    //     res = {
+    //       "statusCode": 200,
+    //       "message": "Registration successfully done",
+    //       "email": saveusers.username
+    //     };
+    //   }
+    //   else {
+    //     res = {
+    //       "statusCode": 201,
+    //       "message": "email already exits"
+    //     };
+    //   }
+    //   return res;
+    // }
     async userLogin(credentials) {
         let response;
         console.log(credentials);
@@ -352,29 +376,10 @@ let AuthController = class AuthController {
         let data = { "name": constants.name, "version": constants.version, "NodeVersion": process.versions.node, "NpmVersion": constants.npm_version };
         let responseData = {
             "statusCode": 200,
-            "message": "The project details",
+            "message": "GroupBenefitz CorporatePortal application details",
             "AppData": data
         };
         return responseData;
-    }
-    async ip() {
-        let req = this.request;
-        let headers = req.headers;
-        // console.log(headers);
-        let xForwardFor = headers['X-Forwarded-For'];
-        console.log(req.ip);
-        // console.log(req.socket.);
-        let data = { "userIp": req.ip, "socketAddress": req.socket.address, "socketRemoteAddress": req.socket.remoteAddress, "xForwardFor": xForwardFor };
-        let responseData = {
-            "statusCode": 200,
-            "message": "The project details",
-            "userConfig": data
-        };
-        return responseData;
-    }
-    async userss() {
-        let user = await this.usersRepository.find();
-        return user;
     }
 };
 tslib_1.__decorate([
@@ -424,35 +429,6 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], AuthController.prototype, "whoAmI", null);
 tslib_1.__decorate([
-    (0, rest_1.post)(paths_1.AUTH.SIGNUP, {
-        responses: {
-            '200': {
-                description: 'User',
-                content: {
-                    'application/json': {
-                        schema: {
-                            'x-ts-type': authentication_jwt_1.User,
-                        },
-                    },
-                },
-            },
-        },
-    }),
-    tslib_1.__param(0, (0, rest_1.requestBody)({
-        content: {
-            'application/json': {
-                schema: (0, rest_1.getModelSchemaRef)(NewUserRequest, {
-                    title: 'NewUser',
-                    exclude: ['id']
-                }),
-            },
-        },
-    })),
-    tslib_1.__metadata("design:type", Function),
-    tslib_1.__metadata("design:paramtypes", [NewUserRequest]),
-    tslib_1.__metadata("design:returntype", Promise)
-], AuthController.prototype, "signUp", null);
-tslib_1.__decorate([
     (0, rest_1.post)(paths_1.AUTH.SIGNIN),
     tslib_1.__param(0, (0, rest_1.requestBody)(exports.CredentialsRequestBody)),
     tslib_1.__metadata("design:type", Function),
@@ -496,18 +472,6 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:paramtypes", []),
     tslib_1.__metadata("design:returntype", Promise)
 ], AuthController.prototype, "app", null);
-tslib_1.__decorate([
-    (0, rest_1.get)(paths_1.AUTH.IP),
-    tslib_1.__metadata("design:type", Function),
-    tslib_1.__metadata("design:paramtypes", []),
-    tslib_1.__metadata("design:returntype", Promise)
-], AuthController.prototype, "ip", null);
-tslib_1.__decorate([
-    (0, rest_1.get)('/user'),
-    tslib_1.__metadata("design:type", Function),
-    tslib_1.__metadata("design:paramtypes", []),
-    tslib_1.__metadata("design:returntype", Promise)
-], AuthController.prototype, "userss", null);
 AuthController = tslib_1.__decorate([
     tslib_1.__param(0, (0, core_1.inject)(authentication_jwt_1.TokenServiceBindings.TOKEN_SERVICE)),
     tslib_1.__param(1, (0, core_1.inject)(authentication_jwt_1.UserServiceBindings.USER_SERVICE)),

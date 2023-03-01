@@ -1,6 +1,11 @@
 #CHANGE LOG
 1.0.0.0 - RELEASE(v...)
 -----------------------------------------------------------------
+
+0.6.2
+
+made changes in corporate signup and customer validation service in that remove the signup form and creating signup fomr in corporate plans service and added the plan levels in signup form plan level mapping
+
 0.6.1
 
 added tier configration and waller configration in corporate controller and made changes in planselection service in that added configration key in that key added tier and waller in tier is flase create a defaul tier in corporate tiers

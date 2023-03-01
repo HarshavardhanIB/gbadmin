@@ -9,6 +9,7 @@ const broker_licensed_states_and_provinces_model_1 = require("./broker-licensed-
 const contact_information_model_1 = require("./contact-information.model");
 const signup_forms_model_1 = require("./signup-forms.model");
 const users_model_1 = require("./users.model");
+const customer_model_1 = require("./customer.model");
 let Broker = Broker_1 = class Broker extends repository_1.Entity {
     constructor(data) {
         super(data);
@@ -348,6 +349,10 @@ tslib_1.__decorate([
     (0, repository_1.belongsTo)(() => users_model_1.Users, { name: 'user' }),
     tslib_1.__metadata("design:type", Number)
 ], Broker.prototype, "user_id", void 0);
+tslib_1.__decorate([
+    (0, repository_1.hasMany)(() => customer_model_1.Customer, { keyTo: 'broker_id' }),
+    tslib_1.__metadata("design:type", Array)
+], Broker.prototype, "customers", void 0);
 Broker = Broker_1 = tslib_1.__decorate([
     (0, repository_1.model)({
         settings: {

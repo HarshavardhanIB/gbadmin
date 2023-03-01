@@ -33,4 +33,5 @@ export declare class Corporate {
     modelPropoerties(model: any): Promise<any>;
     customerBankDetailsRegister(session: any, filenamets: any, ext: any, mimetype: any, customerName: any, fusebillCustomerId: any): Promise<any>;
     addEmployee(data: any, corporateId: number): Promise<boolean>;
+    getEnrollmentPlanDates(): Promise<string[]>;
 }

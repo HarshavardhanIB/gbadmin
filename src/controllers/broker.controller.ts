@@ -6,7 +6,7 @@ import { del, get, getModelSchemaRef, param, post, put, Request, requestBody, Re
 import { publicEncrypt, sign } from "crypto";
 import { includes } from "lodash";
 import { FILE_UPLOAD_SERVICE } from "../keys";
-import { BROKERIMG_RESOURCES_FOLDER, BROKERPATH_STRING, DISCLOSUREPATH_STRING } from "../paths";
+import { BROKERIMG_RESOURCES_FOLDER, BROKERPATH_STRING, BROKER_DISCLOSURES_FOLDER, DISCLOSUREPATH_STRING, DISCLOSURES_FOLDER } from "../paths";
 import { BrokerRepository, BrokerLicensedStatesAndProvincesRepository, InsurancePlansRepository, SignupFormsRepository, StatesAndProvincesRepository, SignupFormsPlanLevelMappingRepository, UsersRepository, ContactInformationRepository, CustomerSignupRepository, CustomerRepository, PlanLevelRepository, BrokerEoInsuranceRepository, InsurancePackagesRepository, PlansAvailabilityRepository } from '../repositories'
 import { FileUploadHandler } from "../types";
 import { FilesController } from "./files.controller";
@@ -32,6 +32,13 @@ import moment from "moment";
 import { BROKER } from '../paths'
 import { BrokerAdminsRepository } from "../repositories/broker-admins.repository";
 import { from } from "form-data";
+const log4js = require("log4js");
+log4js.configure({
+  appenders: { brokerController: { type: "file", filename: "logs.log" } },
+  categories: { default: { appenders: ["brokerController"], level: "error" } },
+});
+const logger = log4js.getLogger("brokerController");
+let timestamp=moment().format('YYYY-MM-DD mm-hh-ss')
 // @authenticate('jwt')
 // @authorize({
 //   allowedRoles: ['BROKER', 'ADMINISTRATOR'],
@@ -92,7 +99,8 @@ export class BrokerController {
       },
     },
   })
-  async brokerCount(): Promise<Response> {
+  async brokerCount(): Promise<Response> {  
+
     let totalBrokers, TpaMga, brokaRage, advisor, association, corporate, status, message, data, date: any = {};
     try {
       await this.logs.consoles("brokerCount","condition","ressss","");
@@ -151,7 +159,7 @@ export class BrokerController {
       });
       for (let i = 0; i < Brokers.length; i++) {
         let broker = Brokers[i];
-        let EOIStatus, contactStatus, LicecncesStatus: any;
+        let EOIStatus, contactStatus, licecncesStatus: any=" ";
         let today = moment(new Date(), "YYYY-MM-DD").toDate()
         let brokerId = broker.id;
         let contactId = broker.contactId;
@@ -161,12 +169,15 @@ export class BrokerController {
         if (licences.length > 0) {
           for (let licence of licences) {
             if (licence.expiryDate != undefined) {
-              new Date(licence.expiryDate) < today ? LicecncesStatus = licence.licenseNumber + " " + CONST.LICENCE.EXPIRE : LicecncesStatus = CONST.LICENCE.FOUND
+              new Date(licence.expiryDate) < today ? licecncesStatus += licence.licenseNumber + " " + CONST.LICENCE.EXPIRE : licecncesStatus += CONST.LICENCE.FOUND
+            }
+            else{
+              licecncesStatus+=licence.licenseNumber+" : "+ CONST.LICENCE.NO_EXPIRE_DATA+" "
             }
           }
         }
         else {
-          LicecncesStatus = CONST.LICENCE.NOLICENCES
+          licecncesStatus = CONST.LICENCE.NOLICENCES
         }
         if (contactId) {
           let contactDetails: any = await this.contactInformationRepository.findById(contactId);
@@ -180,14 +191,15 @@ export class BrokerController {
         } else {
           contactStatus = CONST.NONE
         }
-        broker.LicecncesStatus = LicecncesStatus;
+        broker.LicecncesStatus = licecncesStatus;
         broker.EOIStatus = EOIStatus;
-        let status = { "broker": broker, "LicecncesStatus": LicecncesStatus, "EOIStatus": EOIStatus, "contactStatus": contactStatus };
-        brokerList.push(status)
+        // const status = { "broker": broker, "licecncesStatus": licecncesStatus, "EOIStatus": EOIStatus, "contactStatus": contactStatus };
+        var status:any= { "broker": broker,"EOIStatus": EOIStatus, "contactStatus": contactStatus };
+        status['licecncesStatus']=licecncesStatus;
+        brokerList.push(status);
         statusCode = 200;
         message = MESSAGE.BROKER_MSG.BROKERS_PRMARY_DETAILS
       }
-
     }
     catch (err) {
       console.log(err);
@@ -198,7 +210,8 @@ export class BrokerController {
     return this.response;
   }
   @get(BROKER.BROKERID)
-  async brokerDetailsBasedonId(@param.path.number('brokerId') id: number): Promise<any> {
+  async brokerDetailsBasedonId(@param.path.number('brokerId') id: number): Promise<any> {    
+    // logger.fatal("brokerDetailsBasedonId  ^ broker id:"+id+" ^ "+"Broker details based on broker id  ^"+"broker id :"+id);
     let final: any = [];
     let responseObject, brokerStatus, status: any;
     try {
@@ -238,11 +251,13 @@ export class BrokerController {
           for (let licence of licences) {
             if (licence.expiryDate != undefined) {
               new Date(licence.expiryDate) < today ? LicecncesStatus = licence.licenseNumber + " " + CONST.LICENCE.EXPIRE : LicecncesStatus = CONST.LICENCE.FOUND
+              logger.fatal("brokerDetailsBasedonId  ^ broker name : "+data.name+" ^ "+"Broker licence status ^ "+LicecncesStatus+" Licence num:"+licences.licenseNumber+" province Id :"+licence.stateId);
             }
           }
         }
         else {
-          LicecncesStatus = CONST.LICENCE.NOLICENCES
+          LicecncesStatus = CONST.LICENCE.NOLICENCES;
+          logger.fatal("brokerDetailsBasedonId  ^ broker name : "+data.name+" ^ "+"Broker licence status ^ "+LicecncesStatus);
         }
         if (contactId && contactId != 0) {
           let contactDetails: any = await this.contactInformationRepository.findById(contactId);
@@ -261,6 +276,8 @@ export class BrokerController {
           contactStatus = CONST.NONE
         }
         brokerStatus = { "LicecncesStatus": LicecncesStatus, "EOIStatus": EOIStatus, "contactinfoStatus": contactStatus };
+        logger.fatal("brokerDetailsBasedonId  ^ broker name : "+data.name+" ^ "+"Broker licence status ^ "+"brokerid :"+id);
+             
       }
 
       if (!data) {
@@ -294,6 +311,7 @@ export class BrokerController {
     }
     catch (error) {
       console.log(error);
+      logger.error("brokerDetailsBasedonId  ^ "+id+" ^ "+"Broker details based on id ^ "+error.message);
     }
   }
   @get(BROKER.CUSTOMERLIST)
@@ -3497,6 +3515,10 @@ export class BrokerController {
                 let disClosureName = `disclosure-agreement-${apiRequest.name}.pdf`;
                 disClosureName = disClosureName.replace(/[\])}[{(]/g, '').replace(/ /g, '');
                 await this.brokerRepository.updateById(brokerId, { disclosureAgreement: DISCLOSUREPATH_STRING + disClosureName });
+                let url = process.env.MAINAPI + `/broker/${brokerId}/disclosureAgreement`;
+                let pathImg = BROKER_DISCLOSURES_FOLDER + "/" + disClosureName;
+                const fetchStatus = await this.http.fetchMultipartFormdata(url, pathImg);
+                console.log("fetchStatus >> status", fetchStatus);
               }
             }
           }
@@ -3633,6 +3655,10 @@ export class BrokerController {
                 originalname = originalname.replace(/[\])}[{(]/g, '').replace(/ /g, '')
                 let filename = originalname
                 await this.signupFormsRepository.updateById(formId, { logo: BROKERPATH_STRING + filename });
+                let url = process.env.MAINAPI + `/broker/form/${formId}/logo`;
+                let pathImg = BROKERIMG_RESOURCES_FOLDER + "/" + filename;
+                const fetchStatus = await this.http.fetchMultipartFormdata(url, pathImg);
+                console.log("fetchStatus >> status", fetchStatus);
                 message = 'Form logo is set'
                 status = 200
               } else {
@@ -3745,6 +3771,10 @@ export class BrokerController {
                 let disClosureName = `disclosure-agreement-${brokerAndForm.broker.name}.pdf`;
                 disClosureName = disClosureName.replace(/[\])}[{(]/g, '').replace(/ /g, '')
                 await this.signupFormsRepository.updateById(formId, { disclosureAgreement: DISCLOSUREPATH_STRING + disClosureName });
+                let url = process.env.MAINAPI + `/broker/form/${formId}/disclosureAgreement`;
+                let pathImg = BROKER_DISCLOSURES_FOLDER + "/" + disClosureName;
+                const fetchStatus = await this.http.fetchMultipartFormdata(url, pathImg);
+                console.log("fetchStatus >> status", fetchStatus);
                 message = 'Disclouser is set'
                 status = 200
               } else {
@@ -3861,6 +3891,10 @@ export class BrokerController {
                 let disClosureName = `disclosure-agreement-${broker.name}.pdf`;
                 disClosureName = disClosureName.replace(/[\])}[{(]/g, '').replace(/ /g, '')
                 await this.brokerRepository.updateById(brokerId, { disclosureAgreement: DISCLOSUREPATH_STRING + disClosureName });
+                let url = process.env.MAINAPI + `/broker/${brokerId}/disclosureAgreement`;
+                let pathImg = BROKER_DISCLOSURES_FOLDER + "/" + disClosureName;
+                const fetchStatus = await this.http.fetchMultipartFormdata(url, pathImg);
+                console.log("fetchStatus >> status", fetchStatus);
                 message = 'Disclouser is set'
                 status = 200
               } else {

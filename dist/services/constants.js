@@ -4,7 +4,7 @@ exports.node_version = exports.npm_version = exports.version = exports.name = ex
 exports.expiresIn = "24h";
 exports.algorithm = "HS512";
 exports.secret = "IDEABYTES";
-exports.name = process.env.name || "adminportal";
+exports.name = process.env.name || "corpdev";
 exports.version = "0.6.0";
 exports.npm_version = "8.15.0";
 exports.node_version = "18.7.0";
