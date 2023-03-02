@@ -51,3 +51,10 @@
  ^ Broker licence status ^ Licences are found Licence num:undefined province Id :12
 [2023-02-27T22:24:49.643] [FATAL] brokerController - brokerDetailsBasedonId  ^ broker name : Stacey Aarssen
  ^ Broker licence status ^ brokerid :65
+[2023-03-02T11:19:52.094] [FATAL] default - this is form config
+[2023-03-02T11:25:37.985] [FATAL] corporate - this is form config
+[2023-03-02T11:25:37.985] [FATAL] corporate - this is form config
+[2023-03-02T11:26:10.342] [FATAL] broker - brokerDetailsBasedonId  ^ broker name : Steven Cohen ^ Broker licence status ^ No Licences
+[2023-03-02T11:26:10.342] [FATAL] broker - brokerDetailsBasedonId  ^ broker name : Steven Cohen ^ Broker licence status ^ No Licences
+[2023-03-02T11:26:10.367] [FATAL] broker - brokerDetailsBasedonId  ^ broker name : Steven Cohen ^ Broker licence status ^ brokerid :12
+[2023-03-02T11:26:10.367] [FATAL] broker - brokerDetailsBasedonId  ^ broker name : Steven Cohen ^ Broker licence status ^ brokerid :12

@@ -25,6 +25,9 @@ const model_extended_1 = require("../model_extended");
 const corporate_tiered_plan_levels_repository_1 = require("../repositories/corporate-tiered-plan-levels.repository");
 let fuseBillCustomerCreation = true;
 let fiseBill = 11;
+const log4js = tslib_1.__importStar(require("log4js"));
+const logger = log4js.getLogger("corporate");
+let timestamp = (0, moment_1.default)().format('YYYY-MM-DD mm-hh-ss');
 let CorporateController = class CorporateController {
     constructor(http, brokerRepository, response, corporateService, usersRepository, BrokerAdminsRepository, contactInformationRepository, customerRepository, handler, fusebill, registrationService, ach, banksCodesRepository, banksRepository, branchesRepository, statesAndProvincesRepository, insurancePlansRepository, plansAvailabilityRepository, insurancePackages, signupFormsRepository, planLevelRepository, corporateTiersRepository, corporateTieredPlanLevelsRepository, corporatePaidTieredPlanLevelsRepository, customerContactInfoRepository, excelService, excel2Service, signupFormsPlanLevelMappingRepository) {
         this.http = http;
@@ -213,7 +216,7 @@ let CorporateController = class CorporateController {
                         brokerObj.userId = groupAdminsUsers[0];
                         brokerObj.settingsAllowGroupBenefitsWallet = apiRequest.setupWallet ? 1 : 0;
                         brokerObj.settingsEnableTieredHealthBenefits = apiRequest.setupTiers ? 1 : 0;
-                        brokerObj.waitTime = apiRequest.waitTime;
+                        brokerObj.waitTime = apiRequest.waitingPeriod;
                         brokerObj.useCreditCardPaymentMethod = apiRequest.useCreditCard;
                         brokerObj.useInvoicePaymentMethod = apiRequest.invoicePayment;
                         brokerObj.usePadPaymentMethod = apiRequest.padPayment;
@@ -491,6 +494,7 @@ let CorporateController = class CorporateController {
         return this.response;
     }
     async corporateFormConfig() {
+        logger.fatal('this is form config');
         let status, message, date, data = {};
         try {
             status = 200;
@@ -525,7 +529,8 @@ let CorporateController = class CorporateController {
                 'payForService': 'How does the company want to pay for the service?',
                 'payForServiceKeys': CONST.rolloverUnusedWalletFunds
             };
-            data['walletConfig'] = walletConfig;
+            data['walletConfig'] = walletConfig,
+                data['enrollmentDates'] = await this.corporateService.getEnrollmentPlanDates();
         }
         catch (error) {
             status = 400;
@@ -1075,7 +1080,7 @@ let CorporateController = class CorporateController {
                         brokerObj.userId = groupAdminsUsers[0];
                         brokerObj.settingsAllowGroupBenefitsWallet = apiRequest.setupWallet ? 1 : 0;
                         brokerObj.settingsEnableTieredHealthBenefits = apiRequest.setUplevelofCoverage ? 1 : 0;
-                        brokerObj.waitTime = apiRequest.waitTime;
+                        brokerObj.waitTime = apiRequest.waitingPeriod;
                         brokerObj.useCreditCardPaymentMethod = apiRequest.useCreditCard;
                         brokerObj.useInvoicePaymentMethod = apiRequest.invoicePayment;
                         brokerObj.usePadPaymentMethod = apiRequest.padPayment;
@@ -1086,7 +1091,7 @@ let CorporateController = class CorporateController {
                         data1['corporateId'] = broker.id;
                         // data.push({ "broker": broker });
                         console.log(apiRequest.gropupAdmin);
-                        data1['groupAdminstrators'] = groupAdminsArray;
+                        // data1['groupAdminstrators'] = groupAdminsArray
                         // data.push({ "groupAdmins": groupAdminsArray });
                         let brokerAdmin = new models_1.BrokerAdmins();
                         brokerAdmin.brokerId = broker.id;
@@ -1102,6 +1107,10 @@ let CorporateController = class CorporateController {
                         customerObj.userId = groupAdminsUsers[0];
                         let customer = await this.customerRepository.create(customerObj);
                         customerId = customer.id;
+                        let customerContactInfo = new models_1.CustomerContactInfo();
+                        customerContactInfo.contactId = contId;
+                        customerContactInfo.customerId = customerId;
+                        await this.customerContactInfoRepository.create(customerContactInfo);
                         data1['customerId'] = customerId;
                         var fusebillCustomer = {};
                         if (JSON.parse(apiRequest.fuseBillCustomerCreation)) {
@@ -1204,10 +1213,11 @@ let CorporateController = class CorporateController {
                             };
                         }
                         await this.customerRepository.updateById(customerId, { fusebillCustomerId: fusebillCustomer.id });
+                        await this.brokerRepository.updateById(brokerId, { fusebillCorporateCustomerId: fusebillCustomer.id });
                         //activationg fuse bill customer id
                         // bank details and void check service 
                         // data.push(customer);
-                        data1['customer'] = customer;
+                        // data1['customer'] = customer;
                         for (const user of groupAdminsUsers) {
                             console.log(user);
                             brokerAdmin.userId = user;
@@ -1437,6 +1447,8 @@ let CorporateController = class CorporateController {
                 customerObj.registrationDate = (0, moment_1.default)().format('YYYY-MM-DD');
                 customerObj.userId = employeeUser.id;
                 customerObj.employeeId = apiRequest.employeeId;
+                let actualTier = await this.corporateService.getActualTiers(corporateId, apiRequest.walletLimit, apiRequest.dateOfHire);
+                actualTier != 0 ? customerObj.actualTier : actualTier = 0;
                 let customer = await this.customerRepository.create(customerObj);
                 let customerContactInfoObj = new models_1.ContactInformation();
                 customerContactInfoObj.apt = (_a = apiRequest.apt) !== null && _a !== void 0 ? _a : '';
@@ -1480,10 +1492,10 @@ let CorporateController = class CorporateController {
                             //"addressType": apiRequest.addressType ?? 'Shipping',//here shipping is same as home //Billing, shipping    
                             "addressType": (_d = apiRequest.addressType) !== null && _d !== void 0 ? _d : 'Billing',
                             "enforceFullAddress": true,
-                            "line1": apiRequest.streetAddressLine1,
-                            "line2": apiRequest.streetAddressLine2,
+                            // "line1": apiRequest.streetAddressLine1,
+                            // "line2": apiRequest.streetAddressLine2,
                             "city": apiRequest.residentIn,
-                            "postalZip": apiRequest.postalCode,
+                            // "postalZip": apiRequest.postalCode,
                             "country": apiRequest.country || 'Canada',
                             "state": apiRequest.provienceName
                         };
@@ -1711,7 +1723,10 @@ let CorporateController = class CorporateController {
         try {
             let corporate = await this.brokerRepository.findById(corporateId);
             if (corporate) {
+                let settingHealthSpendingAccount = "";
+                apiRequest.walletType == "BOTH" ? settingHealthSpendingAccount = apiRequest.walletType : apiRequest.walletType == CONST.walletType[0] ? settingHealthSpendingAccount == "HEALTH" : apiRequest.walletType == CONST.walletType[1] ? settingHealthSpendingAccount == "WELLNESS" : settingHealthSpendingAccount == "BOTH";
                 await this.brokerRepository.updateById(corporateId, {
+                    settingsHealthSpendingAccount: settingHealthSpendingAccount,
                     settingsGroupBenefitzWalletType: apiRequest.walletType,
                     settingsHealthSpendingAllotment: apiRequest.walletAllotment,
                     settingsRolloverEmployeeLimitNextYear: apiRequest.roolOverLimitToTheNextYear,
@@ -1788,8 +1803,7 @@ let CorporateController = class CorporateController {
             console.log(error);
         }
         this.response.status(status).send({
-            status, message, data, date: new data()
-        });
+         });
         return this.response;
     }
     async uploadEmployeeExcel(request, response) {
@@ -2333,7 +2347,7 @@ tslib_1.__decorate([
                         walletType: {
                             //settings_group_benefitz_wallet_type
                             type: 'string',
-                            default: 'Both',
+                            default: 'BOTH',
                             enum: CONST.walletType
                         },
                         walletAllotment: {

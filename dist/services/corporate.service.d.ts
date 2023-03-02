@@ -24,14 +24,15 @@ export declare class Corporate {
     insurancePackages: InsurancePackagesRepository;
     SignupFormsRepository: SignupFormsRepository;
     PlanLevelRepository: PlanLevelRepository;
-    CorporateTiersRepository: CorporateTiersRepository;
+    corporateTiersRepository: CorporateTiersRepository;
     CorporateTieredPlanLevelsRepository: CorporateTieredPlanLevelsRepository;
     CorporatePaidTieredPlanLevelsRepository: CorporatePaidTieredPlanLevelsRepository;
     CustomerContactInfoRepository: CustomerContactInfoRepository;
-    constructor(/* Add @inject to inject parameters */ fusebill: FusebillService, handler: FileUploadHandler, registrationService: RegistrationServiceService, ach: AchService, banksCodesRepository: BankCodesRepository, banksRepository: FinancialInstitutionsRepository, branchesRepository: FinancialInstitutionsRoutingNumbersRepository, StatesAndProvincesRepository: StatesAndProvincesRepository, BrokerRepository: BrokerRepository, usersRepository: UsersRepository, BrokerAdminsRepository: BrokerAdminsRepository, ContactInformationRepository: ContactInformationRepository, CustomerRepository: CustomerRepository, InsurancePlansRepository: InsurancePlansRepository, PlansAvailabilityRepository: PlansAvailabilityRepository, insurancePackages: InsurancePackagesRepository, SignupFormsRepository: SignupFormsRepository, PlanLevelRepository: PlanLevelRepository, CorporateTiersRepository: CorporateTiersRepository, CorporateTieredPlanLevelsRepository: CorporateTieredPlanLevelsRepository, CorporatePaidTieredPlanLevelsRepository: CorporatePaidTieredPlanLevelsRepository, CustomerContactInfoRepository: CustomerContactInfoRepository);
+    constructor(/* Add @inject to inject parameters */ fusebill: FusebillService, handler: FileUploadHandler, registrationService: RegistrationServiceService, ach: AchService, banksCodesRepository: BankCodesRepository, banksRepository: FinancialInstitutionsRepository, branchesRepository: FinancialInstitutionsRoutingNumbersRepository, StatesAndProvincesRepository: StatesAndProvincesRepository, BrokerRepository: BrokerRepository, usersRepository: UsersRepository, BrokerAdminsRepository: BrokerAdminsRepository, ContactInformationRepository: ContactInformationRepository, CustomerRepository: CustomerRepository, InsurancePlansRepository: InsurancePlansRepository, PlansAvailabilityRepository: PlansAvailabilityRepository, insurancePackages: InsurancePackagesRepository, SignupFormsRepository: SignupFormsRepository, PlanLevelRepository: PlanLevelRepository, corporateTiersRepository: CorporateTiersRepository, CorporateTieredPlanLevelsRepository: CorporateTieredPlanLevelsRepository, CorporatePaidTieredPlanLevelsRepository: CorporatePaidTieredPlanLevelsRepository, CustomerContactInfoRepository: CustomerContactInfoRepository);
     encryptPswrd(password: string): Promise<string>;
     modelPropoerties(model: any): Promise<any>;
     customerBankDetailsRegister(session: any, filenamets: any, ext: any, mimetype: any, customerName: any, fusebillCustomerId: any): Promise<any>;
     addEmployee(data: any, corporateId: number): Promise<boolean>;
     getEnrollmentPlanDates(): Promise<string[]>;
+    getActualTiers(corporateId: number, wallerLimit: number, dateofHire: any): Promise<number | undefined>;
 }

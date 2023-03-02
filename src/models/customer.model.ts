@@ -82,12 +82,19 @@ export class Customer extends Entity {
 
   @property({
     type: 'string',
-    length: 45,
+    length: 255,
     generated: 0,
-    mysql: { columnName: 'company_name', dataType: 'varchar', dataLength: 45, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
+    mysql: { columnName: 'company_name', dataType: 'varchar', dataLength: 255, dataPrecision: null, dataScale: null, nullable: 'Y', generated: 0 },
   })
   companyName?: string;
-
+  @property({
+    type: 'number',
+    precision: 3,
+    scale: 0,
+    generated: 0,
+    mysql: { columnName: 'bill_as_corporate', dataType: 'tinyint', dataLength: null, dataPrecision: 3, dataScale: 0, nullable: 'Y', generated: 0 },
+  })
+  billAsCorporate?: number;
   @property({
     type: 'boolean',
     precision: 1,

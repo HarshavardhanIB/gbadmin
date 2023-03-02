@@ -32,13 +32,13 @@ import moment from "moment";
 import { BROKER } from '../paths'
 import { BrokerAdminsRepository } from "../repositories/broker-admins.repository";
 import { from } from "form-data";
-const log4js = require("log4js");
-log4js.configure({
-  appenders: { brokerController: { type: "file", filename: "logs.log" } },
-  categories: { default: { appenders: ["brokerController"], level: "error" } },
-});
-const logger = log4js.getLogger("brokerController");
-let timestamp=moment().format('YYYY-MM-DD mm-hh-ss')
+import * as log4js from "log4js";
+// log4js.configure({
+//   appenders: { brokerController: { type: "file", filename: "logs.log" } },
+//   categories: { default: { appenders: ["brokerController"], level: "error" } },
+// });
+const logger = log4js.getLogger("broker");
+let timestamp=moment().format('YYYY-MM-DD mm-hh-ss');
 // @authenticate('jwt')
 // @authorize({
 //   allowedRoles: ['BROKER', 'ADMINISTRATOR'],

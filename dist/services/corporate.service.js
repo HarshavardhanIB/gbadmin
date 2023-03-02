@@ -19,10 +19,11 @@ const broker_admins_repository_1 = require("../repositories/broker-admins.reposi
 const corporate_tiered_plan_levels_repository_1 = require("../repositories/corporate-tiered-plan-levels.repository");
 const CONST = tslib_1.__importStar(require("../constants"));
 const fusebill_service_1 = require("./fusebill.service");
+const common_services_1 = require("./common.services");
 let fuseBillCustomerCreation = true;
 let fiseBill = 0;
 let Corporate = class Corporate {
-    constructor(/* Add @inject to inject parameters */ fusebill, handler, registrationService, ach, banksCodesRepository, banksRepository, branchesRepository, StatesAndProvincesRepository, BrokerRepository, usersRepository, BrokerAdminsRepository, ContactInformationRepository, CustomerRepository, InsurancePlansRepository, PlansAvailabilityRepository, insurancePackages, SignupFormsRepository, PlanLevelRepository, CorporateTiersRepository, CorporateTieredPlanLevelsRepository, CorporatePaidTieredPlanLevelsRepository, CustomerContactInfoRepository) {
+    constructor(/* Add @inject to inject parameters */ fusebill, handler, registrationService, ach, banksCodesRepository, banksRepository, branchesRepository, StatesAndProvincesRepository, BrokerRepository, usersRepository, BrokerAdminsRepository, ContactInformationRepository, CustomerRepository, InsurancePlansRepository, PlansAvailabilityRepository, insurancePackages, SignupFormsRepository, PlanLevelRepository, corporateTiersRepository, CorporateTieredPlanLevelsRepository, CorporatePaidTieredPlanLevelsRepository, CustomerContactInfoRepository) {
         this.fusebill = fusebill;
         this.handler = handler;
         this.registrationService = registrationService;
@@ -41,7 +42,7 @@ let Corporate = class Corporate {
         this.insurancePackages = insurancePackages;
         this.SignupFormsRepository = SignupFormsRepository;
         this.PlanLevelRepository = PlanLevelRepository;
-        this.CorporateTiersRepository = CorporateTiersRepository;
+        this.corporateTiersRepository = corporateTiersRepository;
         this.CorporateTieredPlanLevelsRepository = CorporateTieredPlanLevelsRepository;
         this.CorporatePaidTieredPlanLevelsRepository = CorporatePaidTieredPlanLevelsRepository;
         this.CustomerContactInfoRepository = CustomerContactInfoRepository;
@@ -329,6 +330,52 @@ let Corporate = class Corporate {
         }
         //console.log(dates)  
         return dates;
+    }
+    async getActualTiers(corporateId, wallerLimit, dateofHire) {
+        let data = {};
+        let hiredate = (0, common_services_1.moments)(dateofHire);
+        const today = (0, moment_1.default)();
+        const diffInYears = today.diff(hiredate, 'years');
+        let corporateAnnualIncomeTiers = await this.corporateTiersRepository.find({ order: ['annualIncome ASC'], where: { and: [{ brokerId: corporateId }, { tierType: CONST.TIER_TYPE.AI }] } });
+        let corporatelengthOfServiceTiers = await this.corporateTiersRepository.find({ where: { and: [{ brokerId: corporateId }, { tierType: CONST.TIER_TYPE.LOS }, { toLength: { lt: diffInYears } }, { fromLength: { gte: diffInYears } }] } });
+        if (corporateAnnualIncomeTiers.length > 0) {
+            if (corporateAnnualIncomeTiers.length > 1) {
+                for (const corporateAnnualIncomeTier of corporateAnnualIncomeTiers) {
+                    if (wallerLimit > 0 && wallerLimit <= corporateAnnualIncomeTier.annualIncome) {
+                        return corporateAnnualIncomeTier.id;
+                    }
+                    else {
+                        for (let j = 1; j < corporateAnnualIncomeTiers.length; j++) {
+                            if (wallerLimit > corporateAnnualIncomeTier.annualIncome && wallerLimit <= corporateAnnualIncomeTiers[j].annualIncome) {
+                                return corporateAnnualIncomeTiers[j].id;
+                            }
+                        }
+                    }
+                }
+            }
+            else {
+                if (wallerLimit < corporateAnnualIncomeTiers[0].annualIncome) {
+                    return corporateAnnualIncomeTiers[0].id;
+                }
+            }
+        }
+        else {
+            if (corporateAnnualIncomeTiers.length > 0) {
+                console.log(corporateAnnualIncomeTiers);
+                return corporateAnnualIncomeTiers[0].id;
+            }
+        }
+        // else if (corporatelengthOfServiceTiers.length > 0) {
+        //   for (const corporatelengthOfServiceTier of corporatelengthOfServiceTiers) {
+        //     let hiredate = moments(dateofHire.toString());
+        //     const today = moment();
+        //     const diffInYears = today.diff(hiredate, 'years');       
+        //     if (diffInYears >= corporatelengthOfServiceTier.fromLength && diffInYears < corporatelengthOfServiceTier.toLength) {
+        //       return corporatelengthOfServiceTier.id;
+        //     }
+        //   }
+        // }
+        return 0;
     }
 };
 Corporate = tslib_1.__decorate([

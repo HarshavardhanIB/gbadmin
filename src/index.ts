@@ -12,7 +12,11 @@ export * from './models';
 export * from './repositories';
 // import dotenv from "dotenv";
 import 'dotenv/config';
-
+import * as log4js from "log4js";
+log4js.configure({
+  appenders: { broker: { type: "file", filename: "logs.log" },corporate:{ type: "file", filename: "logs.log" }},
+  categories: { default : { appenders: ["broker","corporate"], level: "debug" } },
+});
 // let config: any = dotenv.config();
 // console.log(config);
 export async function main(options: ApplicationConfig = {})
@@ -36,7 +40,7 @@ if (require.main === module) {
     rest: {
       port: +(process.env.PORT ?? 3002),
       host: process.env.HOST,
-      basePath: '/api/cp',
+      basePath: '/api/ap',
 
       gracePeriodForClose: 5000, // 5 seconds
       openApiSpec: {

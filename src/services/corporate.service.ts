@@ -19,6 +19,7 @@ import { BrokerAdminsRepository } from '../repositories/broker-admins.repository
 import { CorporateTieredPlanLevelsRepository } from '../repositories/corporate-tiered-plan-levels.repository';
 import * as CONST from '../constants'
 import { FusebillService } from './fusebill.service';
+import { moments } from './common.services';
 let fuseBillCustomerCreation = true;
 let fiseBill = 0;
 @injectable({ scope: BindingScope.TRANSIENT })
@@ -42,7 +43,7 @@ export class Corporate {
     @repository(InsurancePackagesRepository) public insurancePackages: InsurancePackagesRepository,
     @repository(SignupFormsRepository) public SignupFormsRepository: SignupFormsRepository,
     @repository(PlanLevelRepository) public PlanLevelRepository: PlanLevelRepository,
-    @repository(CorporateTiersRepository) public CorporateTiersRepository: CorporateTiersRepository,
+    @repository(CorporateTiersRepository) public corporateTiersRepository: CorporateTiersRepository,
     @repository(CorporateTieredPlanLevelsRepository) public CorporateTieredPlanLevelsRepository: CorporateTieredPlanLevelsRepository,
     @repository(CorporatePaidTieredPlanLevelsRepository) public CorporatePaidTieredPlanLevelsRepository: CorporatePaidTieredPlanLevelsRepository,
     @repository(CustomerContactInfoRepository) public CustomerContactInfoRepository: CustomerContactInfoRepository,
@@ -323,7 +324,7 @@ enrollmentDate: "2022-10-01"
       dates.push(today);
       //next month.. 
       //next of next moth  
-       months = 2
+      months = 2
     } else {
       //next month..   //next of next month..   //next of next next month
       months = 3
@@ -340,8 +341,54 @@ enrollmentDate: "2022-10-01"
     }
     //console.log(dates)  
     return dates;
-    
+
   }
+  async getActualTiers(corporateId: number, wallerLimit: number, dateofHire:any) {
+    let data: any = {};
+    let hiredate = moments(dateofHire);
+        const today = moment();
+        const diffInYears = today.diff(hiredate, 'years');
+    let corporateAnnualIncomeTiers = await this.corporateTiersRepository.find({ order: ['annualIncome ASC'], where: { and: [{ brokerId: corporateId }, { tierType: CONST.TIER_TYPE.AI }] } });
+    let corporatelengthOfServiceTiers: any = await this.corporateTiersRepository.find({ where: { and: [{ brokerId: corporateId }, { tierType: CONST.TIER_TYPE.LOS },{toLength:{lt:diffInYears}},{fromLength:{gte:diffInYears}}] } });
+    if (corporateAnnualIncomeTiers.length > 0) {
+      if (corporateAnnualIncomeTiers.length > 1) {
+        for (const corporateAnnualIncomeTier of corporateAnnualIncomeTiers) {
+          if (wallerLimit > 0 && wallerLimit <= corporateAnnualIncomeTier.annualIncome) {
+            return corporateAnnualIncomeTier.id;
+          }
+          else {
+            for (let j = 1; j < corporateAnnualIncomeTiers.length; j++) {
+              if (wallerLimit > corporateAnnualIncomeTier.annualIncome && wallerLimit <= corporateAnnualIncomeTiers[j].annualIncome) {
+                return corporateAnnualIncomeTiers[j].id;
+              }
+            }
+          }
+        }
+      } else {
+        if (wallerLimit < corporateAnnualIncomeTiers[0].annualIncome) {
+          return corporateAnnualIncomeTiers[0].id;
+        }
+      }
+    }
+    else{
+      if(corporateAnnualIncomeTiers.length>0){
+        console.log(corporateAnnualIncomeTiers);
+        return corporateAnnualIncomeTiers[0].id;
+      }
+    }
+    // else if (corporatelengthOfServiceTiers.length > 0) {
+    //   for (const corporatelengthOfServiceTier of corporatelengthOfServiceTiers) {
+    //     let hiredate = moments(dateofHire.toString());
+    //     const today = moment();
+    //     const diffInYears = today.diff(hiredate, 'years');       
+    //     if (diffInYears >= corporatelengthOfServiceTier.fromLength && diffInYears < corporatelengthOfServiceTier.toLength) {
+    //       return corporatelengthOfServiceTier.id;
+    //     }
+    //   }
+    // }
+    return 0;
+  }
+
 }
 const btoa = function (str: string) { return Buffer.from(str).toString('base64'); }
 const atob = function (b64Encoded: string) { return Buffer.from(b64Encoded, 'base64').toString() }

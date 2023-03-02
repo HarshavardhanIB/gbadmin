@@ -12,6 +12,7 @@ export declare class Customer extends Entity {
     ccExpiryAlertSent?: boolean;
     companyId?: number;
     companyName?: string;
+    billAsCorporate?: number;
     deleted?: boolean;
     dob?: string;
     equitableCertificateId?: string;

@@ -1,6 +1,8 @@
 #CHANGE LOG
 1.0.0.0 - RELEASE(v...)
 -----------------------------------------------------------------
+0.6.3
+changes in corporate controoler when corporate is create update the corporate broker.customer fusebill id 
 
 0.6.2
 

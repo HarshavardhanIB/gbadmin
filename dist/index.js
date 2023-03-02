@@ -15,6 +15,11 @@ tslib_1.__exportStar(require("./models"), exports);
 tslib_1.__exportStar(require("./repositories"), exports);
 // import dotenv from "dotenv";
 require("dotenv/config");
+const log4js = tslib_1.__importStar(require("log4js"));
+log4js.configure({
+    appenders: { broker: { type: "file", filename: "logs.log" }, corporate: { type: "file", filename: "logs.log" } },
+    categories: { default: { appenders: ["broker", "corporate"], level: "debug" } },
+});
 // let config: any = dotenv.config();
 // console.log(config);
 async function main(options = {}) {
@@ -37,7 +42,7 @@ if (require.main === module) {
         rest: {
             port: +((_a = process.env.PORT) !== null && _a !== void 0 ? _a : 3002),
             host: process.env.HOST,
-            basePath: '/api/cp',
+            basePath: '/api/ap',
             gracePeriodForClose: 5000,
             openApiSpec: {
                 // useful when used with OpenAPI-to-GraphQL to locate your application

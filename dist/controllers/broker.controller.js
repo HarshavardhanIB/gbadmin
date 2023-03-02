@@ -21,12 +21,12 @@ const services_1 = require("../services");
 const moment_1 = tslib_1.__importDefault(require("moment"));
 const paths_2 = require("../paths");
 const broker_admins_repository_1 = require("../repositories/broker-admins.repository");
-const log4js = require("log4js");
-log4js.configure({
-    appenders: { brokerController: { type: "file", filename: "logs.log" } },
-    categories: { default: { appenders: ["brokerController"], level: "error" } },
-});
-const logger = log4js.getLogger("brokerController");
+const log4js = tslib_1.__importStar(require("log4js"));
+// log4js.configure({
+//   appenders: { brokerController: { type: "file", filename: "logs.log" } },
+//   categories: { default: { appenders: ["brokerController"], level: "error" } },
+// });
+const logger = log4js.getLogger("broker");
 let timestamp = (0, moment_1.default)().format('YYYY-MM-DD mm-hh-ss');
 // @authenticate('jwt')
 // @authorize({

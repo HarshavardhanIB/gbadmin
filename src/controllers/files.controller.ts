@@ -391,7 +391,6 @@ export class FilesController {
               console.log("void check");
               console.log(res);
             })
-  
           } catch (error) {
             console.log(error);
           }
