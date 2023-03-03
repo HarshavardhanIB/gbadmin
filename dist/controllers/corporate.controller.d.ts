@@ -50,4 +50,5 @@ export declare class CorporateController {
     corporateTiers(corporateId: number, apiRequest: any): Promise<any>;
     uploadEmployeeExcel(request: any, response: Response): Promise<void>;
     tierList(corporateId: number): Promise<Response>;
+    deleteCorporateTiers(corporateId: number, apiRequest: any): Promise<any>;
 }

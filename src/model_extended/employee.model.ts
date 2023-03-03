@@ -73,6 +73,11 @@ export class Employee extends Entity {
     })
     provienceName:string;
     @property({
+        type:'number',
+        require:false
+    })
+    tier:number;
+    @property({
         type:'boolean',
         require:true,
     })

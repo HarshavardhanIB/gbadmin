@@ -21,6 +21,9 @@ const paths_1 = require("../paths");
 const messages_1 = require("../messages");
 const storage_helper_1 = require("../storage.helper");
 const constants_1 = require("../constants");
+const authentication_1 = require("@loopback/authentication");
+const authorization_1 = require("@loopback/authorization");
+const auth_middleware_1 = require("../middlewares/auth.middleware");
 const model_extended_1 = require("../model_extended");
 const corporate_tiered_plan_levels_repository_1 = require("../repositories/corporate-tiered-plan-levels.repository");
 let fuseBillCustomerCreation = true;
@@ -106,6 +109,7 @@ let CorporateController = class CorporateController {
         p.then(async (value) => {
             var _a, _b, _c;
             if (!value.fields) {
+                logger.error("signup ^ " + MESSAGE.ERRORS.missingDetails);
                 this.response.status(422).send({
                     status: '422',
                     error: `Missing input fields`,
@@ -225,6 +229,8 @@ let CorporateController = class CorporateController {
                         let broker = await this.brokerRepository.create(brokerObj);
                         brokerId = broker.id;
                         data1['corporateId'] = broker.id;
+                        data1['setupWallet'] = apiRequest.setupWallet;
+                        data1['setupTiers'] = apiRequest.setupTiers;
                         // data.push({ "broker": broker });
                         console.log(apiRequest.gropupAdmin);
                         // data1['groupAdminstrators'] = groupAdminsArray
@@ -345,6 +351,7 @@ let CorporateController = class CorporateController {
                             };
                         }
                         await this.customerRepository.updateById(customerId, { fusebillCustomerId: fusebillCustomer.id });
+                        await this.brokerRepository.updateById(brokerId, { fusebillCorporateCustomerId: fusebillCustomer.id });
                         //activationg fuse bill customer id
                         // bank details and void check service 
                         // data.push(customer);
@@ -859,10 +866,6 @@ let CorporateController = class CorporateController {
         });
         return this.response;
     }
-    // @authorize({
-    //   allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR, CONST.USER_ROLE.CORPORATE_ADMINISTRATOR],
-    //   voters: [basicAuthorization]
-    // })
     async validatePlans() {
         let message, status, data = {}, final = {};
         try {
@@ -1089,6 +1092,8 @@ let CorporateController = class CorporateController {
                         let broker = await this.brokerRepository.create(brokerObj);
                         brokerId = broker.id;
                         data1['corporateId'] = broker.id;
+                        data1['setupWallet'] = apiRequest.setupWallet;
+                        data1['setupTiers'] = apiRequest.setupTiers;
                         // data.push({ "broker": broker });
                         console.log(apiRequest.gropupAdmin);
                         // data1['groupAdminstrators'] = groupAdminsArray
@@ -1419,13 +1424,27 @@ let CorporateController = class CorporateController {
         return this.response;
     }
     async employeeSignup(corporateId, apiRequest) {
-        var _a, _b, _c, _d;
+        var _a, _b, _c;
         let status, message, data = {};
         try {
             // user creation, customer.role=
             let corporate = await this.brokerRepository.findById(corporateId, { include: [{ relation: 'customers' }] });
             console.log(corporate);
             if (corporate) {
+                if (corporate.settingsEnableTieredHealthBenefits == 1 && (apiRequest.tier == undefined || apiRequest.tier == 0)) {
+                    message = MESSAGE.CORPORATE_MSG.TIER_ERROR;
+                    this.response.status(201).send({
+                        status, message, data, dete: new Date()
+                    });
+                    return this.response;
+                }
+                if (corporate.settingsEnableTieredHealthBenefits == 1 && (apiRequest.walletLimit == undefined || apiRequest.walletLimit == 0)) {
+                    message = MESSAGE.CORPORATE_MSG.TIER_ERROR;
+                    this.response.status(201).send({
+                        status, message, data, dete: new Date()
+                    });
+                    return this.response;
+                }
                 let employeeUserObj = new models_1.Users();
                 employeeUserObj.username = apiRequest.emailId;
                 employeeUserObj.role = CONST.USER_ROLE.CUSTOMER;
@@ -1447,6 +1466,9 @@ let CorporateController = class CorporateController {
                 customerObj.registrationDate = (0, moment_1.default)().format('YYYY-MM-DD');
                 customerObj.userId = employeeUser.id;
                 customerObj.employeeId = apiRequest.employeeId;
+                if (corporate.settingsEnableTieredHealthBenefits == 1) {
+                    customerObj.assignerTier = apiRequest.tier;
+                }
                 let actualTier = await this.corporateService.getActualTiers(corporateId, apiRequest.walletLimit, apiRequest.dateOfHire);
                 actualTier != 0 ? customerObj.actualTier : actualTier = 0;
                 let customer = await this.customerRepository.create(customerObj);
@@ -1469,107 +1491,107 @@ let CorporateController = class CorporateController {
                 let customerContactInfo = await this.customerContactInfoRepository.create(customerContact);
                 // customerId = customer.id;
                 var fusebillCustomer = {};
-                if (apiRequest.fuseBillCustomerCreation) {
-                    const fusebillData = {};
-                    fusebillData.firstName = customer.firstName;
-                    fusebillData.lastName = customer.lastName;
-                    // fusebillData.parent = broker.fusebillCustomerId;
-                    fusebillData.companyName = corporate.name;
-                    fusebillData.primaryEmail = apiRequest.emailId;
-                    fusebillData.primaryPhone = apiRequest.phoneNum; //phone num is not mandatory
-                    fusebillData.reference = customer.id;
-                    //fusebillData.companyName=apiRequest.company_name;     
-                    fusebillData.currency = apiRequest.currency || 'CAD'; // || ' 
-                    try {
-                        fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
-                        console.log("**************************************************");
-                        // console.log(fusebillCustomer)
-                        console.log("**************************************************");
-                        let fuseBillAddressData = {
-                            "customerAddressPreferenceId": fusebillCustomer.id,
-                            "countryId": apiRequest.countryId || '1',
-                            "stateId": apiRequest.provienceId,
-                            //"addressType": apiRequest.addressType ?? 'Shipping',//here shipping is same as home //Billing, shipping    
-                            "addressType": (_d = apiRequest.addressType) !== null && _d !== void 0 ? _d : 'Billing',
-                            "enforceFullAddress": true,
-                            // "line1": apiRequest.streetAddressLine1,
-                            // "line2": apiRequest.streetAddressLine2,
-                            "city": apiRequest.residentIn,
-                            // "postalZip": apiRequest.postalCode,
-                            "country": apiRequest.country || 'Canada',
-                            "state": apiRequest.provienceName
-                        };
-                        const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
-                    }
-                    catch (error) {
-                        console.log(error.response.data.Errors);
-                    }
-                }
-                else {
-                    fiseBill = fiseBill + 123;
-                    fusebillCustomer = {
-                        firstName: 'Admin',
-                        middleName: null,
-                        lastName: 'Ideabytes',
-                        companyName: 'Ideabytes',
-                        suffix: null,
-                        primaryEmail: null,
-                        primaryPhone: null,
-                        secondaryEmail: null,
-                        secondaryPhone: null,
-                        title: '',
-                        reference: '1844',
-                        status: 'Draft',
-                        customerAccountStatus: 'Good',
-                        currency: 'CAD',
-                        canChangeCurrency: true,
-                        customerReference: {
-                            reference1: null,
-                            reference2: null,
-                            reference3: null,
-                            salesTrackingCodes: [],
-                            id: 11673101,
-                            uri: 'https://secure.fusebill.com/v1/customers/11673101'
-                        },
-                        customerAcquisition: {
-                            adContent: null,
-                            campaign: null,
-                            keyword: null,
-                            landingPage: null,
-                            medium: null,
-                            source: null,
-                            id: 11673101,
-                            uri: 'https://secure.fusebill.com/v1/customers/11673101'
-                        },
-                        monthlyRecurringRevenue: 0,
-                        netMonthlyRecurringRevenue: 0,
-                        salesforceId: null,
-                        salesforceAccountType: null,
-                        salesforceSynchStatus: 'Enabled',
-                        netsuiteId: null,
-                        netsuiteSynchStatus: 'Enabled',
-                        netsuiteCustomerType: '',
-                        portalUserName: null,
-                        parentId: null,
-                        isParent: false,
-                        quickBooksLatchType: null,
-                        quickBooksId: null,
-                        quickBooksSyncToken: null,
-                        hubSpotId: null,
-                        hubSpotCompanyId: null,
-                        geotabId: null,
-                        digitalRiverId: null,
-                        modifiedTimestamp: '2023-02-01T11:36:16.0432031Z',
-                        createdTimestamp: '2023-02-01T11:36:15.9442038Z',
-                        requiresProjectedInvoiceGeneration: false,
-                        requiresFinancialCalendarGeneration: false,
-                        id: 11673101 + fiseBill,
-                        uri: 'https://secure.fusebill.com/v1/customers/11673101'
-                    };
-                }
-                await this.customerRepository.updateById(customer.id, { fusebillCustomerId: fusebillCustomer.id });
+                // commenting 1923 -2022 and 2024 as per discussion comment the fuse bill code for adding employee
+                // if (apiRequest.fuseBillCustomerCreation) {
+                //   const fusebillData: any = {}
+                //   fusebillData.firstName = customer.firstName;
+                //   fusebillData.lastName = customer.lastName;
+                //   // fusebillData.parent = broker.fusebillCustomerId;
+                //   fusebillData.companyName = corporate.name;
+                //   fusebillData.primaryEmail = apiRequest.emailId;
+                //   fusebillData.primaryPhone = apiRequest.phoneNum;//phone num is not mandatory
+                //   fusebillData.reference = customer.id;
+                //   //fusebillData.companyName=apiRequest.company_name;     
+                //   fusebillData.currency = apiRequest.currency || 'CAD';// || ' 
+                //   try {
+                //     fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
+                //     console.log("**************************************************")
+                //     // console.log(fusebillCustomer)
+                //     console.log("**************************************************")
+                //     let fuseBillAddressData: any = {
+                //       "customerAddressPreferenceId": fusebillCustomer.id,
+                //       "countryId": apiRequest.countryId || '1',
+                //       "stateId": apiRequest.provienceId,
+                //       //"addressType": apiRequest.addressType ?? 'Shipping',//here shipping is same as home //Billing, shipping    
+                //       "addressType": apiRequest.addressType ?? 'Billing', //here shipping is same as home //Billing, shipping  
+                //       "enforceFullAddress": true,
+                //       // "line1": apiRequest.streetAddressLine1,
+                //       // "line2": apiRequest.streetAddressLine2,
+                //       "city": apiRequest.residentIn,
+                //       // "postalZip": apiRequest.postalCode,
+                //       "country": apiRequest.country || 'Canada',
+                //       "state": apiRequest.provienceName
+                //     }
+                //     const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
+                //   } catch (error) {
+                //     console.log(error.response.data.Errors)
+                //   }
+                // }
+                // else {
+                //   fiseBill = fiseBill + 123;
+                //   fusebillCustomer = {
+                //     firstName: 'Admin',
+                //     middleName: null,
+                //     lastName: 'Ideabytes',
+                //     companyName: 'Ideabytes',
+                //     suffix: null,
+                //     primaryEmail: null,
+                //     primaryPhone: null,
+                //     secondaryEmail: null,
+                //     secondaryPhone: null,
+                //     title: '',
+                //     reference: '1844',
+                //     status: 'Draft',
+                //     customerAccountStatus: 'Good',
+                //     currency: 'CAD',
+                //     canChangeCurrency: true,
+                //     customerReference: {
+                //       reference1: null,
+                //       reference2: null,
+                //       reference3: null,
+                //       salesTrackingCodes: [],
+                //       id: 11673101,
+                //       uri: 'https://secure.fusebill.com/v1/customers/11673101'
+                //     },
+                //     customerAcquisition: {
+                //       adContent: null,
+                //       campaign: null,
+                //       keyword: null,
+                //       landingPage: null,
+                //       medium: null,
+                //       source: null,
+                //       id: 11673101,
+                //       uri: 'https://secure.fusebill.com/v1/customers/11673101'
+                //     },
+                //     monthlyRecurringRevenue: 0,
+                //     netMonthlyRecurringRevenue: 0,
+                //     salesforceId: null,
+                //     salesforceAccountType: null,
+                //     salesforceSynchStatus: 'Enabled',
+                //     netsuiteId: null,
+                //     netsuiteSynchStatus: 'Enabled',
+                //     netsuiteCustomerType: '',
+                //     portalUserName: null,
+                //     parentId: null,
+                //     isParent: false,
+                //     quickBooksLatchType: null,
+                //     quickBooksId: null,
+                //     quickBooksSyncToken: null,
+                //     hubSpotId: null,
+                //     hubSpotCompanyId: null,
+                //     geotabId: null,
+                //     digitalRiverId: null,
+                //     modifiedTimestamp: '2023-02-01T11:36:16.0432031Z',
+                //     createdTimestamp: '2023-02-01T11:36:15.9442038Z',
+                //     requiresProjectedInvoiceGeneration: false,
+                //     requiresFinancialCalendarGeneration: false,
+                //     id: 11673101 + fiseBill,
+                //     uri: 'https://secure.fusebill.com/v1/customers/11673101'
+                //   };
+                // }
+                // await this.customerRepository.updateById(customer.id, { fusebillCustomerId: fusebillCustomer.id })
                 data['customerId'] = customer.id;
-                data['fusebillCustomerId'] = fusebillCustomer.id;
+                // data['fusebillCustomerId'] = fusebillCustomer.id;
                 status = 200;
                 message = MESSAGE.CORPORATE_MSG.EMP_REGISTRATION_SUCCESS;
             }
@@ -1769,7 +1791,8 @@ let CorporateController = class CorporateController {
                         let corporateTier = await this.corporateTiersRepository.create(corporateTierObj);
                     }
                 }
-                if (apiRequest.lengthOfService.length > 0) {
+                if (apiRequest.enableLengthOfService && apiRequest.lengthOfService.length > 0) {
+                    await this.brokerRepository.updateById(corporateId, { settingsEnableLengthOfServiceTiers: 1 });
                     for (const lengthOfServiceTier of apiRequest.lengthOfService) {
                         corporateTierObj.name = lengthOfServiceTier.tierName;
                         corporateTierObj.tierType = CONST.TIER_TYPE.LOS;
@@ -1779,7 +1802,8 @@ let CorporateController = class CorporateController {
                         let corporateTier = await this.corporateTiersRepository.create(corporateTierObj);
                     }
                 }
-                if (apiRequest.annualIncome.length > 0) {
+                if (apiRequest.enableAnnualIncome && apiRequest.annualIncome.length > 0) {
+                    await this.brokerRepository.updateById(corporateId, { settingsEnableAnnualIncomeTiers: 1 });
                     for (const annualIncomeTier of apiRequest.annualIncome) {
                         corporateTierObj.name = annualIncomeTier.tierName;
                         corporateTierObj.tierType = CONST.TIER_TYPE.AI;
@@ -1803,7 +1827,8 @@ let CorporateController = class CorporateController {
             console.log(error);
         }
         this.response.status(status).send({
-         });
+            status, message, data, date: new Date()
+        });
         return this.response;
     }
     async uploadEmployeeExcel(request, response) {
@@ -1836,6 +1861,39 @@ let CorporateController = class CorporateController {
         else {
             status = 201;
             message = MESSAGE.CORPORATE_MSG.NO_CORPORATE;
+        }
+        this.response.status(status).send({
+            status, message, data, date: new Date()
+        });
+        return this.response;
+    }
+    async deleteCorporateTiers(corporateId, apiRequest) {
+        let status, message, data = {};
+        try {
+            for (const defaultTierId of apiRequest.default) {
+                let defaultTier = await this.corporateTiersRepository.findOne({ where: { and: [{ id: defaultTierId }, { tierType: CONST.TIER_TYPE.DEF }] } });
+                if (defaultTierId != null && defaultTierId != undefined) {
+                    await this.corporateTiersRepository.deleteById(defaultTier.id);
+                }
+            }
+            for (const defaultTierId of apiRequest.lengthOfService) {
+                let defaultTier = await this.corporateTiersRepository.findOne({ where: { and: [{ id: defaultTierId }, { tierType: CONST.TIER_TYPE.LOS }] } });
+                if (defaultTierId != null && defaultTierId != undefined) {
+                    await this.corporateTiersRepository.deleteById(defaultTier.id);
+                }
+            }
+            for (const defaultTierId of apiRequest.annualIncome) {
+                let defaultTier = await this.corporateTiersRepository.findOne({ where: { and: [{ id: defaultTierId }, { tierType: CONST.TIER_TYPE.AI }] } });
+                if (defaultTierId != null && defaultTierId != undefined) {
+                    await this.corporateTiersRepository.deleteById(defaultTier.id);
+                }
+            }
+            status = 200;
+            message = MESSAGE.CORPORATE_MSG.DELETE_TIERS;
+        }
+        catch (error) {
+            status = 201;
+            message = error.message;
         }
         this.response.status(status).send({
             status, message, data, date: new Date()
@@ -2063,6 +2121,10 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], CorporateController.prototype, "customerBankVerification", null);
 tslib_1.__decorate([
+    (0, authorization_1.authorize)({
+        allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR, CONST.USER_ROLE.CORPORATE_ADMINISTRATOR],
+        voters: [auth_middleware_1.basicAuthorization]
+    }),
     (0, rest_1.get)(paths_1.CORPORATE.PLANS),
     (0, rest_1.response)(200, {
         description: 'Mixed object of all the specific values needed for form configuration',
@@ -2397,6 +2459,14 @@ tslib_1.__decorate([
                             },
                             // default: [{ "tierName": "All", "walletAmount": 0 }]
                         },
+                        enableLengthOfService: {
+                            type: 'boolean',
+                            default: true
+                        },
+                        enableAnnualIncome: {
+                            type: 'boolean',
+                            default: true
+                        },
                         lengthOfService: {
                             type: 'array',
                             items: {
@@ -2472,14 +2542,46 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:paramtypes", [Number]),
     tslib_1.__metadata("design:returntype", Promise)
 ], CorporateController.prototype, "tierList", null);
+tslib_1.__decorate([
+    (0, rest_1.del)(paths_1.CORPORATE.TIER),
+    tslib_1.__param(0, rest_1.param.path.number('corporateId')),
+    tslib_1.__param(1, (0, rest_1.requestBody)({
+        description: 'corporate tiers',
+        content: {
+            'application/json': {
+                schema: {
+                    properties: {
+                        default: {
+                            type: 'array',
+                            format: 'number',
+                            default: []
+                        },
+                        lengthOfService: {
+                            type: 'array',
+                            format: 'number',
+                            default: []
+                        },
+                        annualIncome: {
+                            type: 'array',
+                            format: 'number',
+                            default: []
+                        }
+                    }
+                }
+            }
+        }
+    })),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Number, Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], CorporateController.prototype, "deleteCorporateTiers", null);
 CorporateController = tslib_1.__decorate([
-    (0, rest_1.api)({ basePath: 'admin' })
-    // @authenticate('jwt')
-    // @authorize({
-    //   allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR],
-    //   voters: [basicAuthorization]
-    // })
-    ,
+    (0, rest_1.api)({ basePath: 'admin' }),
+    (0, authentication_1.authenticate)('jwt'),
+    (0, authorization_1.authorize)({
+        allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR],
+        voters: [auth_middleware_1.basicAuthorization]
+    }),
     tslib_1.__param(0, (0, core_1.service)(services_1.HttpService)),
     tslib_1.__param(1, (0, repository_1.repository)(repositories_1.BrokerRepository)),
     tslib_1.__param(2, (0, core_1.inject)(rest_1.RestBindings.Http.RESPONSE)),

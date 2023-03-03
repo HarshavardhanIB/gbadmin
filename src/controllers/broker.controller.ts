@@ -38,12 +38,11 @@ import * as log4js from "log4js";
 //   categories: { default: { appenders: ["brokerController"], level: "error" } },
 // });
 const logger = log4js.getLogger("broker");
-let timestamp=moment().format('YYYY-MM-DD mm-hh-ss');
-// @authenticate('jwt')
-// @authorize({
-//   allowedRoles: ['BROKER', 'ADMINISTRATOR'],
-//   voters: [basicAuthorization]
-// })
+@authenticate('jwt')
+@authorize({
+  allowedRoles: ['BROKER', 'ADMINISTRATOR'],
+  voters: [basicAuthorization]
+})
 export class BrokerController {
   constructor(
     @repository(BrokerRepository)
@@ -397,7 +396,6 @@ export class BrokerController {
 
   })
   async brokerLogoUpload(
-
     @param.path.string('brokerid') broker_id: number,
     @param.query.boolean('resize') resize: boolean,
     @requestBody.file()
@@ -3155,6 +3153,7 @@ export class BrokerController {
       this.handler(request, response, err => {
         if (err) reject(err);
         else {
+          console.log("enter the registration");
           resolve(FilesController.getFilesAndFields(request, 'brokerLogoUpload', {}));
           // const upload = FilesController.getFilesAndFields(request, 'brokerLogoUpload', { brokerid: broker_id });
         }
@@ -3495,6 +3494,7 @@ export class BrokerController {
                     let url = process.env.MAINAPI + `/api/customer/broker/${brokerId}/logo`;
                     let pathImg = BROKERIMG_RESOURCES_FOLDER + "/" + filename;
                     const fetchStatus = await this.http.fetchMultipartFormdata(url, pathImg);
+                    console.log(fetchStatus)
                     await this.brokerRepository.updateById(brokerId, {
                       logo: BROKERPATH_STRING + filename,
                       link: BROKERPATH_STRING + modfilename
@@ -3512,10 +3512,11 @@ export class BrokerController {
 
               }
               else if (file.fieldname == 'disclosureAgreement') {
+                console.log("disclouseru");
                 let disClosureName = `disclosure-agreement-${apiRequest.name}.pdf`;
                 disClosureName = disClosureName.replace(/[\])}[{(]/g, '').replace(/ /g, '');
                 await this.brokerRepository.updateById(brokerId, { disclosureAgreement: DISCLOSUREPATH_STRING + disClosureName });
-                let url = process.env.MAINAPI + `/broker/${brokerId}/disclosureAgreement`;
+                let url = process.env.MAINAPI + `/api/customer/broker/${brokerId}/disclosureAgreement`;
                 let pathImg = BROKER_DISCLOSURES_FOLDER + "/" + disClosureName;
                 const fetchStatus = await this.http.fetchMultipartFormdata(url, pathImg);
                 console.log("fetchStatus >> status", fetchStatus);
@@ -3655,7 +3656,7 @@ export class BrokerController {
                 originalname = originalname.replace(/[\])}[{(]/g, '').replace(/ /g, '')
                 let filename = originalname
                 await this.signupFormsRepository.updateById(formId, { logo: BROKERPATH_STRING + filename });
-                let url = process.env.MAINAPI + `/broker/form/${formId}/logo`;
+                let url = process.env.MAINAPI + `/api/customer/broker/form/${formId}/logo`;
                 let pathImg = BROKERIMG_RESOURCES_FOLDER + "/" + filename;
                 const fetchStatus = await this.http.fetchMultipartFormdata(url, pathImg);
                 console.log("fetchStatus >> status", fetchStatus);
@@ -3771,7 +3772,7 @@ export class BrokerController {
                 let disClosureName = `disclosure-agreement-${brokerAndForm.broker.name}.pdf`;
                 disClosureName = disClosureName.replace(/[\])}[{(]/g, '').replace(/ /g, '')
                 await this.signupFormsRepository.updateById(formId, { disclosureAgreement: DISCLOSUREPATH_STRING + disClosureName });
-                let url = process.env.MAINAPI + `/broker/form/${formId}/disclosureAgreement`;
+                let url = process.env.MAINAPI + `/api/customer/broker/form/${formId}/disclosureAgreement`;
                 let pathImg = BROKER_DISCLOSURES_FOLDER + "/" + disClosureName;
                 const fetchStatus = await this.http.fetchMultipartFormdata(url, pathImg);
                 console.log("fetchStatus >> status", fetchStatus);
@@ -3891,7 +3892,7 @@ export class BrokerController {
                 let disClosureName = `disclosure-agreement-${broker.name}.pdf`;
                 disClosureName = disClosureName.replace(/[\])}[{(]/g, '').replace(/ /g, '')
                 await this.brokerRepository.updateById(brokerId, { disclosureAgreement: DISCLOSUREPATH_STRING + disClosureName });
-                let url = process.env.MAINAPI + `/broker/${brokerId}/disclosureAgreement`;
+                let url = process.env.MAINAPI + `/api/customer/broker/${brokerId}/disclosureAgreement`;
                 let pathImg = BROKER_DISCLOSURES_FOLDER + "/" + disClosureName;
                 const fetchStatus = await this.http.fetchMultipartFormdata(url, pathImg);
                 console.log("fetchStatus >> status", fetchStatus);

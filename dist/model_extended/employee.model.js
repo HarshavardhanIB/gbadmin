@@ -106,6 +106,13 @@ tslib_1.__decorate([
 ], Employee.prototype, "provienceName", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
+        type: 'number',
+        require: false
+    }),
+    tslib_1.__metadata("design:type", Number)
+], Employee.prototype, "tier", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
         type: 'boolean',
         require: true,
     }),

@@ -95,6 +95,7 @@ export class HttpService {
   }
   async fetchMultipartFormdata(url: string, path: any) {
     try {
+      console.log("fetchMultipartFormdata enter");
       const formFile = fs.createReadStream(path);
       const form = new FormData();
       form.append("file", formFile);

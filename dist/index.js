@@ -17,7 +17,7 @@ tslib_1.__exportStar(require("./repositories"), exports);
 require("dotenv/config");
 const log4js = tslib_1.__importStar(require("log4js"));
 log4js.configure({
-    appenders: { broker: { type: "file", filename: "logs.log" }, corporate: { type: "file", filename: "logs.log" } },
+    appenders: { broker: { type: "file", filename: "./logs/logs.log", maxLogSize: 10485760, backups: 3, truncate: true }, corporate: { type: "file", filename: "./logs/logs.log" } },
     categories: { default: { appenders: ["broker", "corporate"], level: "debug" } },
 });
 // let config: any = dotenv.config();

@@ -147,7 +147,7 @@ let FilesController = class FilesController {
                     let disClosureName = `disclosure-agreement-${uploadedFields.name}`;
                     disClosureName = disClosureName.replace(/[\])}[{(]/g, '').replace(/ /g, '');
                     try {
-                        fs_1.default.rename(paths_1.TEMP_UPLOADS_FOLDER + '/' + file.originalname, paths_1.BROKER_DISCLOSURES_FOLDER + '/' + disClosureName, function (res) {
+                        fs_1.default.rename(paths_1.TEMP_UPLOADS_FOLDER + '/' + file.originalname, paths_1.BROKER_DISCLOSURES_FOLDER + '/' + disClosureName + '.pdf', function (res) {
                             console.log(res);
                         });
                     }
@@ -383,7 +383,7 @@ let FilesController = class FilesController {
                 let disClosureName = `disclosure-agreement-${originalname}`;
                 disClosureName.replace(' ', '_');
                 try {
-                    fs_1.default.rename(paths_1.TEMP_UPLOADS_FOLDER + '/' + file.originalname, paths_1.BROKER_DISCLOSURES_FOLDER + '/' + disClosureName, function (res) {
+                    fs_1.default.rename(paths_1.TEMP_UPLOADS_FOLDER + '/' + file.originalname, paths_1.BROKER_DISCLOSURES_FOLDER + '/' + disClosureName + ".pdf", function (res) {
                     });
                 }
                 catch (error) {

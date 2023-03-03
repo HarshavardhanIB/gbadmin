@@ -2,7 +2,7 @@
 // import {inject} from '@loopback/core';
 import { DefaultConfigurationResolver, inject, service } from '@loopback/core';
 import { repository } from '@loopback/repository';
-import { api, get, getModelSchemaRef, param, post, Request, requestBody, response, Response, RestBindings } from '@loopback/rest';
+import { api, del, get, getModelSchemaRef, param, post, Request, requestBody, response, Response, RestBindings } from '@loopback/rest';
 import { request } from 'http';
 import { nextTick } from 'process';
 import { Broker, BrokerAdmins, ContactInformation, CorporatePaidTieredPlanLevels, CorporateTieredPlanLevels, CorporateTiers, Customer, CustomerContactInfo, InsurancePlans, SignupForms, SignupFormsPlanLevelMapping, Users } from '../models';
@@ -34,13 +34,13 @@ let fuseBillCustomerCreation = true;
 let fiseBill = 11;
 import * as log4js from "log4js";
 const logger = log4js.getLogger("corporate");
-let timestamp=moment().format('YYYY-MM-DD mm-hh-ss');
+let timestamp = moment().format('YYYY-MM-DD mm-hh-ss');
 @api({ basePath: 'admin' })
-// @authenticate('jwt')
-// @authorize({
-//   allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR],
-//   voters: [basicAuthorization]
-// })
+@authenticate('jwt')
+@authorize({
+  allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR],
+  voters: [basicAuthorization]
+})
 export class CorporateController {
   constructor(
     @service(HttpService) public http: HttpService,
@@ -261,6 +261,7 @@ export class CorporateController {
     });
     p.then(async value => {
       if (!value.fields) {
+        logger.error("signup ^ " + MESSAGE.ERRORS.missingDetails)
         this.response.status(422).send({
           status: '422',
           error: `Missing input fields`,
@@ -380,6 +381,8 @@ export class CorporateController {
             let broker: any = await this.brokerRepository.create(brokerObj);
             brokerId = broker.id;
             data1['corporateId'] = broker.id;
+            data1['setupWallet']=apiRequest.setupWallet;
+            data1['setupTiers']=apiRequest.setupTiers
             // data.push({ "broker": broker });
             console.log(apiRequest.gropupAdmin);
 
@@ -503,7 +506,7 @@ export class CorporateController {
               };
             }
             await this.customerRepository.updateById(customerId, { fusebillCustomerId: fusebillCustomer.id })
-            await this.brokerRepository.updateById(brokerId,{fusebillCorporateCustomerId:fusebillCustomer.id})
+            await this.brokerRepository.updateById(brokerId, { fusebillCorporateCustomerId: fusebillCustomer.id })
             //activationg fuse bill customer id
             // bank details and void check service 
             // data.push(customer);
@@ -1127,10 +1130,10 @@ export class CorporateController {
     });
     return this.response;
   }
-  // @authorize({
-  //   allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR, CONST.USER_ROLE.CORPORATE_ADMINISTRATOR],
-  //   voters: [basicAuthorization]
-  // })
+  @authorize({
+    allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR, CONST.USER_ROLE.CORPORATE_ADMINISTRATOR],
+    voters: [basicAuthorization]
+  })
   @get(CORPORATE.PLANS)
   @response(200, {
     description: 'Mixed object of all the specific values needed for form configuration',
@@ -1514,6 +1517,8 @@ export class CorporateController {
             let broker: any = await this.brokerRepository.create(brokerObj);
             brokerId = broker.id;
             data1['corporateId'] = broker.id;
+            data1['setupWallet']=apiRequest.setupWallet;
+            data1['setupTiers']=apiRequest.setupTiers
             // data.push({ "broker": broker });
             console.log(apiRequest.gropupAdmin);
 
@@ -1640,7 +1645,7 @@ export class CorporateController {
               };
             }
             await this.customerRepository.updateById(customerId, { fusebillCustomerId: fusebillCustomer.id })
-            await this.brokerRepository.updateById(brokerId,{fusebillCorporateCustomerId:fusebillCustomer.id})
+            await this.brokerRepository.updateById(brokerId, { fusebillCorporateCustomerId: fusebillCustomer.id })
             //activationg fuse bill customer id
             // bank details and void check service 
             // data.push(customer);
@@ -1876,6 +1881,20 @@ export class CorporateController {
       let corporate: any = await this.brokerRepository.findById(corporateId, { include: [{ relation: 'customers' }] });
       console.log(corporate)
       if (corporate) {
+        if (corporate.settingsEnableTieredHealthBenefits == 1 && (apiRequest.tier==undefined||apiRequest.tier==0)) {
+          message=MESSAGE.CORPORATE_MSG.TIER_ERROR
+          this.response.status(201).send({
+            status,message, data, dete: new Date()
+          })
+          return this.response;         
+        }
+        if(corporate.settingsEnableTieredHealthBenefits == 1 && (apiRequest.walletLimit==undefined||apiRequest.walletLimit==0)){
+          message=MESSAGE.CORPORATE_MSG.TIER_ERROR
+          this.response.status(201).send({
+            status,message, data, dete: new Date()
+          })
+          return this.response;   
+        }
         let employeeUserObj: Users = new Users();
         employeeUserObj.username = apiRequest.emailId;
         employeeUserObj.role = CONST.USER_ROLE.CUSTOMER;
@@ -1897,8 +1916,11 @@ export class CorporateController {
         customerObj.registrationDate = moment().format('YYYY-MM-DD');
         customerObj.userId = employeeUser.id;
         customerObj.employeeId = apiRequest.employeeId;
-        let actualTier=await this.corporateService.getActualTiers(corporateId,apiRequest.walletLimit,apiRequest.dateOfHire)
-        actualTier!=0?customerObj.actualTier:actualTier=0;
+        if (corporate.settingsEnableTieredHealthBenefits == 1) {
+          customerObj.assignerTier = apiRequest.tier;
+        }
+        let actualTier = await this.corporateService.getActualTiers(corporateId, apiRequest.walletLimit, apiRequest.dateOfHire)
+        actualTier != 0 ? customerObj.actualTier : actualTier = 0;
         let customer: any = await this.customerRepository.create(customerObj);
         let customerContactInfoObj: ContactInformation = new ContactInformation();
         customerContactInfoObj.apt = apiRequest.apt ?? '';
@@ -1919,108 +1941,109 @@ export class CorporateController {
         let customerContactInfo = await this.customerContactInfoRepository.create(customerContact);
         // customerId = customer.id;
         var fusebillCustomer: any = {};
-        if (apiRequest.fuseBillCustomerCreation) {
-          const fusebillData: any = {}
-          fusebillData.firstName = customer.firstName;
-          fusebillData.lastName = customer.lastName;
-          // fusebillData.parent = broker.fusebillCustomerId;
-          fusebillData.companyName = corporate.name;
-          fusebillData.primaryEmail = apiRequest.emailId;
-          fusebillData.primaryPhone = apiRequest.phoneNum;//phone num is not mandatory
-          fusebillData.reference = customer.id;
-          //fusebillData.companyName=apiRequest.company_name;     
-          fusebillData.currency = apiRequest.currency || 'CAD';// || ' 
-          try {
+        // commenting 1923 -2022 and 2024 as per discussion comment the fuse bill code for adding employee
+        // if (apiRequest.fuseBillCustomerCreation) {
+        //   const fusebillData: any = {}
+        //   fusebillData.firstName = customer.firstName;
+        //   fusebillData.lastName = customer.lastName;
+        //   // fusebillData.parent = broker.fusebillCustomerId;
+        //   fusebillData.companyName = corporate.name;
+        //   fusebillData.primaryEmail = apiRequest.emailId;
+        //   fusebillData.primaryPhone = apiRequest.phoneNum;//phone num is not mandatory
+        //   fusebillData.reference = customer.id;
+        //   //fusebillData.companyName=apiRequest.company_name;     
+        //   fusebillData.currency = apiRequest.currency || 'CAD';// || ' 
+        //   try {
 
-            fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
-            console.log("**************************************************")
-            // console.log(fusebillCustomer)
-            console.log("**************************************************")
-            let fuseBillAddressData: any = {
-              "customerAddressPreferenceId": fusebillCustomer.id,
-              "countryId": apiRequest.countryId || '1',
-              "stateId": apiRequest.provienceId,
-              //"addressType": apiRequest.addressType ?? 'Shipping',//here shipping is same as home //Billing, shipping    
-              "addressType": apiRequest.addressType ?? 'Billing', //here shipping is same as home //Billing, shipping  
-              "enforceFullAddress": true,
-              // "line1": apiRequest.streetAddressLine1,
-              // "line2": apiRequest.streetAddressLine2,
-              "city": apiRequest.residentIn,
-              // "postalZip": apiRequest.postalCode,
-              "country": apiRequest.country || 'Canada',
-              "state": apiRequest.provienceName
-            }
-            const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
+        //     fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
+        //     console.log("**************************************************")
+        //     // console.log(fusebillCustomer)
+        //     console.log("**************************************************")
+        //     let fuseBillAddressData: any = {
+        //       "customerAddressPreferenceId": fusebillCustomer.id,
+        //       "countryId": apiRequest.countryId || '1',
+        //       "stateId": apiRequest.provienceId,
+        //       //"addressType": apiRequest.addressType ?? 'Shipping',//here shipping is same as home //Billing, shipping    
+        //       "addressType": apiRequest.addressType ?? 'Billing', //here shipping is same as home //Billing, shipping  
+        //       "enforceFullAddress": true,
+        //       // "line1": apiRequest.streetAddressLine1,
+        //       // "line2": apiRequest.streetAddressLine2,
+        //       "city": apiRequest.residentIn,
+        //       // "postalZip": apiRequest.postalCode,
+        //       "country": apiRequest.country || 'Canada',
+        //       "state": apiRequest.provienceName
+        //     }
+        //     const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
 
-          } catch (error) {
-            console.log(error.response.data.Errors)
-          }
-        }
-        else {
-          fiseBill = fiseBill + 123;
-          fusebillCustomer = {
-            firstName: 'Admin',
-            middleName: null,
-            lastName: 'Ideabytes',
-            companyName: 'Ideabytes',
-            suffix: null,
-            primaryEmail: null,
-            primaryPhone: null,
-            secondaryEmail: null,
-            secondaryPhone: null,
-            title: '',
-            reference: '1844',
-            status: 'Draft',
-            customerAccountStatus: 'Good',
-            currency: 'CAD',
-            canChangeCurrency: true,
-            customerReference: {
-              reference1: null,
-              reference2: null,
-              reference3: null,
-              salesTrackingCodes: [],
-              id: 11673101,
-              uri: 'https://secure.fusebill.com/v1/customers/11673101'
-            },
-            customerAcquisition: {
-              adContent: null,
-              campaign: null,
-              keyword: null,
-              landingPage: null,
-              medium: null,
-              source: null,
-              id: 11673101,
-              uri: 'https://secure.fusebill.com/v1/customers/11673101'
-            },
-            monthlyRecurringRevenue: 0,
-            netMonthlyRecurringRevenue: 0,
-            salesforceId: null,
-            salesforceAccountType: null,
-            salesforceSynchStatus: 'Enabled',
-            netsuiteId: null,
-            netsuiteSynchStatus: 'Enabled',
-            netsuiteCustomerType: '',
-            portalUserName: null,
-            parentId: null,
-            isParent: false,
-            quickBooksLatchType: null,
-            quickBooksId: null,
-            quickBooksSyncToken: null,
-            hubSpotId: null,
-            hubSpotCompanyId: null,
-            geotabId: null,
-            digitalRiverId: null,
-            modifiedTimestamp: '2023-02-01T11:36:16.0432031Z',
-            createdTimestamp: '2023-02-01T11:36:15.9442038Z',
-            requiresProjectedInvoiceGeneration: false,
-            requiresFinancialCalendarGeneration: false,
-            id: 11673101 + fiseBill,
-            uri: 'https://secure.fusebill.com/v1/customers/11673101'
-          };
-        }
-        await this.customerRepository.updateById(customer.id, { fusebillCustomerId: fusebillCustomer.id })
+        //   } catch (error) {
+        //     console.log(error.response.data.Errors)
+        //   }
+        // }
+        // else {
+        //   fiseBill = fiseBill + 123;
+        //   fusebillCustomer = {
+        //     firstName: 'Admin',
+        //     middleName: null,
+        //     lastName: 'Ideabytes',
+        //     companyName: 'Ideabytes',
+        //     suffix: null,
+        //     primaryEmail: null,
+        //     primaryPhone: null,
+        //     secondaryEmail: null,
+        //     secondaryPhone: null,
+        //     title: '',
+        //     reference: '1844',
+        //     status: 'Draft',
+        //     customerAccountStatus: 'Good',
+        //     currency: 'CAD',
+        //     canChangeCurrency: true,
+        //     customerReference: {
+        //       reference1: null,
+        //       reference2: null,
+        //       reference3: null,
+        //       salesTrackingCodes: [],
+        //       id: 11673101,
+        //       uri: 'https://secure.fusebill.com/v1/customers/11673101'
+        //     },
+        //     customerAcquisition: {
+        //       adContent: null,
+        //       campaign: null,
+        //       keyword: null,
+        //       landingPage: null,
+        //       medium: null,
+        //       source: null,
+        //       id: 11673101,
+        //       uri: 'https://secure.fusebill.com/v1/customers/11673101'
+        //     },
+        //     monthlyRecurringRevenue: 0,
+        //     netMonthlyRecurringRevenue: 0,
+        //     salesforceId: null,
+        //     salesforceAccountType: null,
+        //     salesforceSynchStatus: 'Enabled',
+        //     netsuiteId: null,
+        //     netsuiteSynchStatus: 'Enabled',
+        //     netsuiteCustomerType: '',
+        //     portalUserName: null,
+        //     parentId: null,
+        //     isParent: false,
+        //     quickBooksLatchType: null,
+        //     quickBooksId: null,
+        //     quickBooksSyncToken: null,
+        //     hubSpotId: null,
+        //     hubSpotCompanyId: null,
+        //     geotabId: null,
+        //     digitalRiverId: null,
+        //     modifiedTimestamp: '2023-02-01T11:36:16.0432031Z',
+        //     createdTimestamp: '2023-02-01T11:36:15.9442038Z',
+        //     requiresProjectedInvoiceGeneration: false,
+        //     requiresFinancialCalendarGeneration: false,
+        //     id: 11673101 + fiseBill,
+        //     uri: 'https://secure.fusebill.com/v1/customers/11673101'
+        //   };
+        // }
+        // await this.customerRepository.updateById(customer.id, { fusebillCustomerId: fusebillCustomer.id })
         data['customerId'] = customer.id;
-        data['fusebillCustomerId'] = fusebillCustomer.id;
+        // data['fusebillCustomerId'] = fusebillCustomer.id;
         status = 200;
         message = MESSAGE.CORPORATE_MSG.EMP_REGISTRATION_SUCCESS
       }
@@ -2300,10 +2323,10 @@ export class CorporateController {
     try {
       let corporate: any = await this.brokerRepository.findById(corporateId);
       if (corporate) {
-        let settingHealthSpendingAccount=""
-        apiRequest.walletType=="BOTH"?settingHealthSpendingAccount=apiRequest.walletType:apiRequest.walletType==CONST.walletType[0]?settingHealthSpendingAccount=="HEALTH":apiRequest.walletType==CONST.walletType[1]?settingHealthSpendingAccount=="WELLNESS":settingHealthSpendingAccount=="BOTH";
+        let settingHealthSpendingAccount = ""
+        apiRequest.walletType == "BOTH" ? settingHealthSpendingAccount = apiRequest.walletType : apiRequest.walletType == CONST.walletType[0] ? settingHealthSpendingAccount == "HEALTH" : apiRequest.walletType == CONST.walletType[1] ? settingHealthSpendingAccount == "WELLNESS" : settingHealthSpendingAccount == "BOTH";
         await this.brokerRepository.updateById(corporateId, {
-          settingsHealthSpendingAccount:settingHealthSpendingAccount,
+          settingsHealthSpendingAccount: settingHealthSpendingAccount,
           settingsGroupBenefitzWalletType: apiRequest.walletType,
           settingsHealthSpendingAllotment: apiRequest.walletAllotment,
           settingsRolloverEmployeeLimitNextYear: apiRequest.roolOverLimitToTheNextYear,
@@ -2345,6 +2368,14 @@ export class CorporateController {
               },
               // default: [{ "tierName": "All", "walletAmount": 0 }]
             },
+            enableLengthOfService: {
+              type: 'boolean',
+              default: true
+            },
+            enableAnnualIncome: {
+              type: 'boolean',
+              default: true
+            },
             lengthOfService: {
               type: 'array',
               items: {
@@ -2384,7 +2415,8 @@ export class CorporateController {
             let corporateTier = await this.corporateTiersRepository.create(corporateTierObj);
           }
         }
-        if (apiRequest.lengthOfService.length > 0) {
+        if (apiRequest.enableLengthOfService && apiRequest.lengthOfService.length > 0) {
+          await this.brokerRepository.updateById(corporateId, { settingsEnableLengthOfServiceTiers: 1 })
           for (const lengthOfServiceTier of apiRequest.lengthOfService) {
             corporateTierObj.name = lengthOfServiceTier.tierName;
             corporateTierObj.tierType = CONST.TIER_TYPE.LOS;
@@ -2394,7 +2426,8 @@ export class CorporateController {
             let corporateTier = await this.corporateTiersRepository.create(corporateTierObj);
           }
         }
-        if (apiRequest.annualIncome.length > 0) {
+        if (apiRequest.enableAnnualIncome && apiRequest.annualIncome.length > 0) {
+          await this.brokerRepository.updateById(corporateId, { settingsEnableAnnualIncomeTiers: 1 })
           for (const annualIncomeTier of apiRequest.annualIncome) {
             corporateTierObj.name = annualIncomeTier.tierName;
             corporateTierObj.tierType = CONST.TIER_TYPE.AI;
@@ -2488,6 +2521,65 @@ export class CorporateController {
       status = 201;
       message = MESSAGE.CORPORATE_MSG.NO_CORPORATE
     }
+    this.response.status(status).send({
+      status, message, data, date: new Date()
+    })
+    return this.response;
+  }
+  @del(CORPORATE.TIER)
+  async deleteCorporateTiers(@param.path.number('corporateId') corporateId: number, @requestBody({
+    description: 'corporate tiers',
+    content: {
+      'application/json': {
+        schema: {
+          properties: {
+            default: {
+              type: 'array',
+              format: 'number',
+              default: []
+            },
+            lengthOfService: {
+              type: 'array',
+              format: 'number',
+              default: []
+            },
+            annualIncome: {
+              type: 'array',
+              format: 'number',
+              default: []
+            }
+          }
+        }
+      }
+    }
+  }) apiRequest: any): Promise<any> {
+    let status, message, data: any = {};
+    try {
+      for (const defaultTierId of apiRequest.default) {
+        let defaultTier: any = await this.corporateTiersRepository.findOne({ where: { and: [{ id: defaultTierId }, { tierType: CONST.TIER_TYPE.DEF }] } })
+        if (defaultTierId != null && defaultTierId != undefined) {
+          await this.corporateTiersRepository.deleteById(defaultTier.id)
+        }
+      }
+      for (const defaultTierId of apiRequest.lengthOfService) {
+        let defaultTier: any = await this.corporateTiersRepository.findOne({ where: { and: [{ id: defaultTierId }, { tierType: CONST.TIER_TYPE.LOS }] } })
+        if (defaultTierId != null && defaultTierId != undefined) {
+          await this.corporateTiersRepository.deleteById(defaultTier.id)
+        }
+      }
+      for (const defaultTierId of apiRequest.annualIncome) {
+        let defaultTier: any = await this.corporateTiersRepository.findOne({ where: { and: [{ id: defaultTierId }, { tierType: CONST.TIER_TYPE.AI }] } })
+        if (defaultTierId != null && defaultTierId != undefined) {
+          await this.corporateTiersRepository.deleteById(defaultTier.id)
+        }
+      }
+      status = 200;
+      message = MESSAGE.CORPORATE_MSG.DELETE_TIERS
+    } catch (error) {
+      status = 201;
+      message = error.message;
+    }
+
     this.response.status(status).send({
       status, message, data, date: new Date()
     })

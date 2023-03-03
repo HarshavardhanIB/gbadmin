@@ -13,6 +13,7 @@ export declare class Employee extends Entity {
     walletLimit: number;
     provienceId: number;
     provienceName: string;
+    tier: number;
     fuseBillCustomerCreation: boolean;
     [prop: string]: any;
     constructor(data?: Partial<Employee>);

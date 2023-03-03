@@ -35,6 +35,9 @@ export declare const CORPORATE_MSG: {
     WALLET_CONFIG_SUCCESS: string;
     OK: string;
     TIER_LIST: string;
+    DELETE_TIERS: string;
+    TIER_ERROR: string;
+    ANNUAL_ERROR: string;
 };
 export declare const BROKER_MSG: {
     BROKERCOUNT: string;

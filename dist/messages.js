@@ -33,7 +33,7 @@ exports.EMAIL_EXISTS = {
 };
 //corporate messages
 exports.CORPORATE_MSG = {
-    REGISTRATION_SUCCESS: 'Corporate registratered successfully ',
+    REGISTRATION_SUCCESS: 'Corporate registered successfully ',
     REGISTRATION_FAIL: 'Corporate registration failed',
     LOGO_NOT_SET: 'logo is not set',
     LOGO: 'logo',
@@ -45,7 +45,10 @@ exports.CORPORATE_MSG = {
     TIER_CONFIG_SUCCESS: 'Tiers config set successfull',
     WALLET_CONFIG_SUCCESS: 'Wallet config set successfull',
     OK: 'Ok',
-    TIER_LIST: 'List configured list'
+    TIER_LIST: 'List configured list',
+    DELETE_TIERS: 'Tiers deleted successfull',
+    TIER_ERROR: 'Please send tier id',
+    ANNUAL_ERROR: 'Please send annual income'
 };
 exports.BROKER_MSG = {
     BROKERCOUNT: "The brokers count",
