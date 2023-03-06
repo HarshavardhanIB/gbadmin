@@ -68,6 +68,7 @@ export const CORPORATE={
     BANK_DETAILS_REGISTER:'/bankDetails/register',
     BANK_VERIFY:'/bank/verify',
     PLANS:'/corporate/validation',
+    CUSTOMER_PLANS:'/corporate/{corporateId}/plans',
     CUSTOMER_VALIDATION:'/corporate/customer/validation',
     EMPLOYEE:'/corporate/{corporateId}/employee',
     PLAN_SELECTION:'/corporate/{corporateId}/planSelections',

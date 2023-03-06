@@ -28,6 +28,7 @@ export declare const CORPORATE_MSG: {
     LOGO: string;
     NOLOGO: string;
     PLANS: string;
+    NO_PLANS: string;
     NO_CORPORATE: string;
     EMP_REGISTRATION_SUCCESS: string;
     GROUP_ADMIN_DETAILS: string;
@@ -38,6 +39,7 @@ export declare const CORPORATE_MSG: {
     DELETE_TIERS: string;
     TIER_ERROR: string;
     ANNUAL_ERROR: string;
+    NO_TIER: string;
 };
 export declare const BROKER_MSG: {
     BROKERCOUNT: string;

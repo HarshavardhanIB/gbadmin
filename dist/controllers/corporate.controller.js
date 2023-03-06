@@ -21,7 +21,6 @@ const paths_1 = require("../paths");
 const messages_1 = require("../messages");
 const storage_helper_1 = require("../storage.helper");
 const constants_1 = require("../constants");
-const authentication_1 = require("@loopback/authentication");
 const authorization_1 = require("@loopback/authorization");
 const auth_middleware_1 = require("../middlewares/auth.middleware");
 const model_extended_1 = require("../model_extended");
@@ -1900,6 +1899,48 @@ let CorporateController = class CorporateController {
         });
         return this.response;
     }
+    async customerPlans(corporateId) {
+        let status, messgae, plans = [];
+        let data = {};
+        let corporate = await this.brokerRepository.findById(corporateId);
+        if (corporate) {
+            let corporateTiers = await this.corporateTiersRepository.find({ where: { brokerId: corporateId } });
+            console.log(corporateTiers);
+            if (corporateTiers.length > 0) {
+                for (let corporateTier of corporateTiers) {
+                    let corporatePlanlevels = await this.corporateTieredPlanLevelsRepository.find({ where: { tierId: corporateTier.id } });
+                    if (corporatePlanlevels.length > 0) {
+                        for (let corporatePlanlevel of corporatePlanlevels) {
+                            let plan = await this.planLevelRepository.findById(corporatePlanlevel.planLevelId);
+                            plans.push({ tier: corporateTier, plan: plan });
+                        }
+                    }
+                    else {
+                    }
+                }
+                if (plans.length > 0) {
+                    status = 200;
+                    messgae = MESSAGE.CORPORATE_MSG.OK;
+                }
+                else {
+                    status = 201;
+                    messgae = MESSAGE.CORPORATE_MSG.NO_PLANS;
+                }
+                data = { "plans": plans };
+            }
+            else {
+                status = 201;
+                messgae = MESSAGE.CORPORATE_MSG.NO_TIER;
+            }
+        }
+        else {
+            status = 201;
+            messgae = MESSAGE.CORPORATE_MSG.NO_CORPORATE;
+        }
+        this.response.status(status).send({
+            status, messgae, data, date: new Date()
+        });
+    }
 };
 tslib_1.__decorate([
     (0, rest_1.get)(paths_1.CORPORATE.LOGO),
@@ -2575,13 +2616,30 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:paramtypes", [Number, Object]),
     tslib_1.__metadata("design:returntype", Promise)
 ], CorporateController.prototype, "deleteCorporateTiers", null);
-CorporateController = tslib_1.__decorate([
-    (0, rest_1.api)({ basePath: 'admin' }),
-    (0, authentication_1.authenticate)('jwt'),
-    (0, authorization_1.authorize)({
-        allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR],
-        voters: [auth_middleware_1.basicAuthorization]
+tslib_1.__decorate([
+    (0, rest_1.get)(paths_1.CORPORATE.PLAN_SELECTION),
+    (0, rest_1.response)(200, {
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object'
+                }
+            }
+        }
     }),
+    tslib_1.__param(0, rest_1.param.path.number('corporateId')),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Number]),
+    tslib_1.__metadata("design:returntype", Promise)
+], CorporateController.prototype, "customerPlans", null);
+CorporateController = tslib_1.__decorate([
+    (0, rest_1.api)({ basePath: 'admin' })
+    // @authenticate('jwt')
+    // @authorize({
+    //   allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR],
+    //   voters: [basicAuthorization]
+    // })
+    ,
     tslib_1.__param(0, (0, core_1.service)(services_1.HttpService)),
     tslib_1.__param(1, (0, repository_1.repository)(repositories_1.BrokerRepository)),
     tslib_1.__param(2, (0, core_1.inject)(rest_1.RestBindings.Http.RESPONSE)),

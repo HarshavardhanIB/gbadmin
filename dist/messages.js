@@ -39,6 +39,7 @@ exports.CORPORATE_MSG = {
     LOGO: 'logo',
     NOLOGO: 'No logo found',
     PLANS: 'Plans selections are successfully',
+    NO_PLANS: "No plans",
     NO_CORPORATE: 'No details found for this corporate',
     EMP_REGISTRATION_SUCCESS: 'Employee registration successfully',
     GROUP_ADMIN_DETAILS: 'Please atlease one company administrator details',
@@ -48,7 +49,8 @@ exports.CORPORATE_MSG = {
     TIER_LIST: 'List configured list',
     DELETE_TIERS: 'Tiers deleted successfull',
     TIER_ERROR: 'Please send tier id',
-    ANNUAL_ERROR: 'Please send annual income'
+    ANNUAL_ERROR: 'Please send annual income',
+    NO_TIER: 'No tiers'
 };
 exports.BROKER_MSG = {
     BROKERCOUNT: "The brokers count",
