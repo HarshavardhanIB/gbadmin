@@ -1,6 +1,9 @@
 #CHANGE LOG
 1.0.0.0 - RELEASE(v...)
 -----------------------------------------------------------------
+0.6.5
+added get plans service in corporate controller
+
 0.6.4
 added delete tier service in corporate controller
 

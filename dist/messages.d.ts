@@ -40,6 +40,7 @@ export declare const CORPORATE_MSG: {
     TIER_ERROR: string;
     ANNUAL_ERROR: string;
     NO_TIER: string;
+    PLANS_DELETE: string;
 };
 export declare const BROKER_MSG: {
     BROKERCOUNT: string;

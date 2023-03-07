@@ -50,7 +50,8 @@ exports.CORPORATE_MSG = {
     DELETE_TIERS: 'Tiers deleted successfull',
     TIER_ERROR: 'Please send tier id',
     ANNUAL_ERROR: 'Please send annual income',
-    NO_TIER: 'No tiers'
+    NO_TIER: 'No tiers',
+    PLANS_DELETE: 'Plans deleted successfull'
 };
 exports.BROKER_MSG = {
     BROKERCOUNT: "The brokers count",

@@ -77,11 +77,11 @@ export class Employee extends Entity {
         require:false
     })
     tier:number;
-    @property({
-        type:'boolean',
-        require:true,
-    })
-    fuseBillCustomerCreation:boolean
+    // @property({
+    //     type:'boolean',
+    //     require:true,
+    // })
+    // fuseBillCustomerCreation:boolean
     // Define well-known properties here
 
     // Indexer property to allow additional data

@@ -4,7 +4,6 @@ import { BankCodesRepository, BrokerRepository, ContactInformationRepository, Co
 import { AchService, Corporate, Excel2Service, ExcelService, FusebillService, HttpService, RegistrationServiceService } from '../services';
 import { FileUploadHandler } from "../types";
 import { BrokerAdminsRepository } from '../repositories/broker-admins.repository';
-import { Employee } from '../model_extended';
 import { CorporateTieredPlanLevelsRepository } from '../repositories/corporate-tiered-plan-levels.repository';
 export declare class CorporateController {
     http: HttpService;
@@ -44,12 +43,14 @@ export declare class CorporateController {
     validatePlans(): Promise<any>;
     checkAndGenerateNewFormLink(formLink: string, userid: number): Promise<string>;
     customerValidation(request: Request, response: Response): Promise<any>;
-    employeeSignup(corporateId: number, apiRequest: Employee): Promise<any>;
+    employeeSignup(corporateId: number, apiRequest: any): Promise<any>;
     planSelctions(corporateId: number, apiRequest: any): Promise<Response>;
     configureWallet(corporateId: number, apiRequest: any): Promise<any>;
     corporateTiers(corporateId: number, apiRequest: any): Promise<any>;
-    uploadEmployeeExcel(request: any, response: Response): Promise<void>;
+    uploadEmployeeExcel(corporateId: number, request: any, response: Response): Promise<void>;
     tierList(corporateId: number): Promise<Response>;
     deleteCorporateTiers(corporateId: number, apiRequest: any): Promise<any>;
     customerPlans(corporateId: number): Promise<void>;
+    updatePlanSelctions(corporateId: number, apiRequest: any): Promise<Response>;
+    deletePlan(corporateId: number, apiRequest: any): Promise<Response<any, Record<string, any>>>;
 }

@@ -12,7 +12,8 @@ let Excel2Service = class Excel2Service {
     async excelToJson(filepath) {
         let workbook = xlsx.readFile(filepath);
         let worksheet = workbook.Sheets[workbook.SheetNames[0]];
-        let jsonData = xlsx.utils.sheet_to_json(worksheet, { defval: '' });
+        let jsonSheetData = xlsx.utils.sheet_to_json(worksheet, { defval: '' });
+        let jsonData = JSON.stringify(jsonSheetData);
         console.log(jsonData);
         return jsonData;
     }

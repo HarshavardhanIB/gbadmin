@@ -164,7 +164,7 @@ enrollmentDate: "2022-10-01"
   async addEmployee(data: any, corporateId: number) {
     try {
       let corporate: any = await this.BrokerRepository.findById(corporateId);
-      if (corporate) {
+      if (corporate) { 
         let employeeUserObj: Users = new Users();
         employeeUserObj.username = data.emailId;
         employeeUserObj.role = CONST.USER_ROLE.CUSTOMER;
@@ -199,108 +199,6 @@ enrollmentDate: "2022-10-01"
         customerContact.customerId = customer.id;
         customerContact.contactId = customerContact.id;
         let customerContactInfo = await this.CustomerContactInfoRepository.create(customerContact);
-        // customerId = customer.id;
-        var fusebillCustomer: any = {};
-        if (fuseBillCustomerCreation) {
-          const fusebillData: any = {}
-          fusebillData.firstName = customer.firstName;
-          fusebillData.lastName = customer.lastName;
-          // fusebillData.parent = broker.fusebillCustomerId;
-          fusebillData.companyName = corporate.name;
-          fusebillData.primaryEmail = data.emailId;
-          fusebillData.primaryPhone = data.phoneNum;//phone num is not mandatory
-          fusebillData.reference = customer.id;
-          //fusebillData.companyName=apiRequest.company_name;     
-          fusebillData.currency = data.currency || 'CAD';// || ' 
-          try {
-
-            fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
-            console.log("**************************************************")
-            // console.log(fusebillCustomer)
-            console.log("**************************************************")
-            let fuseBillAddressData: any = {
-              "customerAddressPreferenceId": fusebillCustomer.id,
-              "countryId": data.countryId || '1',
-              "stateId": data.provienceId,
-              //"addressType": apiRequest.addressType ?? 'Shipping',//here shipping is same as home //Billing, shipping    
-              "addressType": data.addressType ?? 'Billing', //here shipping is same as home //Billing, shipping  
-              "enforceFullAddress": true,
-              // "line1": data.streetAddressLine1,
-              // "line2": data.streetAddressLine2,
-              "city": data.residentIn,
-              // "postalZip": data.postalCode,
-              "country": data.country || 'Canada',
-              "state": data.provinceName
-            }
-            const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
-
-          } catch (error) {
-            console.log(error.response.data.Errors)
-          }
-        }
-        else {
-          fiseBill = fiseBill + 123;
-          fusebillCustomer = {
-            firstName: 'Admin',
-            middleName: null,
-            lastName: 'Ideabytes',
-            companyName: 'Ideabytes',
-            suffix: null,
-            primaryEmail: null,
-            primaryPhone: null,
-            secondaryEmail: null,
-            secondaryPhone: null,
-            title: '',
-            reference: '1844',
-            status: 'Draft',
-            customerAccountStatus: 'Good',
-            currency: 'CAD',
-            canChangeCurrency: true,
-            customerReference: {
-              reference1: null,
-              reference2: null,
-              reference3: null,
-              salesTrackingCodes: [],
-              id: 11673101,
-              uri: 'https://secure.fusebill.com/v1/customers/11673101'
-            },
-            customerAcquisition: {
-              adContent: null,
-              campaign: null,
-              keyword: null,
-              landingPage: null,
-              medium: null,
-              source: null,
-              id: 11673101,
-              uri: 'https://secure.fusebill.com/v1/customers/11673101'
-            },
-            monthlyRecurringRevenue: 0,
-            netMonthlyRecurringRevenue: 0,
-            salesforceId: null,
-            salesforceAccountType: null,
-            salesforceSynchStatus: 'Enabled',
-            netsuiteId: null,
-            netsuiteSynchStatus: 'Enabled',
-            netsuiteCustomerType: '',
-            portalUserName: null,
-            parentId: null,
-            isParent: false,
-            quickBooksLatchType: null,
-            quickBooksId: null,
-            quickBooksSyncToken: null,
-            hubSpotId: null,
-            hubSpotCompanyId: null,
-            geotabId: null,
-            digitalRiverId: null,
-            modifiedTimestamp: '2023-02-01T11:36:16.0432031Z',
-            createdTimestamp: '2023-02-01T11:36:15.9442038Z',
-            requiresProjectedInvoiceGeneration: false,
-            requiresFinancialCalendarGeneration: false,
-            id: 11673101 + fiseBill,
-            uri: 'https://secure.fusebill.com/v1/customers/11673101'
-          };
-        }
-        await this.CustomerRepository.updateById(customerContactInfo.id, { fusebillCustomerId: fusebillCustomer.id })
         return true;
       }
       else {

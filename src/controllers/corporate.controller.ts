@@ -2,7 +2,7 @@
 // import {inject} from '@loopback/core';
 import { DefaultConfigurationResolver, inject, service } from '@loopback/core';
 import { repository } from '@loopback/repository';
-import { api, del, get, getModelSchemaRef, param, post, Request, requestBody, response, Response, RestBindings } from '@loopback/rest';
+import { api, del, get, getModelSchemaRef, param, post, put, Request, requestBody, response, Response, RestBindings } from '@loopback/rest';
 import { request } from 'http';
 import { nextTick } from 'process';
 import { Broker, BrokerAdmins, ContactInformation, CorporatePaidTieredPlanLevels, CorporateTieredPlanLevels, CorporateTiers, Customer, CustomerContactInfo, InsurancePlans, SignupForms, SignupFormsPlanLevelMapping, Users } from '../models';
@@ -36,11 +36,11 @@ import * as log4js from "log4js";
 const logger = log4js.getLogger("corporate");
 let timestamp = moment().format('YYYY-MM-DD mm-hh-ss');
 @api({ basePath: 'admin' })
-// @authenticate('jwt')
-// @authorize({
-//   allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR],
-//   voters: [basicAuthorization]
-// })
+@authenticate('jwt')
+@authorize({
+  allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR],
+  voters: [basicAuthorization]
+})
 export class CorporateController {
   constructor(
     @service(HttpService) public http: HttpService,
@@ -1869,11 +1869,15 @@ export class CorporateController {
       {
         content: {
           'application/json': {
-            schema: getModelSchemaRef(Employee),
+            schema: 
+            {
+              type:'array',
+              items:getModelSchemaRef(Employee)      
+            },
           }
         }
       }
-    ) apiRequest: Employee
+    ) apiRequest: any
   ): Promise<any> {
     let status, message, data: any = {};
     try {
@@ -1895,155 +1899,54 @@ export class CorporateController {
           })
           return this.response;
         }
-        let employeeUserObj: Users = new Users();
-        employeeUserObj.username = apiRequest.emailId;
-        employeeUserObj.role = CONST.USER_ROLE.CUSTOMER;
-        let randomPswrd = await generateRandomPassword();
-        employeeUserObj.password = await encryptPassword(randomPswrd);
-        employeeUserObj.block = true;
-        employeeUserObj.activation = await getActivationCode();
-        employeeUserObj.registrationDate = moment().format('YYYY-MM-DD');
-        employeeUserObj.companyId = corporateId;
-        let employeeUser: any = await this.usersRepository.create(employeeUserObj);
-        let customerObj: Customer = new Customer();
-        customerObj.brokerId = corporateId;
-        customerObj.parentId = corporate.customers[0].id;
-        customerObj.firstName = apiRequest.firstName;
-        customerObj.lastName = apiRequest.lastName;
-        customerObj.gender = apiRequest.sex;
-        customerObj.companyName = corporate.name;
-        customerObj.isCorporateAccount = true;
-        customerObj.registrationDate = moment().format('YYYY-MM-DD');
-        customerObj.userId = employeeUser.id;
-        customerObj.employeeId = apiRequest.employeeId;
-        if (corporate.settingsEnableTieredHealthBenefits == 1) {
-          customerObj.assignerTier = apiRequest.tier;
-        }
-        let actualTier = await this.corporateService.getActualTiers(corporateId, apiRequest.walletLimit, apiRequest.dateOfHire)
-        actualTier != 0 ? customerObj.actualTier : actualTier = 0;
-        let customer: any = await this.customerRepository.create(customerObj);
-        let customerContactInfoObj: ContactInformation = new ContactInformation();
-        customerContactInfoObj.apt = apiRequest.apt ?? '';
-        customerContactInfoObj.line1 = apiRequest.line1 ?? '';
-        customerContactInfoObj.line2 = apiRequest.line2 ?? '';
-        customerContactInfoObj.city = apiRequest.residentIn;
-        customerContactInfoObj.primaryEmail = apiRequest.emailId;
-        customerContactInfoObj.country = CONST.DEFAULT_COUNTRY.name;
-        customerContactInfoObj.contactType = CONST.USER_ROLE.CUSTOMER;
-        customerContactInfoObj.addressType = CONST.ADDRESS_TYPE.HOME_ADDRESS;
-        customerContactInfoObj.primaryPhone = apiRequest.phoneNum.toString();
-        customerContactInfoObj.state = apiRequest.provienceName;
-        console.log(customerContactInfoObj);
-        let contcatInfo: any = await this.contactInformationRepository.create(customerContactInfoObj);
-        let customerContact: CustomerContactInfo = new CustomerContactInfo();
-        customerContact.customerId = customer.id;
-        customerContact.contactId = customerContact.id;
-        let customerContactInfo = await this.customerContactInfoRepository.create(customerContact);
-        // customerId = customer.id;
-        var fusebillCustomer: any = {};
-        // commenting 1923 -2022 and 2024 as per discussion comment the fuse bill code for adding employee
-        // if (apiRequest.fuseBillCustomerCreation) {
-        //   const fusebillData: any = {}
-        //   fusebillData.firstName = customer.firstName;
-        //   fusebillData.lastName = customer.lastName;
-        //   // fusebillData.parent = broker.fusebillCustomerId;
-        //   fusebillData.companyName = corporate.name;
-        //   fusebillData.primaryEmail = apiRequest.emailId;
-        //   fusebillData.primaryPhone = apiRequest.phoneNum;//phone num is not mandatory
-        //   fusebillData.reference = customer.id;
-        //   //fusebillData.companyName=apiRequest.company_name;     
-        //   fusebillData.currency = apiRequest.currency || 'CAD';// || ' 
-        //   try {
-
-        //     fusebillCustomer = await this.fusebill.createCustomer(fusebillData);
-        //     console.log("**************************************************")
-        //     // console.log(fusebillCustomer)
-        //     console.log("**************************************************")
-        //     let fuseBillAddressData: any = {
-        //       "customerAddressPreferenceId": fusebillCustomer.id,
-        //       "countryId": apiRequest.countryId || '1',
-        //       "stateId": apiRequest.provienceId,
-        //       //"addressType": apiRequest.addressType ?? 'Shipping',//here shipping is same as home //Billing, shipping    
-        //       "addressType": apiRequest.addressType ?? 'Billing', //here shipping is same as home //Billing, shipping  
-        //       "enforceFullAddress": true,
-        //       // "line1": apiRequest.streetAddressLine1,
-        //       // "line2": apiRequest.streetAddressLine2,
-        //       "city": apiRequest.residentIn,
-        //       // "postalZip": apiRequest.postalCode,
-        //       "country": apiRequest.country || 'Canada',
-        //       "state": apiRequest.provienceName
-        //     }
-        //     const fbCustomerAddress = await this.fusebill.createCustomerAddress(fuseBillAddressData);
-
-        //   } catch (error) {
-        //     console.log(error.response.data.Errors)
-        //   }
-        // }
-        // else {
-        //   fiseBill = fiseBill + 123;
-        //   fusebillCustomer = {
-        //     firstName: 'Admin',
-        //     middleName: null,
-        //     lastName: 'Ideabytes',
-        //     companyName: 'Ideabytes',
-        //     suffix: null,
-        //     primaryEmail: null,
-        //     primaryPhone: null,
-        //     secondaryEmail: null,
-        //     secondaryPhone: null,
-        //     title: '',
-        //     reference: '1844',
-        //     status: 'Draft',
-        //     customerAccountStatus: 'Good',
-        //     currency: 'CAD',
-        //     canChangeCurrency: true,
-        //     customerReference: {
-        //       reference1: null,
-        //       reference2: null,
-        //       reference3: null,
-        //       salesTrackingCodes: [],
-        //       id: 11673101,
-        //       uri: 'https://secure.fusebill.com/v1/customers/11673101'
-        //     },
-        //     customerAcquisition: {
-        //       adContent: null,
-        //       campaign: null,
-        //       keyword: null,
-        //       landingPage: null,
-        //       medium: null,
-        //       source: null,
-        //       id: 11673101,
-        //       uri: 'https://secure.fusebill.com/v1/customers/11673101'
-        //     },
-        //     monthlyRecurringRevenue: 0,
-        //     netMonthlyRecurringRevenue: 0,
-        //     salesforceId: null,
-        //     salesforceAccountType: null,
-        //     salesforceSynchStatus: 'Enabled',
-        //     netsuiteId: null,
-        //     netsuiteSynchStatus: 'Enabled',
-        //     netsuiteCustomerType: '',
-        //     portalUserName: null,
-        //     parentId: null,
-        //     isParent: false,
-        //     quickBooksLatchType: null,
-        //     quickBooksId: null,
-        //     quickBooksSyncToken: null,
-        //     hubSpotId: null,
-        //     hubSpotCompanyId: null,
-        //     geotabId: null,
-        //     digitalRiverId: null,
-        //     modifiedTimestamp: '2023-02-01T11:36:16.0432031Z',
-        //     createdTimestamp: '2023-02-01T11:36:15.9442038Z',
-        //     requiresProjectedInvoiceGeneration: false,
-        //     requiresFinancialCalendarGeneration: false,
-        //     id: 11673101 + fiseBill,
-        //     uri: 'https://secure.fusebill.com/v1/customers/11673101'
-        //   };
-        // }
-        // await this.customerRepository.updateById(customer.id, { fusebillCustomerId: fusebillCustomer.id })
-        data['customerId'] = customer.id;
-        // data['fusebillCustomerId'] = fusebillCustomer.id;
+        for(let employeeObj of apiRequest){
+          let employeeUserObj: Users = new Users();
+          employeeUserObj.username = employeeObj.emailId;
+          employeeUserObj.role = CONST.USER_ROLE.CUSTOMER;
+          let randomPswrd = await generateRandomPassword();
+          employeeUserObj.password = await encryptPassword(randomPswrd);
+          employeeUserObj.block = true;
+          employeeUserObj.activation = await getActivationCode();
+          employeeUserObj.registrationDate = moment().format('YYYY-MM-DD');
+          employeeUserObj.companyId = corporateId;
+          let employeeUser: any = await this.usersRepository.create(employeeUserObj);
+          let customerObj: Customer = new Customer();
+          customerObj.brokerId = corporateId;
+          customerObj.parentId = corporate.customers[0].id;
+          customerObj.firstName = employeeObj.firstName;
+          customerObj.lastName = employeeObj.lastName;
+          customerObj.gender = employeeObj.sex;
+          customerObj.companyName = corporate.name;
+          customerObj.isCorporateAccount = true;
+          customerObj.registrationDate = moment().format('YYYY-MM-DD');
+          customerObj.userId = employeeUser.id;
+          customerObj.employeeId = employeeObj.employeeId;
+          if (corporate.settingsEnableTieredHealthBenefits == 1) {
+            customerObj.assignerTier = employeeObj.tier;
+          }
+          let actualTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire)
+          actualTier != 0 ? customerObj.actualTier : actualTier = 0;
+          customerObj.assignerTier=employeeObj.tier;
+          let customer: any = await this.customerRepository.create(customerObj);
+          let customerContactInfoObj: ContactInformation = new ContactInformation();
+          customerContactInfoObj.apt = employeeObj.apt ?? '';
+          customerContactInfoObj.line1 = employeeObj.line1 ?? '';
+          customerContactInfoObj.line2 = employeeObj.line2 ?? '';
+          customerContactInfoObj.city = employeeObj.residentIn;
+          customerContactInfoObj.primaryEmail = employeeObj.emailId;
+          customerContactInfoObj.country = CONST.DEFAULT_COUNTRY.name;
+          customerContactInfoObj.contactType = CONST.USER_ROLE.CUSTOMER;
+          customerContactInfoObj.addressType = CONST.ADDRESS_TYPE.HOME_ADDRESS;
+          customerContactInfoObj.primaryPhone = employeeObj.phoneNum.toString();
+          customerContactInfoObj.state = employeeObj.provienceName;
+          console.log(customerContactInfoObj);
+          let contcatInfo: any = await this.contactInformationRepository.create(customerContactInfoObj);
+          let customerContact: CustomerContactInfo = new CustomerContactInfo();
+          customerContact.customerId = customer.id;
+          customerContact.contactId = customerContact.id;
+          let customerContactInfo = await this.customerContactInfoRepository.create(customerContact);
+          // data['customerId'] = customer.id;
+        }       
         status = 200;
         message = MESSAGE.CORPORATE_MSG.EMP_REGISTRATION_SUCCESS
       }
@@ -2465,7 +2368,7 @@ export class CorporateController {
       }
     }
   })
-  async uploadEmployeeExcel(@requestBody({
+  async uploadEmployeeExcel(@param.path.number('corporateId')corporateId:number,@requestBody({
     description: 'excel file',
     content: {
       'multipart/form-data': {
@@ -2493,6 +2396,10 @@ export class CorporateController {
     });
     p.then(async value => {
       let excelDatainJson = await this.excel2Service.excelToJson(value.files[0].filepath);
+      for (const employeeData of excelDatainJson){
+        let addExployee=await this.corporateService.addEmployee(employeeData,corporateId);      
+      }
+
       // let addingEmployee=await this.corporateService.
       //  console.log(excelDatainJson);
     })
@@ -2602,10 +2509,10 @@ export class CorporateController {
     if (corporate) {
       let corporateTiers = await this.corporateTiersRepository.find({ where: { brokerId: corporateId } });
       console.log(corporateTiers)
-      if (corporateTiers.length >0) {
+      if (corporateTiers.length > 0) {
         for (let corporateTier of corporateTiers) {
           let corporatePlanlevels = await this.corporateTieredPlanLevelsRepository.find({ where: { tierId: corporateTier.id } });
-          if (corporatePlanlevels.length >0) {
+          if (corporatePlanlevels.length > 0) {
             for (let corporatePlanlevel of corporatePlanlevels) {
               let plan = await this.planLevelRepository.findById(corporatePlanlevel.planLevelId);
               plans.push({ tier: corporateTier, plan: plan });
@@ -2614,15 +2521,15 @@ export class CorporateController {
           else {
           }
         }
-        if(plans.length >0){
-          status=200;
-          messgae=MESSAGE.CORPORATE_MSG.OK;
+        if (plans.length > 0) {
+          status = 200;
+          messgae = MESSAGE.CORPORATE_MSG.OK;
         }
-        else{
-          status=201;
-          messgae=MESSAGE.CORPORATE_MSG.NO_PLANS
+        else {
+          status = 201;
+          messgae = MESSAGE.CORPORATE_MSG.NO_PLANS
         }
-        data = { "plans": plans };        
+        data = { "plans": plans };
       }
       else {
         status = 201;
@@ -2637,4 +2544,245 @@ export class CorporateController {
       status, messgae, data, date: new Date()
     })
   }
-}     
+  @put(CORPORATE.PLAN_SELECTION)
+  @response(200, {
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object'
+        }
+      }
+    }
+  })
+  async updatePlanSelctions(@param.path.number('corporateId') corporateId: number, @requestBody({
+    description: 'selected plans',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object',
+          properties: {
+            //block1
+            plansPaidByTheCompant: {
+              type: 'array',
+              required: ['planLevelId'],
+              items: {
+                properties: {
+                  planLevelId: {
+                    type: 'number'
+                  },
+                  tierId: {
+                    type: 'number',
+                    default: 0
+                  }
+                }
+              },
+
+            },
+            //block 2
+            upgradedPlans: {
+              type: 'array',
+              required: ['planLevelId'],
+              items: {
+                properties: {
+                  planLevelId: {
+                    type: 'number',
+                  },
+                  tierId: {
+                    type: 'number',
+                  }
+                }
+              },
+
+            },
+            //block 3
+            employeePurchasePlans: {
+              type: 'array',
+              required: ['planLevelId'],
+              items: {
+                properties: {
+                  planLevelId: {
+                    type: 'number'
+                  },
+                  tierId: {
+                    type: 'number',
+                  }
+                }
+              },
+
+            },
+          }
+        }
+      }
+    },
+
+  }) apiRequest: any): Promise<Response> {
+    let status, message, data: any = {};
+    let corporateDefaultTier: any;
+    try {
+      let corporate=await this.brokerRepository.findById(corporateId);
+      if(corporate){  
+        let tiers=await this.corporateTiersRepository.find({where:{brokerId:corporateId}});
+        if(tiers.length>0){
+          for(let tier of tiers){
+            await this.corporateTieredPlanLevelsRepository.deleteAll({tierId:tier.id});
+          }
+          let corporateTiredPlanLevel: CorporateTieredPlanLevels = new CorporateTieredPlanLevels();
+          corporateTiredPlanLevel.spendingLimit = CONST.SPENDING_LIMIT;
+          corporateTiredPlanLevel.coveredPercentage = 0;
+          //block 1
+          for (const planPaidByTheCompant of apiRequest.plansPaidByTheCompant) {
+            corporateTiredPlanLevel.tierId = planPaidByTheCompant.tierId;
+            corporateTiredPlanLevel.paidByCompany = 1;
+            corporateTiredPlanLevel.coveredByCompany = 0;
+            corporateTiredPlanLevel.paidByEmployee = 0;
+            corporateTiredPlanLevel.planLevelId = planPaidByTheCompant.planLevelId;
+            await this.corporateTieredPlanLevelsRepository.create(corporateTiredPlanLevel);
+          }
+          if (apiRequest.enableUpgradedPlans && apiRequest.upgradedPlans.length > 0) {
+            //block 2
+            for (const enableUpgradedPlan of apiRequest.enableUpgradedPlans) {
+              corporateTiredPlanLevel.tierId = enableUpgradedPlan.tierId;
+              corporateTiredPlanLevel.paidByCompany = 0;
+              corporateTiredPlanLevel.coveredByCompany = 1;
+              corporateTiredPlanLevel.paidByEmployee = 0;
+              corporateTiredPlanLevel.planLevelId = enableUpgradedPlan.planLevelId;
+              await this.corporateTieredPlanLevelsRepository.create(corporateTiredPlanLevel);
+            }
+          }
+          if (apiRequest.enableEmployeePurchasePlans && apiRequest.employeePurchasePlans.length > 0) {
+            //block 3
+            for (const employeePurchasePlan of apiRequest.employeePurchasePlans) {
+              corporateTiredPlanLevel.tierId =employeePurchasePlan.tierId;
+              corporateTiredPlanLevel.paidByCompany = 0;
+              corporateTiredPlanLevel.coveredByCompany = 0;
+              corporateTiredPlanLevel.paidByEmployee = 1;
+              corporateTiredPlanLevel.planLevelId = employeePurchasePlan.planLevelId;
+              await this.corporateTieredPlanLevelsRepository.create(corporateTiredPlanLevel);
+            }
+          }
+          
+        }
+      }
+      else{
+        status=201;
+        message=MESSAGE.CORPORATE_MSG.NO_CORPORATE
+      }      
+    } catch (error) {
+      await this.corporateTiersRepository.deleteById(corporateDefaultTier.id);
+      console.log(error)
+      status = 201;
+      message = MESSAGE.ERRORS.someThingwentWrong
+    }
+    this.response.status(409).send({
+      status,
+      message,
+      data,
+      date: new Date(),
+    });
+    return this.response;
+  }
+  @del(CORPORATE.PLAN_SELECTION)
+  @response(200, {
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object'
+        }
+      }
+    }
+  })
+  async deletePlan(@param.path.number('corporateId') corporateId: number, @requestBody({
+    description: 'selected plans',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object',
+          properties: {
+            plansPaidByTheCompant: {
+              type: 'array',
+              required: ['planLevelId'],
+              items: {
+                properties: {
+                  planLevelId: {
+                    type: 'number'
+                  },
+                  tierId: {
+                    type: 'number',
+                    default: 0
+                  }
+                }
+              },
+
+            },
+            //block 2
+            upgradedPlans: {
+              type: 'array',
+              required: ['planLevelId'],
+              items: {
+                properties: {
+                  planLevelId: {
+                    type: 'number',
+                  },
+                  tierId: {
+                    type: 'number',
+                  }
+                }
+              },
+
+            },
+            //block 3
+            employeePurchasePlans: {
+              type: 'array',
+              required: ['planLevelId'],
+              items: {
+                properties: {
+                  planLevelId: {
+                    type: 'number'
+                  },
+                  tierId: {
+                    type: 'number',
+                  }
+                }
+              },
+
+            },
+          }
+        }
+      }
+    },
+
+  }) apiRequest: any) {
+    let status, message;
+    let corporate = await this.brokerRepository.findById(corporateId);
+    if (corporate) {
+      let plans=await this.corporateTieredPlanLevelsRepository.find();
+      console.log(plans);
+      if(apiRequest.plansPaidByTheCompant.length >0){
+        for(let paidByCompanyPlan of apiRequest.plansPaidByTheCompant){
+          await this.corporateTieredPlanLevelsRepository.deleteAll({and:[{paidByCompany:1},{planLevelId:paidByCompanyPlan.planLevelId},{tierId:paidByCompanyPlan.tierId}]})
+        }
+       
+      }
+      if(apiRequest.upgradedPlans.length >0){
+        for(let upgradedPlan of apiRequest.upgradedPlans){
+          await this.corporateTieredPlanLevelsRepository.deleteAll({and:[{coveredByCompany:1},{planLevelId:upgradedPlan.planLevelId},{tierId:upgradedPlan.tierId}]})
+        }
+      }
+      if(apiRequest.employeePurchasePlans.length >0){
+        for(let employeePurchasePlan of apiRequest.employeePurchasePlans){
+          await this.corporateTieredPlanLevelsRepository.deleteAll({and:[{paidByEmployee:1},{planLevelId:employeePurchasePlan.planLevelId},{tierId:employeePurchasePlan.tierId}]})
+        }
+      }
+      status = 200;
+      message=MESSAGE.CORPORATE_MSG.PLANS_DELETE;
+    }
+    else {
+      status = 201;
+      message = MESSAGE.CORPORATE_MSG.NO_CORPORATE;
+    }
+    this.response.status(status).send({
+      status, message
+    })
+    return this.response;
+  }
+}

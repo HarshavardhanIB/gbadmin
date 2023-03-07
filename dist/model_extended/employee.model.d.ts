@@ -14,7 +14,6 @@ export declare class Employee extends Entity {
     provienceId: number;
     provienceName: string;
     tier: number;
-    fuseBillCustomerCreation: boolean;
     [prop: string]: any;
     constructor(data?: Partial<Employee>);
 }

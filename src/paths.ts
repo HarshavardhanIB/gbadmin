@@ -74,7 +74,7 @@ export const CORPORATE={
     PLAN_SELECTION:'/corporate/{corporateId}/planSelections',
     CONFIGURE_WALLET:'/corporate/{corporateId}/configureWallet',
     TIER:'/corporate/{corporateId}/configureTiers',
-    EXCEL:'/corporate/uploadEmployees',
+    EXCEL:'/corporate/{corporateId}/uploadEmployees',
     
 }
 // broker paths

@@ -111,13 +111,6 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", Number)
 ], Employee.prototype, "tier", void 0);
-tslib_1.__decorate([
-    (0, repository_1.property)({
-        type: 'boolean',
-        require: true,
-    }),
-    tslib_1.__metadata("design:type", Boolean)
-], Employee.prototype, "fuseBillCustomerCreation", void 0);
 Employee = tslib_1.__decorate([
     (0, repository_1.model)({ settings: { idInjection: false } }),
     tslib_1.__metadata("design:paramtypes", [Object])
