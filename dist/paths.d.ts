@@ -47,6 +47,7 @@ export declare const CORPORATE: {
     CONFIGURE_WALLET: string;
     TIER: string;
     EXCEL: string;
+    PLAN_LEVELS: string;
 };
 export declare const BROKER: {
     COUNT: string;

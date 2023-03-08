@@ -34,5 +34,5 @@ export declare class Corporate {
     customerBankDetailsRegister(session: any, filenamets: any, ext: any, mimetype: any, customerName: any, fusebillCustomerId: any): Promise<any>;
     addEmployee(data: any, corporateId: number): Promise<boolean>;
     getEnrollmentPlanDates(): Promise<string[]>;
-    getActualTiers(corporateId: number, wallerLimit: number, dateofHire: any): Promise<number | undefined>;
+    getActualTiers(corporateId: number, wallerLimit: number, dateofHire: any, type: any): Promise<any>;
 }

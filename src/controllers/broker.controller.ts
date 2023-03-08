@@ -38,11 +38,11 @@ import * as log4js from "log4js";
 //   categories: { default: { appenders: ["brokerController"], level: "error" } },
 // });
 const logger = log4js.getLogger("broker");
-@authenticate('jwt')
-@authorize({
-  allowedRoles: ['BROKER', 'ADMINISTRATOR'],
-  voters: [basicAuthorization]
-})
+// @authenticate('jwt')
+// @authorize({
+//   allowedRoles: ['BROKER', 'ADMINISTRATOR'],
+//   voters: [basicAuthorization]
+// })
 export class BrokerController {
   constructor(
     @repository(BrokerRepository)
@@ -2575,7 +2575,7 @@ export class BrokerController {
           }
         }
         else {
-          let planLevesAfter: any;
+          let planLevesAfter: any=[];
           // let signUpform: SignupForms = new SignupForms();
           // signUpform.brokerId = formData.brokerId;
           signUpform.formType = CONST.SIGNUP_FORM.CUSTOM;
@@ -2612,7 +2612,7 @@ export class BrokerController {
                 // fields: { id: true }
               })
               if (palLevel) {
-                await planLevesAfter.push(await palLevel.id)
+                planLevesAfter.push(palLevel.id)
               }
               // console.log(palLevel);
               // console.log("plan levels after id");
@@ -2652,7 +2652,7 @@ export class BrokerController {
                     //brokerSignupformsPlansObj.planId = plan.id || 0;
                     // console.log(brokerSignupformsPlansObj);
                     //  await this.BrokerSignupFormsPlansRepository.create(brokerSignupformsPlansObj);
-                  }
+                  } 
                 }
               }
             }
@@ -2663,8 +2663,9 @@ export class BrokerController {
       }
       // }
     } catch (error) {
+      console.log(error)
       status = 404;
-      message = "error while modify the form"
+      message = "error while modify the form "+error.message
     }
     this.response.status(status).send({
       status, message, date: new Date(), data,

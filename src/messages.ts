@@ -52,7 +52,9 @@ export const CORPORATE_MSG={
   TIER_ERROR:'Please send tier id',
   ANNUAL_ERROR:'Please send annual income',
   NO_TIER:'No tiers',
-  PLANS_DELETE:'Plans deleted successfull'
+  PLANS_DELETE:'Plans deleted successfull',
+  NO_DETAILS:'No details found',
+  NO_CUSTOMER_DETAILS:'No custonmer details found'
 }
 export const BROKER_MSG={
 BROKERCOUNT:"The brokers count",

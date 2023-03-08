@@ -41,6 +41,8 @@ export declare const CORPORATE_MSG: {
     ANNUAL_ERROR: string;
     NO_TIER: string;
     PLANS_DELETE: string;
+    NO_DETAILS: string;
+    NO_CUSTOMER_DETAILS: string;
 };
 export declare const BROKER_MSG: {
     BROKERCOUNT: string;

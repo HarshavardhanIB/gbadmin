@@ -241,39 +241,101 @@ enrollmentDate: "2022-10-01"
     return dates;
 
   }
-  async getActualTiers(corporateId: number, wallerLimit: number, dateofHire:any) {
+  async getActualTiers(corporateId: number, wallerLimit: number, dateofHire:any,type:any) {
     let data: any = {};
     let hiredate = moments(dateofHire);
-        const today = moment();
-        const diffInYears = today.diff(hiredate, 'years');
+    const today = moment();
+    const diffInYears = today.diff(hiredate, 'years');
     let corporateAnnualIncomeTiers = await this.corporateTiersRepository.find({ order: ['annualIncome ASC'], where: { and: [{ brokerId: corporateId }, { tierType: CONST.TIER_TYPE.AI }] } });
     let corporatelengthOfServiceTiers: any = await this.corporateTiersRepository.find({ where: { and: [{ brokerId: corporateId }, { tierType: CONST.TIER_TYPE.LOS },{toLength:{lt:diffInYears}},{fromLength:{gte:diffInYears}}] } });
-    if (corporateAnnualIncomeTiers.length > 0) {
-      if (corporateAnnualIncomeTiers.length > 1) {
-        for (const corporateAnnualIncomeTier of corporateAnnualIncomeTiers) {
-          if (wallerLimit > 0 && wallerLimit <= corporateAnnualIncomeTier.annualIncome) {
-            return corporateAnnualIncomeTier.id;
-          }
-          else {
-            for (let j = 1; j < corporateAnnualIncomeTiers.length; j++) {
-              if (wallerLimit > corporateAnnualIncomeTier.annualIncome && wallerLimit <= corporateAnnualIncomeTiers[j].annualIncome) {
-                return corporateAnnualIncomeTiers[j].id;
+    if(type=="wallet"){
+      if (corporateAnnualIncomeTiers.length > 0) {
+        if (corporateAnnualIncomeTiers.length > 1) {
+          for (const corporateAnnualIncomeTier of corporateAnnualIncomeTiers) {
+            if (wallerLimit > 0 && wallerLimit <= corporateAnnualIncomeTier.annualIncome) {
+              return corporateAnnualIncomeTier.id;
+            }
+            else {
+              for (let j = 1; j < corporateAnnualIncomeTiers.length; j++) {
+                if (wallerLimit > corporateAnnualIncomeTier.annualIncome && wallerLimit <= corporateAnnualIncomeTiers[j].annualIncome) {
+                  return corporateAnnualIncomeTiers[j].id;
+                }
               }
             }
           }
+        } else {
+          if (wallerLimit < corporateAnnualIncomeTiers[0].annualIncome) {
+            return corporateAnnualIncomeTiers[0].id;
+          }
         }
-      } else {
-        if (wallerLimit < corporateAnnualIncomeTiers[0].annualIncome) {
+      }
+      else{
+        if(corporateAnnualIncomeTiers.length>0){
+          console.log(corporateAnnualIncomeTiers);
           return corporateAnnualIncomeTiers[0].id;
         }
       }
     }
-    else{
-      if(corporateAnnualIncomeTiers.length>0){
+    else if (type=="tier"){
+     if(corporatelengthOfServiceTiers.length>0){
         console.log(corporateAnnualIncomeTiers);
-        return corporateAnnualIncomeTiers[0].id;
+        return corporatelengthOfServiceTiers[0].id;
+      }
+    }   
+    else{
+      if (corporateAnnualIncomeTiers.length > 0) {
+        if (corporateAnnualIncomeTiers.length > 1) {
+          for (const corporateAnnualIncomeTier of corporateAnnualIncomeTiers) {
+            if (wallerLimit > 0 && wallerLimit <= corporateAnnualIncomeTier.annualIncome) {
+              return corporateAnnualIncomeTier.id;
+            }
+            else {
+              for (let j = 1; j < corporateAnnualIncomeTiers.length; j++) {
+                if (wallerLimit > corporateAnnualIncomeTier.annualIncome && wallerLimit <= corporateAnnualIncomeTiers[j].annualIncome) {
+                  return corporateAnnualIncomeTiers[j].id;
+                }
+              }
+            }
+          }
+        } else {
+          if (wallerLimit < corporateAnnualIncomeTiers[0].annualIncome) {
+            return corporateAnnualIncomeTiers[0].id;
+          }
+        }
+      }
+      else{
+        if(corporatelengthOfServiceTiers.length>0){
+          console.log(corporatelengthOfServiceTiers);
+          return corporatelengthOfServiceTiers[0].id;
+        }
       }
     }
+    // if (corporateAnnualIncomeTiers.length > 0) {
+    //   if (corporateAnnualIncomeTiers.length > 1) {
+    //     for (const corporateAnnualIncomeTier of corporateAnnualIncomeTiers) {
+    //       if (wallerLimit > 0 && wallerLimit <= corporateAnnualIncomeTier.annualIncome) {
+    //         return corporateAnnualIncomeTier.id;
+    //       }
+    //       else {
+    //         for (let j = 1; j < corporateAnnualIncomeTiers.length; j++) {
+    //           if (wallerLimit > corporateAnnualIncomeTier.annualIncome && wallerLimit <= corporateAnnualIncomeTiers[j].annualIncome) {
+    //             return corporateAnnualIncomeTiers[j].id;
+    //           }
+    //         }
+    //       }
+    //     }
+    //   } else {
+    //     if (wallerLimit < corporateAnnualIncomeTiers[0].annualIncome) {
+    //       return corporateAnnualIncomeTiers[0].id;
+    //     }
+    //   }
+    // }
+    // else{
+    //   if(corporateAnnualIncomeTiers.length>0){
+    //     console.log(corporateAnnualIncomeTiers);
+    //     return corporateAnnualIncomeTiers[0].id;
+    //   }
+    // }
     // else if (corporatelengthOfServiceTiers.length > 0) {
     //   for (const corporatelengthOfServiceTier of corporatelengthOfServiceTiers) {
     //     let hiredate = moments(dateofHire.toString());

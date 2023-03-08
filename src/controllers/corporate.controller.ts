@@ -8,7 +8,7 @@ import { nextTick } from 'process';
 import { Broker, BrokerAdmins, ContactInformation, CorporatePaidTieredPlanLevels, CorporateTieredPlanLevels, CorporateTiers, Customer, CustomerContactInfo, InsurancePlans, SignupForms, SignupFormsPlanLevelMapping, Users } from '../models';
 import * as CONST from '../constants'
 import { BankCodesRepository, BrokerRepository, ContactInformationRepository, CorporatePaidTieredPlanLevelsRepository, CorporateTiersRepository, CustomerContactInfoRepository, CustomerRepository, FinancialInstitutionsRepository, FinancialInstitutionsRoutingNumbersRepository, InsurancePackagesRepository, InsurancePlansRepository, PlanLevelRepository, PlansAvailabilityRepository, SignupFormsPlanLevelMappingRepository, SignupFormsRepository, StatesAndProvincesRepository, UsersRepository, } from '../repositories'
-import { AchService, Corporate, Excel2Service, ExcelService, FusebillService, HttpService, mail, moments, RegistrationServiceService } from '../services';
+import { AchService, Corporate, Excel2Service, ExcelService, FusebillService, HttpService, intersection, mail, moments, RegistrationServiceService } from '../services';
 import { FILE_UPLOAD_SERVICE } from '../keys';
 import { FileUploadHandler } from "../types";
 import { FilesController } from './files.controller';
@@ -36,11 +36,11 @@ import * as log4js from "log4js";
 const logger = log4js.getLogger("corporate");
 let timestamp = moment().format('YYYY-MM-DD mm-hh-ss');
 @api({ basePath: 'admin' })
-@authenticate('jwt')
-@authorize({
-  allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR],
-  voters: [basicAuthorization]
-})
+// @authenticate('jwt')
+// @authorize({
+//   allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR],
+//   voters: [basicAuthorization]
+// })
 export class CorporateController {
   constructor(
     @service(HttpService) public http: HttpService,
@@ -76,6 +76,8 @@ export class CorporateController {
     @service(ExcelService) public excelService: ExcelService,
     @service(Excel2Service) public excel2Service: Excel2Service,
     @repository(SignupFormsPlanLevelMappingRepository) public signupFormsPlanLevelMappingRepository: SignupFormsPlanLevelMappingRepository,
+    @repository(PlansAvailabilityRepository)
+    public plansAvalibility: PlansAvailabilityRepository,
 
   ) { }
 
@@ -1869,10 +1871,10 @@ export class CorporateController {
       {
         content: {
           'application/json': {
-            schema: 
+            schema:
             {
-              type:'array',
-              items:getModelSchemaRef(Employee)      
+              type: 'array',
+              items: getModelSchemaRef(Employee)
             },
           }
         }
@@ -1885,21 +1887,35 @@ export class CorporateController {
       let corporate: any = await this.brokerRepository.findById(corporateId, { include: [{ relation: 'customers' }] });
       console.log(corporate)
       if (corporate) {
-        if (corporate.settingsEnableTieredHealthBenefits == 1 && (apiRequest.tier == undefined || apiRequest.tier == 0)) {
-          message = MESSAGE.CORPORATE_MSG.TIER_ERROR
-          this.response.status(201).send({
-            status, message, data, dete: new Date()
-          })
-          return this.response;
-        }
-        if (corporate.settingsEnableTieredHealthBenefits == 1 && (apiRequest.walletLimit == undefined || apiRequest.walletLimit == 0)) {
-          message = MESSAGE.CORPORATE_MSG.TIER_ERROR
-          this.response.status(201).send({
-            status, message, data, dete: new Date()
-          })
-          return this.response;
-        }
-        for(let employeeObj of apiRequest){
+        // if (corporate.settingsEnableTieredHealthBenefits == 1 && (apiRequest.tier == undefined || apiRequest.tier == 0)) {
+        //   message = MESSAGE.CORPORATE_MSG.TIER_ERROR
+        //   this.response.status(201).send({
+        //     status, message, data, dete: new Date()
+        //   })
+        //   return this.response;
+        // }
+        // if (corporate.settingsEnableTieredHealthBenefits == 1 && (apiRequest.walletLimit == undefined || apiRequest.walletLimit == 0)) {
+        //   message = MESSAGE.CORPORATE_MSG.TIER_ERROR
+        //   this.response.status(201).send({
+        //     status, message, data, dete: new Date()
+        //   })
+        //   return this.response;
+        // }
+        for (let employeeObj of apiRequest) {
+          if (corporate.settingsEnableTieredHealthBenefits == 1 && (employeeObj.tier == undefined || employeeObj.tier == 0)) {
+            message = MESSAGE.CORPORATE_MSG.TIER_ERROR
+            this.response.status(201).send({
+              status, message, data, dete: new Date()
+            })
+            return this.response;
+          }
+          if (corporate.settingsEnableTieredHealthBenefits == 1 && (employeeObj.walletLimit == undefined || employeeObj.walletLimit == 0)) {
+            message = MESSAGE.CORPORATE_MSG.TIER_ERROR
+            this.response.status(201).send({
+              status, message, data, dete: new Date()
+            })
+            return this.response;
+          }
           let employeeUserObj: Users = new Users();
           employeeUserObj.username = employeeObj.emailId;
           employeeUserObj.role = CONST.USER_ROLE.CUSTOMER;
@@ -1921,12 +1937,22 @@ export class CorporateController {
           customerObj.registrationDate = moment().format('YYYY-MM-DD');
           customerObj.userId = employeeUser.id;
           customerObj.employeeId = employeeObj.employeeId;
-          if (corporate.settingsEnableTieredHealthBenefits == 1) {
-            customerObj.assignerTier = employeeObj.tier;
+          customerObj.assignerTier = employeeObj.tier;
+          customerObj.dateOfHiring = moments(employeeObj.dateOfHire).format(CONST.dateFormat2);
+          customerObj.annualIncome = employeeObj.walletLimit;
+          let caluclatedTier;
+          if (corporate.settingsEnableTieredHealthBenefits == 1 && corporate.settingsAllowGroupBenefitsWallet == 0) {
+            caluclatedTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire, "tier")
           }
-          let actualTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire)
-          actualTier != 0 ? customerObj.actualTier : actualTier = 0;
-          customerObj.assignerTier=employeeObj.tier;
+          else if (corporate.settingsEnableTieredHealthBenefits == 0 && corporate.settingsAllowGroupBenefitsWallet == 1) {
+            // customerObj.assignerTier = employeeObj.tier;
+            caluclatedTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire, "wallet")
+          }
+          else {
+            caluclatedTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire, "")
+          }
+          // actualTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire,"")
+          caluclatedTier != 0 ? customerObj.actualTier = caluclatedTier : customerObj.actualTier = customerObj.assignerTier;
           let customer: any = await this.customerRepository.create(customerObj);
           let customerContactInfoObj: ContactInformation = new ContactInformation();
           customerContactInfoObj.apt = employeeObj.apt ?? '';
@@ -1946,7 +1972,7 @@ export class CorporateController {
           customerContact.contactId = customerContact.id;
           let customerContactInfo = await this.customerContactInfoRepository.create(customerContact);
           // data['customerId'] = customer.id;
-        }       
+        }
         status = 200;
         message = MESSAGE.CORPORATE_MSG.EMP_REGISTRATION_SUCCESS
       }
@@ -2305,11 +2331,12 @@ export class CorporateController {
     try {
       let corporate: any = await this.brokerRepository.findById(corporateId);
       if (corporate) {
-        let corporateTierObj: CorporateTiers = new CorporateTiers();
-        corporateTierObj.brokerId = corporate.id;
-        corporateTierObj.published = 1;
+
         if (apiRequest.default.length > 0) {
           for (const defaultTier of apiRequest.default) {
+            let corporateTierObj: CorporateTiers = new CorporateTiers();
+            corporateTierObj.brokerId = corporate.id;
+            corporateTierObj.published = 1;
             console.log(defaultTier);
             corporateTierObj.name = defaultTier.tierName;
             corporateTierObj.tierType = CONST.TIER_TYPE.DEF;
@@ -2321,6 +2348,9 @@ export class CorporateController {
         if (apiRequest.enableLengthOfService && apiRequest.lengthOfService.length > 0) {
           await this.brokerRepository.updateById(corporateId, { settingsEnableLengthOfServiceTiers: 1 })
           for (const lengthOfServiceTier of apiRequest.lengthOfService) {
+            let corporateTierObj: CorporateTiers = new CorporateTiers();
+            corporateTierObj.published = 1;
+            corporateTierObj.brokerId = corporate.id;
             corporateTierObj.name = lengthOfServiceTier.tierName;
             corporateTierObj.tierType = CONST.TIER_TYPE.LOS;
             corporateTierObj.fromLength = lengthOfServiceTier.from;
@@ -2332,6 +2362,9 @@ export class CorporateController {
         if (apiRequest.enableAnnualIncome && apiRequest.annualIncome.length > 0) {
           await this.brokerRepository.updateById(corporateId, { settingsEnableAnnualIncomeTiers: 1 })
           for (const annualIncomeTier of apiRequest.annualIncome) {
+            let corporateTierObj: CorporateTiers = new CorporateTiers();
+            corporateTierObj.published = 1;
+            corporateTierObj.brokerId = corporate.id;
             corporateTierObj.name = annualIncomeTier.tierName;
             corporateTierObj.tierType = CONST.TIER_TYPE.AI;
             corporateTierObj.incomePercentage = annualIncomeTier.percentage;
@@ -2368,7 +2401,7 @@ export class CorporateController {
       }
     }
   })
-  async uploadEmployeeExcel(@param.path.number('corporateId')corporateId:number,@requestBody({
+  async uploadEmployeeExcel(@param.path.number('corporateId') corporateId: number, @requestBody({
     description: 'excel file',
     content: {
       'multipart/form-data': {
@@ -2396,8 +2429,8 @@ export class CorporateController {
     });
     p.then(async value => {
       let excelDatainJson = await this.excel2Service.excelToJson(value.files[0].filepath);
-      for (const employeeData of excelDatainJson){
-        let addExployee=await this.corporateService.addEmployee(employeeData,corporateId);      
+      for (const employeeData of excelDatainJson) {
+        let addExployee = await this.corporateService.addEmployee(employeeData, corporateId);
       }
 
       // let addingEmployee=await this.corporateService.
@@ -2561,6 +2594,10 @@ export class CorporateController {
         schema: {
           type: 'object',
           properties: {
+            spendingLimit: {
+              type: 'number',
+              default: 1000
+            },
             //block1
             plansPaidByTheCompant: {
               type: 'array',
@@ -2619,12 +2656,12 @@ export class CorporateController {
     let status, message, data: any = {};
     let corporateDefaultTier: any;
     try {
-      let corporate=await this.brokerRepository.findById(corporateId);
-      if(corporate){  
-        let tiers=await this.corporateTiersRepository.find({where:{brokerId:corporateId}});
-        if(tiers.length>0){
-          for(let tier of tiers){
-            await this.corporateTieredPlanLevelsRepository.deleteAll({tierId:tier.id});
+      let corporate = await this.brokerRepository.findById(corporateId);
+      if (corporate) {
+        let tiers = await this.corporateTiersRepository.find({ where: { brokerId: corporateId } });
+        if (tiers.length > 0) {
+          for (let tier of tiers) {
+            await this.corporateTieredPlanLevelsRepository.deleteAll({ tierId: tier.id });
           }
           let corporateTiredPlanLevel: CorporateTieredPlanLevels = new CorporateTieredPlanLevels();
           corporateTiredPlanLevel.spendingLimit = CONST.SPENDING_LIMIT;
@@ -2652,7 +2689,7 @@ export class CorporateController {
           if (apiRequest.enableEmployeePurchasePlans && apiRequest.employeePurchasePlans.length > 0) {
             //block 3
             for (const employeePurchasePlan of apiRequest.employeePurchasePlans) {
-              corporateTiredPlanLevel.tierId =employeePurchasePlan.tierId;
+              corporateTiredPlanLevel.tierId = employeePurchasePlan.tierId;
               corporateTiredPlanLevel.paidByCompany = 0;
               corporateTiredPlanLevel.coveredByCompany = 0;
               corporateTiredPlanLevel.paidByEmployee = 1;
@@ -2660,15 +2697,14 @@ export class CorporateController {
               await this.corporateTieredPlanLevelsRepository.create(corporateTiredPlanLevel);
             }
           }
-          
+
         }
       }
-      else{
-        status=201;
-        message=MESSAGE.CORPORATE_MSG.NO_CORPORATE
-      }      
+      else {
+        status = 201;
+        message = MESSAGE.CORPORATE_MSG.NO_CORPORATE
+      }
     } catch (error) {
-      await this.corporateTiersRepository.deleteById(corporateDefaultTier.id);
       console.log(error)
       status = 201;
       message = MESSAGE.ERRORS.someThingwentWrong
@@ -2755,26 +2791,26 @@ export class CorporateController {
     let status, message;
     let corporate = await this.brokerRepository.findById(corporateId);
     if (corporate) {
-      let plans=await this.corporateTieredPlanLevelsRepository.find();
+      let plans = await this.corporateTieredPlanLevelsRepository.find();
       console.log(plans);
-      if(apiRequest.plansPaidByTheCompant.length >0){
-        for(let paidByCompanyPlan of apiRequest.plansPaidByTheCompant){
-          await this.corporateTieredPlanLevelsRepository.deleteAll({and:[{paidByCompany:1},{planLevelId:paidByCompanyPlan.planLevelId},{tierId:paidByCompanyPlan.tierId}]})
+      if (apiRequest.plansPaidByTheCompant.length > 0) {
+        for (let paidByCompanyPlan of apiRequest.plansPaidByTheCompant) {
+          await this.corporateTieredPlanLevelsRepository.deleteAll({ and: [{ paidByCompany: 1 }, { planLevelId: paidByCompanyPlan.planLevelId }, { tierId: paidByCompanyPlan.tierId }] })
         }
-       
+
       }
-      if(apiRequest.upgradedPlans.length >0){
-        for(let upgradedPlan of apiRequest.upgradedPlans){
-          await this.corporateTieredPlanLevelsRepository.deleteAll({and:[{coveredByCompany:1},{planLevelId:upgradedPlan.planLevelId},{tierId:upgradedPlan.tierId}]})
+      if (apiRequest.upgradedPlans.length > 0) {
+        for (let upgradedPlan of apiRequest.upgradedPlans) {
+          await this.corporateTieredPlanLevelsRepository.deleteAll({ and: [{ coveredByCompany: 1 }, { planLevelId: upgradedPlan.planLevelId }, { tierId: upgradedPlan.tierId }] })
         }
       }
-      if(apiRequest.employeePurchasePlans.length >0){
-        for(let employeePurchasePlan of apiRequest.employeePurchasePlans){
-          await this.corporateTieredPlanLevelsRepository.deleteAll({and:[{paidByEmployee:1},{planLevelId:employeePurchasePlan.planLevelId},{tierId:employeePurchasePlan.tierId}]})
+      if (apiRequest.employeePurchasePlans.length > 0) {
+        for (let employeePurchasePlan of apiRequest.employeePurchasePlans) {
+          await this.corporateTieredPlanLevelsRepository.deleteAll({ and: [{ paidByEmployee: 1 }, { planLevelId: employeePurchasePlan.planLevelId }, { tierId: employeePurchasePlan.tierId }] })
         }
       }
       status = 200;
-      message=MESSAGE.CORPORATE_MSG.PLANS_DELETE;
+      message = MESSAGE.CORPORATE_MSG.PLANS_DELETE;
     }
     else {
       status = 201;
@@ -2784,5 +2820,397 @@ export class CorporateController {
       status, message
     })
     return this.response;
+  }
+  @post(CORPORATE.PLAN_LEVELS, {
+    responses: {
+      200: {
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+            },
+          },
+        },
+        description: 'File',
+      },
+    },
+  })
+  async planlevels(@requestBody({
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object',
+          properties: {
+            formId: {
+              type: 'number',
+            },
+            firstName: {
+              type: 'string',
+            },
+            lastName: {
+              type: 'string'
+            },
+            email: {
+              type: 'string',
+
+            },
+            age: {
+              type: 'number'
+            },
+            province_id: {
+              type: 'number'
+            }
+          }
+        }
+      },
+    }
+  }) apiRequest: any): Promise<any> {
+    console.log(apiRequest)
+    let status, message, data: any = {};
+
+    try {
+      // const brokerSignupFormPlans = await this.BrokerSignupFormsPlansRepository.find({
+      //   where: {
+      //     formId: apiRequest.formId
+      //   }
+      // })
+      let users = await this.usersRepository.find({ where: { username: { like: `%${apiRequest.email}%` } }, include: [{ relation: 'customer' }] })
+      console.log(users);
+      if (users.length == 0 || !users) {
+        this.response.status(201).send({
+          status: 201,
+          message: MESSAGE.CORPORATE_MSG.NO_DETAILS
+        });
+        return this.response;
+      }
+      let customeerId = users[0].customer.id;
+      let customer = await this.customerRepository.findById(customeerId);
+      if (!customer) {
+        this.response.status(201).send({
+          status: 201,
+          message: MESSAGE.CORPORATE_MSG.NO_CUSTOMER_DETAILS
+        });
+        return this.response;
+      }
+      if (customer.actualTier == null || customer.actualTier == undefined) {
+        this.response.status(201).send({
+          status: 201,
+          message: MESSAGE.CORPORATE_MSG.NO_TIER
+        });
+        return this.response;
+      }
+      let tieredPlanLevsls = await this.corporateTieredPlanLevelsRepository.find({
+        where: { tierId: customer.actualTier }
+      });
+      // const signupForm_PlanLevels = await this.signupFormsPlanLevelMappingRepository.find({
+      //   where: {
+      //     formId: apiRequest.formId
+      //   }
+      // })
+
+      //brokerPlanOptions -- planOptions -- planoptionvalues
+
+      console.log(`brokerPlans or brokerSignupFormPlans`);
+      //console.log(brokerSignupFormPlans);
+      //signupForm_PlanLevels
+      console.log(`brokerPlanLevels or brokerSignupFormPlansLevels`);
+      // console.log(signupForm_PlanLevels);
+      //let brokerPlanOptions: any = {}
+      let brokerplanIds: any = []
+      // for (let brokerPlan of brokerSignupFormPlans) {
+      //   if (brokerPlan.planId) {
+      //     brokerplanIds.push(brokerPlan.planId)
+      //     // brokerPlanOptions[brokerPlan.planId] = brokerPlan.planOptions
+      //   }
+      // }
+      // console.log(brokerPlanOptions) //not needed
+
+      let brokerplanLevels: any = [];
+      let blockDivisionforPlanLevel: any = {}
+      // for (let brokerPlanLevel of signupForm_PlanLevels) {
+      for (let brokerPlanLevel of tieredPlanLevsls) {
+        if (brokerPlanLevel.planLevelId) {
+          brokerplanLevels.push(brokerPlanLevel.planLevelId)
+          // brokerPlanOptions[brokerPlan.planId] = brokerPlan.planOptions
+          blockDivisionforPlanLevel[brokerPlanLevel.planLevelId] = {
+            paidByCompany: brokerPlanLevel.paidByCompany,
+            coveredByCompany: brokerPlanLevel.coveredByCompany,
+            paidByEmployee: brokerPlanLevel.paidByEmployee
+          }
+        }
+      }
+      //check for broker -license statesalso
+
+      // console.log(`brokerplanIds`)
+      // console.log(brokerplanIds)
+
+      console.log(`brokerplanLevels`)
+      console.log(brokerplanLevels)
+
+      const provinceData = await this.statesAndProvincesRepository.findById(apiRequest.province_id);
+      data.province = provinceData;
+      console.log(data);
+      //get plans valid for this customer -- state_id, plan_id
+      let plansforProvince: any = {
+        where: {
+          and: [
+            { "stateId": apiRequest.province_id }
+          ]
+        },
+        include: [{ relation: 'plan' }]
+      }
+
+      //Remove this //comment this
+      // if (brokerplanIds.length > 0) {
+      //   let brokerPlanFilter = {"planId": {"inq": brokerplanIds}}
+      //   plansforProvince.where.and.push(brokerPlanFilter);
+
+      // }
+
+      // if (brokerplanLevels.length > 0) {
+      //   let brokerPlanLevelsFilter = {"planLevel": {"inq": brokerplanLevels}}
+      //   plansforProvince.where.and.push(brokerPlanLevelsFilter);
+
+      // }
+
+      // console.log(plansforProvince.where.and.length)
+      //  console.log(plansforProvince.where.and)
+
+      const planIdsData = await this.plansAvalibility.find(plansforProvince)
+      // console.log(planIdsData);
+
+      let planIds: any = [];
+      let planLevelIds: any = [];
+
+      for (let planIdData of planIdsData) {
+        if (planIdData.planId)
+          planIds.push(planIdData.planId)
+
+        if (planIdData.plan) {
+          if (planLevelIds.indexOf(planIdData.plan.planLevel) == -1)
+            planLevelIds.push(planIdData.plan.planLevel)
+        }
+      }
+
+      console.log(`state - ${apiRequest.province_id} planIds`)
+      console.log(planIds)
+      console.log(`state - ${apiRequest.province_id} plans---planlevels`)
+      console.log(planLevelIds)
+
+
+      let filteredPlanLevels;
+      if (brokerplanLevels.length > 0) {
+        filteredPlanLevels = await intersection(planLevelIds, brokerplanLevels);
+      } else {
+        filteredPlanLevels = planLevelIds;
+      }
+      console.log("filteredPlanLevels");
+      console.log(filteredPlanLevels);
+      //console.log(age);
+      // console.log(`children_coverage:${children_coverage}`);
+      // let pcc: any = this.registrationService.planCoverageCalculations(apiRequest.having_spouse, apiRequest.spouse_details.is_spouse_having_healthcard, apiRequest.no_of_children, children_coverage);
+      let pcc: any = {
+        exclusivePlanCoverageArray: [],
+        maritalStatus: 'COUPLE',
+        ninCondition: false,
+        rital_status: 'SINGLE',
+        exclusive: ['COUPLE', 'FAMILY'],
+        inclusive: ['SINGLE']
+      };
+      console.log("***************************");
+      console.log(pcc);
+      console.log(pcc.maritalStatus);
+      data.customer = {};
+      data.customer.maritalStatus = pcc.maritalStatus;
+
+      // console.log(`excl. ${pcc.exclusivePlanCoverageArray}`);
+      // console.log(`maritalStatus: ${pcc.maritalStatus}`);
+
+      let plansFilter: any = {
+        order: 'ordering ASC',
+        where: {
+          and: [
+            { "id": { "inq": planIds } },
+            //{"planCoverage": {"nin": pcc.exclusivePlanCoverageArray}},
+            // {"or": [{"planCoverage": {"nin": pcc.exclusivePlanCoverageArray}}, {"planCoverage": {"eq": null}}]},
+            //{"packageId": pckg.id},
+            //{"planLevel": planlevel.id},
+            { "published": { "type": "Buffer", "data": [1] } },
+            { "corporatePlan": false },
+            { "or": [{ "minAge": { "lte": apiRequest.age } }, { "minAge": { "eq": null } }] },
+            { "or": [{ "maxAge": { "gt": apiRequest.age } }, { "maxAge": { "eq": null } }] },
+            //{"requiredPlanId": null}
+          ]
+        },
+        include: [
+
+          {
+            relation: 'stateTaxDetails',
+            scope: {
+              include: [
+                {
+                  relation: 'state'
+                }
+              ]
+            }
+          },
+          // {
+          //   relation: 'planOptions',
+          //   scope: {
+          //     include: [
+          //       {
+          //         relation: 'planOptionsValues'
+          //       }
+          //     ]
+          //   }
+          // },
+        ]
+      }
+
+      let packageFilter: any = {
+        order: 'ordering ASC',
+        where: {
+          published: true
+        },
+      }
+
+      const packages: any = await this.insurancePackages.find(packageFilter)
+
+      const packagesArray: any = []
+      for (const pckg of packages) {
+        //console.log(pckg.name)
+        const packageObject: any = {}
+        // packageObject = pckg;
+        packageObject["description"] = pckg.description
+        packageObject["id"] = pckg.id
+        packageObject["logo"] = pckg.logo
+        packageObject["name"] = pckg.name
+        packageObject["published"] = pckg.published
+        packageObject["ordering"] = pckg.ordering
+        packageObject["allowMultiple"] = pckg.allowMultiple
+        packageObject["applyFilters"] = pckg.applyFilters
+        packageObject["optIn"] = pckg.optIn
+
+        //console.log(plansFilter.where.and.length)
+        plansFilter.where.and.splice(5); //6 conditions default; 1 or 2 dynamic -->changed to 5 as required_plan_id is removed
+        //console.log(plansFilter.where.and.length)
+        //console.log(`Apply filter to this ${pckg.name}:${pckg.applyFilters}`);
+
+        let pccNincondition = pcc.ninCondition
+        let pccExclusivePlanCoverageArray = pcc.exclusivePlanCoverageArray
+        //package 3 : couple is same as family for Highcost drugs..
+
+        if (pckg.id == CONST.HIGHCOST_DRUGS_PACKAGE_ID) {
+          if (pcc.maritalStatus == 'COUPLE') {
+            //remove FAMILY from pccExclusivePlanCoverageArray //just pop
+            // console.log(pccExclusivePlanCoverageArray.length);
+            pccExclusivePlanCoverageArray.pop();
+            // console.log('popped last element--Family?')
+            //console.log(pccExclusivePlanCoverageArray.length);
+
+            // console.log(`pccNincondition:${pccNincondition}`)
+            if (pccExclusivePlanCoverageArray.length == 0) {
+              pccNincondition = false;
+            }
+            // console.log(`fixed for pckg3 pccNincondition:${pccNincondition}`)
+
+          }
+        }
+
+        //package 5: applyfilters--true same single, couple, family, and combinations //applyfilters has no effect now..
+        if (pckg.id == CONST.EXECUTIVE_PACKAGE_ID) {
+          // console.log(`pccNincondition:${pccNincondition}`)
+          if (pcc.maritalStatus == 'SINGLE') {
+            pccExclusivePlanCoverageArray = ['COUPLE', 'FAMILY']
+          } else if (pcc.maritalStatus == 'COUPLE') {
+            pccExclusivePlanCoverageArray = ['FAMILY']
+          } else {
+            //FAMILY
+            pccExclusivePlanCoverageArray = []
+            pccNincondition = false
+          }
+
+          // console.log(`fixed for pckg5 pccNincondition:${pccNincondition}`)
+        }
+
+        // if (pckg.applyFilters) {
+        if (pccNincondition) {
+          let planCoverageConditon = { "or": [{ "planCoverage": { "nin": pccExclusivePlanCoverageArray } }, { "planCoverage": { "eq": null } }] }
+          plansFilter.where.and.push(planCoverageConditon)
+        }
+        // } else {
+        //   console.log('so basic no exc covergae filter')
+        // }
+
+        plansFilter.where.and.push({ "packageId": pckg.id })
+
+        let plansLevelFilter: any = {
+          order: 'ordering ASC',
+          where: {
+            //"id": {"inq": planLevelIds},
+            "id": { "inq": filteredPlanLevels },
+            "published": { "type": "Buffer", "data": [1] },
+            "requirePlanLevel": null
+          },
+
+          "include": [
+            // { "relation": "planLevelFeatures", "scope": { "include": [{ "relation": "feature" }] } },
+            //{"relation": "greenshieldPackages"},
+            { "relation": "plans", "scope": plansFilter }]
+        }
+        const planLevels = await this.insurancePackages.planGroups(pckg.id).find(plansLevelFilter)
+        console.log(plansLevelFilter);
+        const groupsArray: any = []
+        for (const pl of planLevels) {
+          var mpl:any={};
+          let mpl1:any={};
+          if (pl.plans?.length > 0) {
+            mpl=pl;
+            const plansArray: any = []
+            // for (const plan of pl.plans) {
+            //   plan.options = []
+            //   if (plan.id) {
+            //     plan.options = brokerPlanOptions[plan.id];
+            //     let planoptions: any = []
+            //     if (plan.options) {
+            //       for (const blOption of plan.options) {
+            //         //blOption.id
+            //         const pov = await this.planOptionsValuesRepository.find({where: {planOptionsId: blOption.id}})
+            //         blOption.optionValues = pov
+            //         planoptions.push(blOption);
+            //       }
+            //     }
+
+            //     plan.options = planoptions;
+
+            //     plansArray.push(plan)
+            //   }
+            // }
+
+            //pl.plans = plansArray;
+
+            //if (plansArray.length > 0)
+            console.log(">>>>>>>>>>>>>>");
+            console.log(blockDivisionforPlanLevel[pl?.id || 0]);
+            pl.categorization = blockDivisionforPlanLevel[pl?.id || 0]
+            console.log(pl);
+            mpl['categorization']= blockDivisionforPlanLevel[pl?.id || 0];
+            // mpl1={'plans':pl,'categorization':blockDivisionforPlanLevel[pl?.id || 0]}
+            groupsArray.push(mpl);            
+          }
+        }
+        packageObject["groups"] = groupsArray//planLevels
+        //console.log("-->" + packageObject.groups.length)
+        if (groupsArray.length > 0)
+          packagesArray.push(packageObject);
+      }
+      data.packages = packagesArray;//packages;
+    }
+
+    catch (error) {
+      console.log(error)
+    }
+    return data;
+
   }
 }

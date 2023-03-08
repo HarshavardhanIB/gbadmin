@@ -1,6 +1,11 @@
 #CHANGE LOG
 1.0.0.0 - RELEASE(v...)
 -----------------------------------------------------------------
+
+0.6.6
+
+changes are done in corporate controller add demployee to multiple employees
+
 0.6.5
 added get plans service in corporate controller
 

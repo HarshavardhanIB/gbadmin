@@ -61,6 +61,7 @@ exports.CORPORATE = {
     CONFIGURE_WALLET: '/corporate/{corporateId}/configureWallet',
     TIER: '/corporate/{corporateId}/configureTiers',
     EXCEL: '/corporate/{corporateId}/uploadEmployees',
+    PLAN_LEVELS: '/corporate/availablePlans'
 };
 // broker paths
 exports.BROKER = {

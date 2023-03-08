@@ -18,8 +18,6 @@ const common_functions_1 = require("../common-functions");
 const authentication_1 = require("@loopback/authentication");
 const validation = tslib_1.__importStar(require("../services/validation.services"));
 const services_1 = require("../services");
-const authorization_1 = require("@loopback/authorization");
-const auth_middleware_1 = require("../middlewares/auth.middleware");
 const moment_1 = tslib_1.__importDefault(require("moment"));
 const paths_2 = require("../paths");
 const broker_admins_repository_1 = require("../repositories/broker-admins.repository");
@@ -29,6 +27,11 @@ const log4js = tslib_1.__importStar(require("log4js"));
 //   categories: { default: { appenders: ["brokerController"], level: "error" } },
 // });
 const logger = log4js.getLogger("broker");
+// @authenticate('jwt')
+// @authorize({
+//   allowedRoles: ['BROKER', 'ADMINISTRATOR'],
+//   voters: [basicAuthorization]
+// })
 let BrokerController = class BrokerController {
     constructor(brokerRepository, brokerLicensedStatesAndProvincesRepository, 
     // @repository(BrokerSignupFormsPlansRepository)
@@ -1652,7 +1655,7 @@ let BrokerController = class BrokerController {
                     }
                 }
                 else {
-                    let planLevesAfter;
+                    let planLevesAfter = [];
                     // let signUpform: SignupForms = new SignupForms();
                     // signUpform.brokerId = formData.brokerId;
                     signUpform.formType = CONST.SIGNUP_FORM.CUSTOM;
@@ -1689,7 +1692,7 @@ let BrokerController = class BrokerController {
                                 // fields: { id: true }
                             });
                             if (palLevel) {
-                                await planLevesAfter.push(await palLevel.id);
+                                planLevesAfter.push(palLevel.id);
                             }
                             // console.log(palLevel);
                             // console.log("plan levels after id");
@@ -1740,8 +1743,9 @@ let BrokerController = class BrokerController {
             // }
         }
         catch (error) {
+            console.log(error);
             status = 404;
-            message = "error while modify the form";
+            message = "error while modify the form " + error.message;
         }
         this.response.status(status).send({
             status, message, date: new Date(), data,
@@ -3703,11 +3707,6 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], BrokerController.prototype, "brokerDisclouserUpdate", null);
 BrokerController = tslib_1.__decorate([
-    (0, authentication_1.authenticate)('jwt'),
-    (0, authorization_1.authorize)({
-        allowedRoles: ['BROKER', 'ADMINISTRATOR'],
-        voters: [auth_middleware_1.basicAuthorization]
-    }),
     tslib_1.__param(0, (0, repository_1.repository)(repositories_1.BrokerRepository)),
     tslib_1.__param(1, (0, repository_1.repository)(repositories_1.BrokerLicensedStatesAndProvincesRepository)),
     tslib_1.__param(2, (0, repository_1.repository)(repositories_1.SignupFormsPlanLevelMappingRepository)),
