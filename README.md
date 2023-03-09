@@ -1,6 +1,8 @@
 #CHANGE LOG
 1.0.0.0 - RELEASE(v...)
 -----------------------------------------------------------------
+0.7.0
+added caluclation controller in that controller added update corporate customer assigned tier and handle the duplicate entry's in corporate signup and employee signup
 
 0.6.6
 

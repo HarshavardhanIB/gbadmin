@@ -13,7 +13,7 @@ export class BrokerAdmins extends Entity {
     scale: 0,
     generated: 1,
     id: 1,
-    mysql: { columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1 },
+    mysql: {columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'N', generated: 1},
   })
   id?: number;
 
@@ -35,6 +35,15 @@ export class BrokerAdmins extends Entity {
   })
   brokerId: number;
 
+  @property({
+    type: 'number',
+  })
+  user_id?: number;
+
+  @property({
+    type: 'number',
+  })
+  broker_id?: number;
   // Define well-known properties here
 
   // Indexer property to allow additional data

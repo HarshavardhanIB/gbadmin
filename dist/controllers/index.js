@@ -30,4 +30,6 @@ tslib_1.__exportStar(require("./insurance-plans-plans-availability.controller"),
 tslib_1.__exportStar(require("./plan-level-insurance-plans.controller"), exports);
 // export * from './signup-forms-broker-signup-forms-plans.controller';
 tslib_1.__exportStar(require("./broker-customer.controller"), exports);
+tslib_1.__exportStar(require("./caluclations.controller"), exports);
+tslib_1.__exportStar(require("./users-broker.controller"), exports);
 //# sourceMappingURL=index.js.map

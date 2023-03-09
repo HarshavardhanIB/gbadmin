@@ -39,6 +39,18 @@ tslib_1.__decorate([
     }),
     tslib_1.__metadata("design:type", Number)
 ], BrokerAdmins.prototype, "brokerId", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'number',
+    }),
+    tslib_1.__metadata("design:type", Number)
+], BrokerAdmins.prototype, "user_id", void 0);
+tslib_1.__decorate([
+    (0, repository_1.property)({
+        type: 'number',
+    }),
+    tslib_1.__metadata("design:type", Number)
+], BrokerAdmins.prototype, "broker_id", void 0);
 BrokerAdmins = tslib_1.__decorate([
     (0, repository_1.model)({
         settings: {

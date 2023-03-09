@@ -62,6 +62,7 @@ export const USER_API_BASE_PATH = API_BASE_PATH + "user/"
 export const FUSEBILL_API_BASE_PATH = API_BASE_PATH + "fusebill/"
 //corporate paths
 export const CORPORATE={
+    UPDATE_CUSTOME_TIER:'/corporate/customers/updateTier',
     SIGNUP:'/corporate/signup',
     LOGO:'/corporate/{company}/logo',
     FORMCONFIG:'/corporateSignup/formConfig',

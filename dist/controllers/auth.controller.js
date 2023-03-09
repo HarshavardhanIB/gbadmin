@@ -168,12 +168,13 @@ let AuthController = class AuthController {
     //   return res;
     // }
     async userLogin(credentials) {
+        var _a;
         let response;
         console.log(credentials);
         let useremail = credentials.email;
         console.log(useremail);
         let userEnterPaswrd = credentials.password;
-        let user = await this.usersRepository.findOne({ where: { username: useremail } });
+        let user = await this.usersRepository.findOne({ where: { username: useremail }, include: [{ relation: 'customer' }, { relation: 'broker' }] });
         console.log(user);
         if (user) {
             let HTMLcontentFile = process.env.ACTIVATIONPATH + "?key=" + user.activation;
@@ -199,11 +200,33 @@ let AuthController = class AuthController {
                 else {
                     // const token = await this.jwtService.generateToken(customers);
                     let token = jwt.sign({ id: user.id, role: user.role, name: user.username }, constants.secret, { expiresIn: constants.expiresIn, algorithm: constants.algorithm });
-                    // const userProfile = this.userService.convertToUserProfile(credentials);
+                    // const userProfile = this.userService.convertToUserProfile(credentials);     
+                    let userName;
+                    if (user.customer) {
+                        userName = user.customer.firstName + " " + user.customer.lastName;
+                    }
+                    else {
+                        let splitUserName = '';
+                        let splitUser = (_a = user.username) === null || _a === void 0 ? void 0 : _a.split('@')[0].split('.');
+                        console.log(splitUser);
+                        console.log(splitUser === null || splitUser === void 0 ? void 0 : splitUser.length);
+                        (splitUser === null || splitUser === void 0 ? void 0 : splitUser.length) > 1 ? splitUserName = splitUser[0] + " " + splitUser[1] : splitUserName = splitUser[0];
+                        if (user.broker) {
+                            userName = user.broker[0].name;
+                        }
+                        else {
+                            userName = splitUserName;
+                        }
+                    }
                     response = {
                         "statusCode": 200,
                         "message": messages.LoginSuccess,
-                        "token": token
+                        "token": token,
+                        data: {
+                            "token": token,
+                            "userName": userName,
+                            "email": user.username, //user.username
+                        }
                     };
                 }
             }

@@ -1,4 +1,5 @@
 "use strict";
+var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CorporateController = void 0;
 const tslib_1 = require("tslib");
@@ -13,6 +14,7 @@ const repositories_1 = require("../repositories");
 const services_1 = require("../services");
 const keys_1 = require("../keys");
 const files_controller_1 = require("./files.controller");
+const lodash_1 = require("lodash");
 const MESSAGE = tslib_1.__importStar(require("../messages"));
 const common_functions_1 = require("../common-functions");
 const moment_1 = tslib_1.__importDefault(require("moment"));
@@ -30,6 +32,7 @@ let fiseBill = 11;
 const log4js = tslib_1.__importStar(require("log4js"));
 const logger = log4js.getLogger("corporate");
 let timestamp = (0, moment_1.default)().format('YYYY-MM-DD mm-hh-ss');
+const houseClientId = (_a = process.env.HOUSE_CLIENT_ID) !== null && _a !== void 0 ? _a : '';
 let CorporateController = class CorporateController {
     constructor(http, brokerRepository, response, corporateService, usersRepository, BrokerAdminsRepository, contactInformationRepository, customerRepository, handler, fusebill, registrationService, ach, banksCodesRepository, banksRepository, branchesRepository, statesAndProvincesRepository, insurancePlansRepository, plansAvailabilityRepository, insurancePackages, signupFormsRepository, planLevelRepository, corporateTiersRepository, corporateTieredPlanLevelsRepository, corporatePaidTieredPlanLevelsRepository, customerContactInfoRepository, excelService, excel2Service, signupFormsPlanLevelMappingRepository, plansAvalibility) {
         this.http = http;
@@ -168,8 +171,36 @@ let CorporateController = class CorporateController {
                 let requestFiles = value.files;
                 console.log(requestFiles);
                 try {
+                    let checkCorporate = await this.brokerRepository.find({ where: { and: [{ name: apiRequest.corporationName }, { brokerType: 'CORPORATE' }] } });
+                    if (checkCorporate.length > 0) {
+                        this.response.status(200).send({
+                            status: '201',
+                            message: messages_1.CORPORATE_MSG.EXISTING_CORPORATE,
+                            date: new Date(),
+                        });
+                        return this.response;
+                    }
                     let groupAdmins = JSON.parse(apiRequest.gropupAdmin);
                     if (groupAdmins.length > 0) {
+                        let userCheck = await this.usersRepository.find({ where: { username: groupAdmins[0].email } });
+                        console.log(userCheck);
+                        if (userCheck.length > 0) {
+                            this.response.status(200).send({
+                                status: '201',
+                                message: messages_1.CORPORATE_MSG.EXISTING_MAIL,
+                                date: new Date(),
+                            });
+                            return this.response;
+                        }
+                        if (!this.registrationService.validateEmail(groupAdmins[0].email)) {
+                            this.response.status(422).send({
+                                status: '422',
+                                error: `Invalid Email`,
+                                message: MESSAGE.ERRORS.email,
+                                date: new Date(),
+                            });
+                            return this.response;
+                        }
                         let groupAdminsArray = [];
                         for (const groupAdmin of groupAdmins) {
                             let userObj = new models_1.Users();
@@ -491,7 +522,7 @@ let CorporateController = class CorporateController {
         p.catch(onrejected => {
             message = messages_1.CORPORATE_MSG.LOGO_NOT_SET;
             status = '202';
-            this.response.status(parseInt(status)).send({
+            this.response.status((0, lodash_1.parseInt)(status)).send({
                 status: status,
                 message: message,
                 date: new Date(),
@@ -725,7 +756,7 @@ let CorporateController = class CorporateController {
                 //eyJjdXN0b21lcklkIjoiMTIiLCJiYW5rQ29kZSI6IjAwMyIsImJyYW5jaENvZGUiOiIwMDAwMSIsImFjY291bnROdW1iZXIiOiIxMjM0NTYiLCJhbW91bnQiOiIwLjEwIn0=
                 //eyJjdXN0b21lcklkIjoiMTIiLCJiYW5rQ29kZSI6IjAwMyIsImJyYW5jaENvZGUiOiIwMDAwMSIsImFjY291bnROdW1iZXIiOiIxMjM0NTYiLCJhbW91bnQiOiIwLjEwIiwiZW5yb2xsbWVudERhdGUiOiIxMC0wMS0yMDIyIn0=
                 let input = {
-                    "customerId": parseInt(bank_details.customerId),
+                    "customerId": (0, lodash_1.parseInt)(bank_details.customerId),
                     "bankCode": bank_details.bankCode,
                     "transitNumber": bank_details.branchCode,
                     "accountNumber": bank_details.accountNumber,
@@ -752,7 +783,7 @@ let CorporateController = class CorporateController {
                     message = 'Customer Record(PAD) creation failed';
                     status = '202';
                 }
-                this.response.status(parseInt(status)).send({
+                this.response.status((0, lodash_1.parseInt)(status)).send({
                     status: status,
                     message: message,
                     date: new Date(),
@@ -772,7 +803,7 @@ let CorporateController = class CorporateController {
         p.catch(onrejected => {
             message = 'Customer Record(PAD) creation failed';
             status = '202';
-            this.response.status(parseInt(status)).send({
+            this.response.status((0, lodash_1.parseInt)(status)).send({
                 status: status,
                 message: message,
                 date: new Date(),
@@ -857,7 +888,7 @@ let CorporateController = class CorporateController {
             message = 'Customer bank verification failed';
             status = '202';
         }
-        this.response.status(parseInt(status)).send({
+        this.response.status((0, lodash_1.parseInt)(status)).send({
             status: status,
             message: message,
             date: new Date(),
@@ -1029,10 +1060,38 @@ let CorporateController = class CorporateController {
                 let requestFiles = value.files;
                 console.log(requestFiles);
                 try {
+                    let checkCorporate = await this.brokerRepository.find({ where: { and: [{ name: apiRequest.corporationName }, { brokerType: 'CORPORATE' }] } });
+                    if (checkCorporate.length > 0) {
+                        this.response.status(200).send({
+                            status: '201',
+                            message: messages_1.CORPORATE_MSG.EXISTING_CORPORATE,
+                            date: new Date(),
+                        });
+                        return this.response;
+                    }
                     console.log(apiRequest);
                     let groupAdmins = JSON.parse(apiRequest.gropupAdmin);
                     // creating contact info
                     if (groupAdmins.length > 0) {
+                        let userCheck = await this.usersRepository.find({ where: { username: groupAdmins[0].email } });
+                        console.log(userCheck);
+                        if (userCheck.length > 0) {
+                            this.response.status(200).send({
+                                status: '201',
+                                message: messages_1.CORPORATE_MSG.EXISTING_MAIL,
+                                date: new Date(),
+                            });
+                            return this.response;
+                        }
+                        if (!this.registrationService.validateEmail(groupAdmins[0].email)) {
+                            this.response.status(422).send({
+                                status: '422',
+                                error: `Invalid Email`,
+                                message: MESSAGE.ERRORS.email,
+                                date: new Date(),
+                            });
+                            return this.response;
+                        }
                         let groupAdminsArray = [];
                         for (const groupAdmin of groupAdmins) {
                             let userObj = new models_1.Users();
@@ -1076,7 +1135,8 @@ let CorporateController = class CorporateController {
                         let brokerObj = new models_1.Broker();
                         brokerObj.name = apiRequest.corporationName;
                         brokerObj.brokerType = 'CORPORATE';
-                        brokerObj.salesTrackingCode = apiRequest.salesTrackingCode || "0000001";
+                        houseClientId == '' || houseClientId == undefined ? "" : brokerObj.parentId = (0, lodash_1.parseInt)(houseClientId);
+                        brokerObj.salesTrackingCode = process.env.HOUSE_CLIENT_STC || '0000000001';
                         brokerObj.salesTrackingType = apiRequest.salesTrackingType || '';
                         brokerObj.published = true;
                         brokerObj.contactId = contactInfo.id;
@@ -1401,6 +1461,7 @@ let CorporateController = class CorporateController {
                         message: messages_1.CORPORATE_MSG.REGISTRATION_FAIL,
                         date: new Date(),
                     });
+                    await this.customerContactInfoRepository.deleteAll({ and: [{ customerId: customerId }, { contactId: contId }] });
                     await this.customerRepository.deleteById(customerId);
                     for (let groupAdminUser of groupAdminsUsers) {
                         await this.usersRepository.deleteById(groupAdminUser);
@@ -1414,7 +1475,7 @@ let CorporateController = class CorporateController {
         p.catch(onrejected => {
             message = messages_1.CORPORATE_MSG.LOGO_NOT_SET;
             status = '202';
-            this.response.status(parseInt(status)).send({
+            this.response.status((0, lodash_1.parseInt)(status)).send({
                 status: status,
                 message: message,
                 date: new Date(),
@@ -1426,11 +1487,14 @@ let CorporateController = class CorporateController {
     async employeeSignup(corporateId, apiRequest) {
         var _a, _b, _c;
         let status, message, data = {};
+        let failedEntrys = [];
+        let successEmployeeCount = 0;
         try {
             // user creation, customer.role=
             let corporate = await this.brokerRepository.findById(corporateId, { include: [{ relation: 'customers' }] });
             console.log(corporate);
             if (corporate) {
+                let corporateCustomerId = corporate.customers[0].id;
                 // if (corporate.settingsEnableTieredHealthBenefits == 1 && (apiRequest.tier == undefined || apiRequest.tier == 0)) {
                 //   message = MESSAGE.CORPORATE_MSG.TIER_ERROR
                 //   this.response.status(201).send({
@@ -1460,62 +1524,75 @@ let CorporateController = class CorporateController {
                         });
                         return this.response;
                     }
-                    let employeeUserObj = new models_1.Users();
-                    employeeUserObj.username = employeeObj.emailId;
-                    employeeUserObj.role = CONST.USER_ROLE.CUSTOMER;
-                    let randomPswrd = await (0, common_functions_1.generateRandomPassword)();
-                    employeeUserObj.password = await (0, common_functions_1.encryptPassword)(randomPswrd);
-                    employeeUserObj.block = true;
-                    employeeUserObj.activation = await (0, common_functions_1.getActivationCode)();
-                    employeeUserObj.registrationDate = (0, moment_1.default)().format('YYYY-MM-DD');
-                    employeeUserObj.companyId = corporateId;
-                    let employeeUser = await this.usersRepository.create(employeeUserObj);
-                    let customerObj = new models_1.Customer();
-                    customerObj.brokerId = corporateId;
-                    customerObj.parentId = corporate.customers[0].id;
-                    customerObj.firstName = employeeObj.firstName;
-                    customerObj.lastName = employeeObj.lastName;
-                    customerObj.gender = employeeObj.sex;
-                    customerObj.companyName = corporate.name;
-                    customerObj.isCorporateAccount = true;
-                    customerObj.registrationDate = (0, moment_1.default)().format('YYYY-MM-DD');
-                    customerObj.userId = employeeUser.id;
-                    customerObj.employeeId = employeeObj.employeeId;
-                    customerObj.assignerTier = employeeObj.tier;
-                    customerObj.dateOfHiring = (0, services_1.moments)(employeeObj.dateOfHire).format(CONST.dateFormat2);
-                    customerObj.annualIncome = employeeObj.walletLimit;
-                    let caluclatedTier;
-                    if (corporate.settingsEnableTieredHealthBenefits == 1 && corporate.settingsAllowGroupBenefitsWallet == 0) {
-                        caluclatedTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire, "tier");
+                    let userEmailcheck = await this.usersRepository.find({ where: { username: employeeObj.emailId } });
+                    let customerCheck = await this.customerRepository.find({ where: { and: [{ firstName: employeeObj.firstName }, { lastName: employeeObj.lastName }, { parentId: corporateCustomerId }] } });
+                    if (userEmailcheck.length > 0) {
+                        let mailExits = { mailId: employeeObj.emailId, firstName: employeeObj.firstName, lastName: employeeObj.lastName, message: 'Email already exits' };
+                        failedEntrys.push(mailExits);
                     }
-                    else if (corporate.settingsEnableTieredHealthBenefits == 0 && corporate.settingsAllowGroupBenefitsWallet == 1) {
-                        // customerObj.assignerTier = employeeObj.tier;
-                        caluclatedTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire, "wallet");
+                    else if (customerCheck.length > 0) {
+                        let customerExits = { mailId: employeeObj.emailId, firstName: employeeObj.firstName, lastName: employeeObj.lastName, message: 'first name and last name already exits' };
+                        failedEntrys.push(customerExits);
                     }
                     else {
-                        caluclatedTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire, "");
+                        let employeeUserObj = new models_1.Users();
+                        employeeUserObj.username = employeeObj.emailId;
+                        employeeUserObj.role = CONST.USER_ROLE.CUSTOMER;
+                        let randomPswrd = await (0, common_functions_1.generateRandomPassword)();
+                        employeeUserObj.password = await (0, common_functions_1.encryptPassword)(randomPswrd);
+                        employeeUserObj.block = true;
+                        employeeUserObj.activation = await (0, common_functions_1.getActivationCode)();
+                        employeeUserObj.registrationDate = (0, moment_1.default)().format('YYYY-MM-DD');
+                        employeeUserObj.companyId = corporateId;
+                        let employeeUser = await this.usersRepository.create(employeeUserObj);
+                        let customerObj = new models_1.Customer();
+                        customerObj.brokerId = corporateId;
+                        customerObj.parentId = corporate.customers[0].id;
+                        customerObj.firstName = employeeObj.firstName;
+                        customerObj.lastName = employeeObj.lastName;
+                        customerObj.gender = employeeObj.sex;
+                        customerObj.companyName = corporate.name;
+                        customerObj.isCorporateAccount = true;
+                        customerObj.registrationDate = (0, moment_1.default)().format('YYYY-MM-DD');
+                        customerObj.userId = employeeUser.id;
+                        customerObj.employeeId = employeeObj.employeeId;
+                        customerObj.assignerTier = employeeObj.tier;
+                        customerObj.dateOfHiring = (0, services_1.moments)(employeeObj.dateOfHire).format(CONST.dateFormat2);
+                        customerObj.annualIncome = employeeObj.walletLimit;
+                        let caluclatedTier;
+                        if (corporate.settingsEnableTieredHealthBenefits == 1 && (corporate.settingsAllowGroupBenefitsWallet == undefined || corporate.settingsAllowGroupBenefitsWallet == 0)) {
+                            caluclatedTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire, "tier");
+                        }
+                        else if ((corporate.settingsEnableTieredHealthBenefits == 0 || corporate.settingsEnableTieredHealthBenefits == undefined) && corporate.settingsAllowGroupBenefitsWallet == 1) {
+                            // customerObj.assignerTier = employeeObj.tier;
+                            caluclatedTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire, "wallet");
+                        }
+                        else {
+                            caluclatedTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire, "");
+                        }
+                        // actualTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire,"")
+                        caluclatedTier != 0 ? customerObj.actualTier = caluclatedTier : customerObj.actualTier = customerObj.assignerTier;
+                        let customer = await this.customerRepository.create(customerObj);
+                        let customerContactInfoObj = new models_1.ContactInformation();
+                        customerContactInfoObj.apt = (_a = employeeObj.apt) !== null && _a !== void 0 ? _a : '';
+                        customerContactInfoObj.line1 = (_b = employeeObj.line1) !== null && _b !== void 0 ? _b : '';
+                        customerContactInfoObj.line2 = (_c = employeeObj.line2) !== null && _c !== void 0 ? _c : '';
+                        customerContactInfoObj.city = employeeObj.residentIn;
+                        customerContactInfoObj.primaryEmail = employeeObj.emailId;
+                        customerContactInfoObj.country = CONST.DEFAULT_COUNTRY.name;
+                        customerContactInfoObj.contactType = CONST.USER_ROLE.CUSTOMER;
+                        customerContactInfoObj.addressType = CONST.ADDRESS_TYPE.HOME_ADDRESS;
+                        customerContactInfoObj.primaryPhone = employeeObj.phoneNum.toString();
+                        customerContactInfoObj.state = employeeObj.provienceName;
+                        console.log(customerContactInfoObj);
+                        let contcatInfo = await this.contactInformationRepository.create(customerContactInfoObj);
+                        let customerContact = new models_1.CustomerContactInfo();
+                        customerContact.customerId = customer.id;
+                        customerContact.contactId = customerContact.id;
+                        let customerContactInfo = await this.customerContactInfoRepository.create(customerContact);
+                        // data['customerId'] = customer.id;
+                        successEmployeeCount = successEmployeeCount + 1;
                     }
-                    // actualTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire,"")
-                    caluclatedTier != 0 ? customerObj.actualTier = caluclatedTier : customerObj.actualTier = customerObj.assignerTier;
-                    let customer = await this.customerRepository.create(customerObj);
-                    let customerContactInfoObj = new models_1.ContactInformation();
-                    customerContactInfoObj.apt = (_a = employeeObj.apt) !== null && _a !== void 0 ? _a : '';
-                    customerContactInfoObj.line1 = (_b = employeeObj.line1) !== null && _b !== void 0 ? _b : '';
-                    customerContactInfoObj.line2 = (_c = employeeObj.line2) !== null && _c !== void 0 ? _c : '';
-                    customerContactInfoObj.city = employeeObj.residentIn;
-                    customerContactInfoObj.primaryEmail = employeeObj.emailId;
-                    customerContactInfoObj.country = CONST.DEFAULT_COUNTRY.name;
-                    customerContactInfoObj.contactType = CONST.USER_ROLE.CUSTOMER;
-                    customerContactInfoObj.addressType = CONST.ADDRESS_TYPE.HOME_ADDRESS;
-                    customerContactInfoObj.primaryPhone = employeeObj.phoneNum.toString();
-                    customerContactInfoObj.state = employeeObj.provienceName;
-                    console.log(customerContactInfoObj);
-                    let contcatInfo = await this.contactInformationRepository.create(customerContactInfoObj);
-                    let customerContact = new models_1.CustomerContactInfo();
-                    customerContact.customerId = customer.id;
-                    customerContact.contactId = customerContact.id;
-                    let customerContactInfo = await this.customerContactInfoRepository.create(customerContact);
-                    // data['customerId'] = customer.id;
                 }
                 status = 200;
                 message = MESSAGE.CORPORATE_MSG.EMP_REGISTRATION_SUCCESS;
@@ -1531,7 +1608,7 @@ let CorporateController = class CorporateController {
             message = error.message;
         }
         this.response.status(status).send({
-            status, message, data, dete: new Date()
+            status, message, data, dete: new Date(), "failedEmployeesList": failedEntrys, "successEmployeeCount": successEmployeeCount
         });
         return this.response;
     }
@@ -2240,7 +2317,7 @@ let CorporateController = class CorporateController {
                 const planLevels = await this.insurancePackages.planGroups(pckg.id).find(plansLevelFilter);
                 console.log(plansLevelFilter);
                 const groupsArray = [];
-                for (let pl of planLevels) {
+                for (const pl of planLevels) {
                     var mpl = {};
                     let mpl1 = {};
                     if (((_a = pl.plans) === null || _a === void 0 ? void 0 : _a.length) > 0) {
@@ -2271,7 +2348,7 @@ let CorporateController = class CorporateController {
                         console.log(pl);
                         mpl['categorization'] = blockDivisionforPlanLevel[(pl === null || pl === void 0 ? void 0 : pl.id) || 0];
                         // mpl1={'plans':pl,'categorization':blockDivisionforPlanLevel[pl?.id || 0]}
-                        groupsArray.push(pl);
+                        groupsArray.push(mpl);
                     }
                 }
                 packageObject["groups"] = groupsArray; //planLevels

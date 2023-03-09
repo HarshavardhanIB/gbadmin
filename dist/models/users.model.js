@@ -4,6 +4,8 @@ exports.Users = void 0;
 const tslib_1 = require("tslib");
 const repository_1 = require("@loopback/repository");
 const customer_model_1 = require("./customer.model");
+const broker_model_1 = require("./broker.model");
+const broker_admins_model_1 = require("./broker-admins.model");
 let Users = class Users extends repository_1.Entity {
     constructor(data) {
         super(data);
@@ -124,6 +126,10 @@ tslib_1.__decorate([
     (0, repository_1.hasOne)(() => customer_model_1.Customer, { keyTo: 'user_id' }),
     tslib_1.__metadata("design:type", customer_model_1.Customer)
 ], Users.prototype, "customer", void 0);
+tslib_1.__decorate([
+    (0, repository_1.hasMany)(() => broker_model_1.Broker, { through: { model: () => broker_admins_model_1.BrokerAdmins, keyFrom: 'user_id', keyTo: 'broker_id' } }),
+    tslib_1.__metadata("design:type", Array)
+], Users.prototype, "broker", void 0);
 Users = tslib_1.__decorate([
     (0, repository_1.model)({ settings: { idInjection: false, mysql: { schema: 'group_benefitz', table: 'users' } } }),
     tslib_1.__metadata("design:paramtypes", [Object])

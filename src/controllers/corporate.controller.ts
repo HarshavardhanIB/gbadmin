@@ -12,7 +12,7 @@ import { AchService, Corporate, Excel2Service, ExcelService, FusebillService, Ht
 import { FILE_UPLOAD_SERVICE } from '../keys';
 import { FileUploadHandler } from "../types";
 import { FilesController } from './files.controller';
-import { values } from 'lodash';
+import { parseInt, values } from 'lodash';
 import * as MESSAGE from '../messages'
 import * as PATHS from '../paths';
 import { encryptPassword, generateFormLink, generateRandomPassword, getActivationCode, getFileAttributes } from '../common-functions';
@@ -35,6 +35,7 @@ let fiseBill = 11;
 import * as log4js from "log4js";
 const logger = log4js.getLogger("corporate");
 let timestamp = moment().format('YYYY-MM-DD mm-hh-ss');
+const houseClientId = process.env.HOUSE_CLIENT_ID ?? '';
 @api({ basePath: 'admin' })
 // @authenticate('jwt')
 // @authorize({
@@ -322,8 +323,36 @@ export class CorporateController {
         let requestFiles = value.files;
         console.log(requestFiles);
         try {
+          let checkCorporate = await this.brokerRepository.find({ where: { and: [{ name: apiRequest.corporationName }, { brokerType: 'CORPORATE' }] } });
+          if (checkCorporate.length > 0) {
+            this.response.status(200).send({
+              status: '201',
+              message: CORPORATE_MSG.EXISTING_CORPORATE,
+              date: new Date(),
+            });
+            return this.response;
+          }
           let groupAdmins: any = JSON.parse(apiRequest.gropupAdmin);
           if (groupAdmins.length > 0) {
+            let userCheck = await this.usersRepository.find({ where: { username: groupAdmins[0].email } });
+            console.log(userCheck);
+            if (userCheck.length > 0) {
+              this.response.status(200).send({
+                status: '201',
+                message: CORPORATE_MSG.EXISTING_MAIL,
+                date: new Date(),
+              });
+              return this.response;
+            }
+            if (!this.registrationService.validateEmail(groupAdmins[0].email)) {
+              this.response.status(422).send({
+                status: '422',
+                error: `Invalid Email`,
+                message: MESSAGE.ERRORS.email,
+                date: new Date(),
+              });
+              return this.response;
+            }
             let groupAdminsArray: any = [];
             for (const groupAdmin of groupAdmins) {
               let userObj: Users = new Users();
@@ -1456,10 +1485,38 @@ export class CorporateController {
         let requestFiles = value.files;
         console.log(requestFiles);
         try {
+          let checkCorporate = await this.brokerRepository.find({ where: { and: [{ name: apiRequest.corporationName }, { brokerType: 'CORPORATE' }] } });
+          if (checkCorporate.length > 0) {
+            this.response.status(200).send({
+              status: '201',
+              message: CORPORATE_MSG.EXISTING_CORPORATE,
+              date: new Date(),
+            });
+            return this.response;
+          }
           console.log(apiRequest);
           let groupAdmins: any = JSON.parse(apiRequest.gropupAdmin);
           // creating contact info
           if (groupAdmins.length > 0) {
+            let userCheck = await this.usersRepository.find({ where: { username: groupAdmins[0].email } });
+            console.log(userCheck);
+            if (userCheck.length > 0) {
+              this.response.status(200).send({
+                status: '201',
+                message: CORPORATE_MSG.EXISTING_MAIL,
+                date: new Date(),
+              });
+              return this.response;
+            }
+            if (!this.registrationService.validateEmail(groupAdmins[0].email)) {
+              this.response.status(422).send({
+                status: '422',
+                error: `Invalid Email`,
+                message: MESSAGE.ERRORS.email,
+                date: new Date(),
+              });
+              return this.response;
+            }
             let groupAdminsArray: any = [];
             for (const groupAdmin of groupAdmins) {
               let userObj: Users = new Users();
@@ -1503,7 +1560,8 @@ export class CorporateController {
             let brokerObj: Broker = new Broker();
             brokerObj.name = apiRequest.corporationName;
             brokerObj.brokerType = 'CORPORATE';
-            brokerObj.salesTrackingCode = apiRequest.salesTrackingCode || "0000001";
+            houseClientId == '' || houseClientId == undefined ? "" : brokerObj.parentId = parseInt(houseClientId);
+            brokerObj.salesTrackingCode = process.env.HOUSE_CLIENT_STC || '0000000001';
             brokerObj.salesTrackingType = apiRequest.salesTrackingType || '';
             brokerObj.published = true;
             brokerObj.contactId = contactInfo.id;
@@ -1824,8 +1882,6 @@ export class CorporateController {
               data: data1
             });
           }
-
-
         } catch (error) {
           console.log(error);
           this.response.status(202).send({
@@ -1834,6 +1890,7 @@ export class CorporateController {
             message: CORPORATE_MSG.REGISTRATION_FAIL,
             date: new Date(),
           });
+          await this.customerContactInfoRepository.deleteAll({ and: [{ customerId: customerId }, { contactId: contId }] })
           await this.customerRepository.deleteById(customerId);
           for (let groupAdminUser of groupAdminsUsers) {
             await this.usersRepository.deleteById(groupAdminUser);
@@ -1882,11 +1939,14 @@ export class CorporateController {
     ) apiRequest: any
   ): Promise<any> {
     let status, message, data: any = {};
+    let failedEntrys: any=[];
+    let successEmployeeCount=0;
     try {
       // user creation, customer.role=
-      let corporate: any = await this.brokerRepository.findById(corporateId, { include: [{ relation: 'customers' }] });
+      let corporate:any= await this.brokerRepository.findById(corporateId, { include: [{ relation: 'customers' }] });
       console.log(corporate)
       if (corporate) {
+       let corporateCustomerId=corporate.customers[0].id;
         // if (corporate.settingsEnableTieredHealthBenefits == 1 && (apiRequest.tier == undefined || apiRequest.tier == 0)) {
         //   message = MESSAGE.CORPORATE_MSG.TIER_ERROR
         //   this.response.status(201).send({
@@ -1916,62 +1976,75 @@ export class CorporateController {
             })
             return this.response;
           }
-          let employeeUserObj: Users = new Users();
-          employeeUserObj.username = employeeObj.emailId;
-          employeeUserObj.role = CONST.USER_ROLE.CUSTOMER;
-          let randomPswrd = await generateRandomPassword();
-          employeeUserObj.password = await encryptPassword(randomPswrd);
-          employeeUserObj.block = true;
-          employeeUserObj.activation = await getActivationCode();
-          employeeUserObj.registrationDate = moment().format('YYYY-MM-DD');
-          employeeUserObj.companyId = corporateId;
-          let employeeUser: any = await this.usersRepository.create(employeeUserObj);
-          let customerObj: Customer = new Customer();
-          customerObj.brokerId = corporateId;
-          customerObj.parentId = corporate.customers[0].id;
-          customerObj.firstName = employeeObj.firstName;
-          customerObj.lastName = employeeObj.lastName;
-          customerObj.gender = employeeObj.sex;
-          customerObj.companyName = corporate.name;
-          customerObj.isCorporateAccount = true;
-          customerObj.registrationDate = moment().format('YYYY-MM-DD');
-          customerObj.userId = employeeUser.id;
-          customerObj.employeeId = employeeObj.employeeId;
-          customerObj.assignerTier = employeeObj.tier;
-          customerObj.dateOfHiring = moments(employeeObj.dateOfHire).format(CONST.dateFormat2);
-          customerObj.annualIncome = employeeObj.walletLimit;
-          let caluclatedTier;
-          if (corporate.settingsEnableTieredHealthBenefits == 1 && corporate.settingsAllowGroupBenefitsWallet == 0) {
-            caluclatedTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire, "tier")
+          let userEmailcheck = await this.usersRepository.find({ where: { username: employeeObj.emailId } });
+          let customerCheck=await this.customerRepository.find({where:{and:[{firstName:employeeObj.firstName},{lastName:employeeObj.lastName},{parentId:corporateCustomerId}]}})
+          if (userEmailcheck.length>0) {
+            let mailExits={mailId:employeeObj.emailId,firstName:employeeObj.firstName,lastName:employeeObj.lastName,message:'Email already exits'};
+            failedEntrys.push(mailExits);
           }
-          else if (corporate.settingsEnableTieredHealthBenefits == 0 && corporate.settingsAllowGroupBenefitsWallet == 1) {
-            // customerObj.assignerTier = employeeObj.tier;
-            caluclatedTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire, "wallet")
+          else if(customerCheck.length>0){
+            let customerExits={mailId:employeeObj.emailId,firstName:employeeObj.firstName,lastName:employeeObj.lastName,message:'first name and last name already exits'};
+            failedEntrys.push(customerExits);
           }
           else {
-            caluclatedTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire, "")
+            let employeeUserObj: Users = new Users();
+            employeeUserObj.username = employeeObj.emailId;
+            employeeUserObj.role = CONST.USER_ROLE.CUSTOMER;
+            let randomPswrd = await generateRandomPassword();
+            employeeUserObj.password = await encryptPassword(randomPswrd);
+            employeeUserObj.block = true;
+            employeeUserObj.activation = await getActivationCode();
+            employeeUserObj.registrationDate = moment().format('YYYY-MM-DD');
+            employeeUserObj.companyId = corporateId;
+            let employeeUser: any = await this.usersRepository.create(employeeUserObj);
+            let customerObj: Customer = new Customer();
+            customerObj.brokerId = corporateId;
+            customerObj.parentId = corporate.customers[0].id;
+            customerObj.firstName = employeeObj.firstName;
+            customerObj.lastName = employeeObj.lastName;
+            customerObj.gender = employeeObj.sex;
+            customerObj.companyName = corporate.name;
+            customerObj.isCorporateAccount = true;
+            customerObj.registrationDate = moment().format('YYYY-MM-DD');
+            customerObj.userId = employeeUser.id;
+            customerObj.employeeId = employeeObj.employeeId;
+            customerObj.assignerTier = employeeObj.tier;
+            customerObj.dateOfHiring = moments(employeeObj.dateOfHire).format(CONST.dateFormat2);
+            customerObj.annualIncome = employeeObj.walletLimit;
+            let caluclatedTier;
+            if (corporate.settingsEnableTieredHealthBenefits == 1 && (corporate.settingsAllowGroupBenefitsWallet == undefined||corporate.settingsAllowGroupBenefitsWallet == 0)) {
+              caluclatedTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire, "tier")
+            }
+            else if ((corporate.settingsEnableTieredHealthBenefits == 0 ||corporate.settingsEnableTieredHealthBenefits == undefined) && corporate.settingsAllowGroupBenefitsWallet == 1) {
+              // customerObj.assignerTier = employeeObj.tier;
+              caluclatedTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire, "wallet")
+            }
+            else {
+              caluclatedTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire, "")
+            }
+            // actualTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire,"")
+            caluclatedTier != 0 ? customerObj.actualTier = caluclatedTier : customerObj.actualTier = customerObj.assignerTier;
+            let customer: any = await this.customerRepository.create(customerObj);
+            let customerContactInfoObj: ContactInformation = new ContactInformation();
+            customerContactInfoObj.apt = employeeObj.apt ?? '';
+            customerContactInfoObj.line1 = employeeObj.line1 ?? '';
+            customerContactInfoObj.line2 = employeeObj.line2 ?? '';
+            customerContactInfoObj.city = employeeObj.residentIn;
+            customerContactInfoObj.primaryEmail = employeeObj.emailId;
+            customerContactInfoObj.country = CONST.DEFAULT_COUNTRY.name;
+            customerContactInfoObj.contactType = CONST.USER_ROLE.CUSTOMER;
+            customerContactInfoObj.addressType = CONST.ADDRESS_TYPE.HOME_ADDRESS;
+            customerContactInfoObj.primaryPhone = employeeObj.phoneNum.toString();
+            customerContactInfoObj.state = employeeObj.provienceName;
+            console.log(customerContactInfoObj);
+            let contcatInfo: any = await this.contactInformationRepository.create(customerContactInfoObj);
+            let customerContact: CustomerContactInfo = new CustomerContactInfo();
+            customerContact.customerId = customer.id;
+            customerContact.contactId = customerContact.id;
+            let customerContactInfo = await this.customerContactInfoRepository.create(customerContact);
+            // data['customerId'] = customer.id;
+            successEmployeeCount=successEmployeeCount+1;
           }
-          // actualTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire,"")
-          caluclatedTier != 0 ? customerObj.actualTier = caluclatedTier : customerObj.actualTier = customerObj.assignerTier;
-          let customer: any = await this.customerRepository.create(customerObj);
-          let customerContactInfoObj: ContactInformation = new ContactInformation();
-          customerContactInfoObj.apt = employeeObj.apt ?? '';
-          customerContactInfoObj.line1 = employeeObj.line1 ?? '';
-          customerContactInfoObj.line2 = employeeObj.line2 ?? '';
-          customerContactInfoObj.city = employeeObj.residentIn;
-          customerContactInfoObj.primaryEmail = employeeObj.emailId;
-          customerContactInfoObj.country = CONST.DEFAULT_COUNTRY.name;
-          customerContactInfoObj.contactType = CONST.USER_ROLE.CUSTOMER;
-          customerContactInfoObj.addressType = CONST.ADDRESS_TYPE.HOME_ADDRESS;
-          customerContactInfoObj.primaryPhone = employeeObj.phoneNum.toString();
-          customerContactInfoObj.state = employeeObj.provienceName;
-          console.log(customerContactInfoObj);
-          let contcatInfo: any = await this.contactInformationRepository.create(customerContactInfoObj);
-          let customerContact: CustomerContactInfo = new CustomerContactInfo();
-          customerContact.customerId = customer.id;
-          customerContact.contactId = customerContact.id;
-          let customerContactInfo = await this.customerContactInfoRepository.create(customerContact);
-          // data['customerId'] = customer.id;
         }
         status = 200;
         message = MESSAGE.CORPORATE_MSG.EMP_REGISTRATION_SUCCESS
@@ -1987,7 +2060,7 @@ export class CorporateController {
       message = error.message;
     }
     this.response.status(status).send({
-      status, message, data, dete: new Date()
+      status, message, data, dete: new Date(),"failedEmployeesList":failedEntrys,"successEmployeeCount":successEmployeeCount
     })
     return this.response;
   }
@@ -3162,10 +3235,10 @@ export class CorporateController {
         console.log(plansLevelFilter);
         const groupsArray: any = []
         for (const pl of planLevels) {
-          var mpl:any={};
-          let mpl1:any={};
+          var mpl: any = {};
+          let mpl1: any = {};
           if (pl.plans?.length > 0) {
-            mpl=pl;
+            mpl = pl;
             const plansArray: any = []
             // for (const plan of pl.plans) {
             //   plan.options = []
@@ -3194,9 +3267,9 @@ export class CorporateController {
             console.log(blockDivisionforPlanLevel[pl?.id || 0]);
             pl.categorization = blockDivisionforPlanLevel[pl?.id || 0]
             console.log(pl);
-            mpl['categorization']= blockDivisionforPlanLevel[pl?.id || 0];
+            mpl['categorization'] = blockDivisionforPlanLevel[pl?.id || 0];
             // mpl1={'plans':pl,'categorization':blockDivisionforPlanLevel[pl?.id || 0]}
-            groupsArray.push(mpl);            
+            groupsArray.push(mpl);
           }
         }
         packageObject["groups"] = groupsArray//planLevels

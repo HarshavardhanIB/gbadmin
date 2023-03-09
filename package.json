@@ -1,7 +1,7 @@
 {
   "name": "groupbenefits-adminportal-api",
   "description": "API services for GroupBenefitz Admin Portal",
-  "version": "0.0.6.2",
+  "version": "0.7.0",
   "keywords": [
     "API",
     "LoopBack"

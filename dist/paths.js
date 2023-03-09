@@ -48,6 +48,7 @@ exports.USER_API_BASE_PATH = exports.API_BASE_PATH + "user/";
 exports.FUSEBILL_API_BASE_PATH = exports.API_BASE_PATH + "fusebill/";
 //corporate paths
 exports.CORPORATE = {
+    UPDATE_CUSTOME_TIER: '/corporate/customers/updateTier',
     SIGNUP: '/corporate/signup',
     LOGO: '/corporate/{company}/logo',
     FORMCONFIG: '/corporateSignup/formConfig',

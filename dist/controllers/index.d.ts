@@ -25,3 +25,5 @@ export * from './plans-availability-insurance-plans.controller';
 export * from './insurance-plans-plans-availability.controller';
 export * from './plan-level-insurance-plans.controller';
 export * from './broker-customer.controller';
+export * from './caluclations.controller';
+export * from './users-broker.controller';

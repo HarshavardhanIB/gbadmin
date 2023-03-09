@@ -1,5 +1,7 @@
-import { Entity, hasOne, model, property } from '@loopback/repository';
+import { Entity, hasOne, model, property, hasMany} from '@loopback/repository';
 import { Customer } from './customer.model';
+import {Broker} from './broker.model';
+import {BrokerAdmins} from './broker-admins.model';
 
 @model({ settings: { idInjection: false, mysql: { schema: 'group_benefitz', table: 'users' } } })
 export class Users extends Entity{
@@ -104,6 +106,9 @@ export class Users extends Entity{
   
   @hasOne(() => Customer, { keyTo: 'user_id' })
   customer: Customer;
+
+  @hasMany(() => Broker, {through: {model: () => BrokerAdmins, keyFrom: 'user_id', keyTo: 'broker_id'}})
+  broker: Broker[];
   // Define well-known properties here
 
   // Indexer property to allow additional data

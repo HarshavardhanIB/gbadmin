@@ -24,6 +24,8 @@ export declare const EMAIL_EXISTS: any;
 export declare const CORPORATE_MSG: {
     REGISTRATION_SUCCESS: string;
     REGISTRATION_FAIL: string;
+    EXISTING_CORPORATE: string;
+    EXISTING_MAIL: string;
     LOGO_NOT_SET: string;
     LOGO: string;
     NOLOGO: string;

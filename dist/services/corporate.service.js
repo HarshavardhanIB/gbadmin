@@ -230,13 +230,22 @@ let Corporate = class Corporate {
         return dates;
     }
     async getActualTiers(corporateId, wallerLimit, dateofHire, type) {
+        console.log(corporateId);
+        if (type == '')
+            console.log("empty");
+        else
+            console.log(type);
         let data = {};
         let hiredate = (0, common_services_1.moments)(dateofHire);
+        console.log(hiredate);
         const today = (0, moment_1.default)();
         const diffInYears = today.diff(hiredate, 'years');
+        console.log(diffInYears);
         let corporateAnnualIncomeTiers = await this.corporateTiersRepository.find({ order: ['annualIncome ASC'], where: { and: [{ brokerId: corporateId }, { tierType: CONST.TIER_TYPE.AI }] } });
-        let corporatelengthOfServiceTiers = await this.corporateTiersRepository.find({ where: { and: [{ brokerId: corporateId }, { tierType: CONST.TIER_TYPE.LOS }, { toLength: { lt: diffInYears } }, { fromLength: { gte: diffInYears } }] } });
+        let corporatelengthOfServiceTiers = await this.corporateTiersRepository.find({ where: { and: [{ brokerId: corporateId }, { tierType: CONST.TIER_TYPE.LOS }, { toLength: { gt: diffInYears } }, { fromLength: { lte: diffInYears } }] } });
+        // console.log(corporatelengthOfServiceTiers);
         if (type == "wallet") {
+            console.log(corporateAnnualIncomeTiers);
             if (corporateAnnualIncomeTiers.length > 0) {
                 if (corporateAnnualIncomeTiers.length > 1) {
                     for (const corporateAnnualIncomeTier of corporateAnnualIncomeTiers) {

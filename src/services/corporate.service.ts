@@ -242,13 +242,22 @@ enrollmentDate: "2022-10-01"
 
   }
   async getActualTiers(corporateId: number, wallerLimit: number, dateofHire:any,type:any) {
+    console.log(corporateId);
+    if(type=='')
+      console.log("empty")
+    else
+      console.log(type)
     let data: any = {};
     let hiredate = moments(dateofHire);
+    console.log(hiredate)
     const today = moment();
     const diffInYears = today.diff(hiredate, 'years');
+    console.log(diffInYears);
     let corporateAnnualIncomeTiers = await this.corporateTiersRepository.find({ order: ['annualIncome ASC'], where: { and: [{ brokerId: corporateId }, { tierType: CONST.TIER_TYPE.AI }] } });
-    let corporatelengthOfServiceTiers: any = await this.corporateTiersRepository.find({ where: { and: [{ brokerId: corporateId }, { tierType: CONST.TIER_TYPE.LOS },{toLength:{lt:diffInYears}},{fromLength:{gte:diffInYears}}] } });
+    let corporatelengthOfServiceTiers: any = await this.corporateTiersRepository.find({ where: { and: [{ brokerId: corporateId }, { tierType: CONST.TIER_TYPE.LOS },{toLength:{gt:diffInYears}},{fromLength:{lte:diffInYears}}] } });
+    // console.log(corporatelengthOfServiceTiers);
     if(type=="wallet"){
+      console.log(corporateAnnualIncomeTiers);
       if (corporateAnnualIncomeTiers.length > 0) {
         if (corporateAnnualIncomeTiers.length > 1) {
           for (const corporateAnnualIncomeTier of corporateAnnualIncomeTiers) {
@@ -276,7 +285,7 @@ enrollmentDate: "2022-10-01"
         }
       }
     }
-    else if (type=="tier"){
+    else if(type=="tier"){
      if(corporatelengthOfServiceTiers.length>0){
         console.log(corporateAnnualIncomeTiers);
         return corporatelengthOfServiceTiers[0].id;

@@ -36,6 +36,8 @@ export const EMAIL_EXISTS: any = {
 export const CORPORATE_MSG={
   REGISTRATION_SUCCESS:'Corporate registered successfully ',
   REGISTRATION_FAIL:'Corporate registration failed',
+  EXISTING_CORPORATE:'Corporate already exists',
+  EXISTING_MAIL:'Email already exists use another email or contact admin',
   LOGO_NOT_SET:'logo is not set',
   LOGO:'logo',
   NOLOGO:'No logo found',

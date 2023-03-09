@@ -3,6 +3,8 @@ export declare class BrokerAdmins extends Entity {
     id?: number;
     userId: number;
     brokerId: number;
+    user_id?: number;
+    broker_id?: number;
     [prop: string]: any;
     constructor(data?: Partial<BrokerAdmins>);
 }

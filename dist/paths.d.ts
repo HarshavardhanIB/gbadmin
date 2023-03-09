@@ -34,6 +34,7 @@ export declare const CUSTOMER_API_BASE_PATH: string;
 export declare const USER_API_BASE_PATH: string;
 export declare const FUSEBILL_API_BASE_PATH: string;
 export declare const CORPORATE: {
+    UPDATE_CUSTOME_TIER: string;
     SIGNUP: string;
     LOGO: string;
     FORMCONFIG: string;
