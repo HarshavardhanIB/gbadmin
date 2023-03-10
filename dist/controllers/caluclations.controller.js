@@ -3,14 +3,17 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CaluclationsController = void 0;
 const tslib_1 = require("tslib");
+const authentication_1 = require("@loopback/authentication");
+const authorization_1 = require("@loopback/authorization");
 const core_1 = require("@loopback/core");
 const repository_1 = require("@loopback/repository");
 const rest_1 = require("@loopback/rest");
+const auth_middleware_1 = require("../middlewares/auth.middleware");
 const models_1 = require("../models");
 const paths_1 = require("../paths");
 const repositories_1 = require("../repositories");
 const services_1 = require("../services");
-// import {inject} from '@loopback/core';
+const CONST = tslib_1.__importStar(require("../constants"));
 let CaluclationsController = class CaluclationsController {
     constructor(brokerRepository, corporateService, customerRepository, response) {
         this.brokerRepository = brokerRepository;
@@ -105,6 +108,13 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], CaluclationsController.prototype, "customerTierUpdate", null);
 CaluclationsController = tslib_1.__decorate([
+    (0, authentication_1.authenticate)('jwt'),
+    (0, authorization_1.authorize)({
+        allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR],
+        voters: [auth_middleware_1.basicAuthorization]
+    })
+    // import {inject} from '@loopback/core';
+    ,
     tslib_1.__param(0, (0, repository_1.repository)(repositories_1.BrokerRepository)),
     tslib_1.__param(1, (0, core_1.service)(services_1.Corporate)),
     tslib_1.__param(2, (0, repository_1.repository)(repositories_1.CustomerRepository)),

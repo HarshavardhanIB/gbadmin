@@ -38,11 +38,11 @@ import * as log4js from "log4js";
 //   categories: { default: { appenders: ["brokerController"], level: "error" } },
 // });
 const logger = log4js.getLogger("broker");
-// @authenticate('jwt')
-// @authorize({
-//   allowedRoles: ['BROKER', 'ADMINISTRATOR'],
-//   voters: [basicAuthorization]
-// })
+@authenticate('jwt')
+@authorize({
+  allowedRoles: ['BROKER', 'ADMINISTRATOR'],
+  voters: [basicAuthorization]
+})
 export class BrokerController {
   constructor(
     @repository(BrokerRepository)

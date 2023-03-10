@@ -10,7 +10,7 @@ export declare class Employee extends Entity {
     residentIn: string;
     familyStatus: string;
     phoneNum: number;
-    walletLimit: number;
+    annualIncome: number;
     provienceId: number;
     provienceName: string;
     tier: number;

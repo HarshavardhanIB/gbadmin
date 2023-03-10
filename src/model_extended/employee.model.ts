@@ -33,7 +33,7 @@ export class Employee extends Entity {
     occupation: string;
     @property({
         type: 'date',
-        required: true,
+        required: false,
     })
     dateOfHire: string;
     @property({
@@ -59,9 +59,9 @@ export class Employee extends Entity {
     phoneNum:number;
     @property({
         type:'number',
-        require:true,
+        require:false,
     })
-    walletLimit:number;
+    annualIncome:number;
     @property({
         type:'number',
         require:true,

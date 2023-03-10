@@ -50,7 +50,7 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'date',
-        required: true,
+        required: false,
     }),
     tslib_1.__metadata("design:type", String)
 ], Employee.prototype, "dateOfHire", void 0);
@@ -86,10 +86,10 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',
-        require: true,
+        require: false,
     }),
     tslib_1.__metadata("design:type", Number)
-], Employee.prototype, "walletLimit", void 0);
+], Employee.prototype, "annualIncome", void 0);
 tslib_1.__decorate([
     (0, repository_1.property)({
         type: 'number',

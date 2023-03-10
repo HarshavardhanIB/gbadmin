@@ -10,9 +10,7 @@ export class Excel2Service {
   async excelToJson(filepath: string) {
     let workbook = xlsx.readFile(filepath);
     let worksheet = workbook.Sheets[workbook.SheetNames[0]]
-    let jsonSheetData = xlsx.utils.sheet_to_json(worksheet, { defval: '' });
-    let jsonData=JSON.stringify(jsonSheetData);
-    console.log(jsonData);
-    return jsonData; 
+    let jsonSheetData = xlsx.utils.sheet_to_json(worksheet, { defval: '' });    
+    return jsonSheetData; 
   }
 }

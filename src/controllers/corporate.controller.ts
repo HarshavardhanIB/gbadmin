@@ -33,15 +33,16 @@ import { Console } from 'console';
 let fuseBillCustomerCreation = true;
 let fiseBill = 11;
 import * as log4js from "log4js";
+import { checkServerIdentity } from 'tls';
 const logger = log4js.getLogger("corporate");
 let timestamp = moment().format('YYYY-MM-DD mm-hh-ss');
 const houseClientId = process.env.HOUSE_CLIENT_ID ?? '';
 @api({ basePath: 'admin' })
-// @authenticate('jwt')
-// @authorize({
-//   allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR],
-//   voters: [basicAuthorization]
-// })
+@authenticate('jwt')
+@authorize({
+  allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR],
+  voters: [basicAuthorization]
+})
 export class CorporateController {
   constructor(
     @service(HttpService) public http: HttpService,
@@ -1969,7 +1970,7 @@ export class CorporateController {
             })
             return this.response;
           }
-          if (corporate.settingsEnableTieredHealthBenefits == 1 && (employeeObj.walletLimit == undefined || employeeObj.walletLimit == 0)) {
+          if (corporate.settingsEnableTieredHealthBenefits == 1 && (employeeObj.annualIncome == undefined || employeeObj.annualIncome == 0)) {
             message = MESSAGE.CORPORATE_MSG.TIER_ERROR
             this.response.status(201).send({
               status, message, data, dete: new Date()
@@ -2010,19 +2011,19 @@ export class CorporateController {
             customerObj.employeeId = employeeObj.employeeId;
             customerObj.assignerTier = employeeObj.tier;
             customerObj.dateOfHiring = moments(employeeObj.dateOfHire).format(CONST.dateFormat2);
-            customerObj.annualIncome = employeeObj.walletLimit;
+            customerObj.annualIncome = employeeObj.annualIncome;
             let caluclatedTier;
             if (corporate.settingsEnableTieredHealthBenefits == 1 && (corporate.settingsAllowGroupBenefitsWallet == undefined||corporate.settingsAllowGroupBenefitsWallet == 0)) {
-              caluclatedTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire, "tier")
+              caluclatedTier = await this.corporateService.getActualTiers(corporateId, employeeObj.annualIncome, employeeObj.dateOfHire, "tier")
             }
             else if ((corporate.settingsEnableTieredHealthBenefits == 0 ||corporate.settingsEnableTieredHealthBenefits == undefined) && corporate.settingsAllowGroupBenefitsWallet == 1) {
               // customerObj.assignerTier = employeeObj.tier;
-              caluclatedTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire, "wallet")
+              caluclatedTier = await this.corporateService.getActualTiers(corporateId, employeeObj.annualIncome, employeeObj.dateOfHire, "wallet")
             }
             else {
-              caluclatedTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire, "")
+              caluclatedTier = await this.corporateService.getActualTiers(corporateId, employeeObj.annualIncome, employeeObj.dateOfHire, "")
             }
-            // actualTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire,"")
+            // actualTier = await this.corporateService.getActualTiers(corporateId, employeeObj.annualIncome, employeeObj.dateOfHire,"")
             caluclatedTier != 0 ? customerObj.actualTier = caluclatedTier : customerObj.actualTier = customerObj.assignerTier;
             let customer: any = await this.customerRepository.create(customerObj);
             let customerContactInfoObj: ContactInformation = new ContactInformation();
@@ -2463,6 +2464,8 @@ export class CorporateController {
     })
     return this.response;
   }
+  @authenticate.skip()
+  @authorize.skip()
   @post(CORPORATE.EXCEL)
   @response(200, {
     description: 'upload the excel file and insert employyes in the database',
@@ -2491,6 +2494,7 @@ export class CorporateController {
       }
     }
   }) request: any, @inject(RestBindings.Http.RESPONSE) response: Response) {
+    let status,message,data:any=[];
     let p = new Promise<any>((resolve, reject) => {
       this.handler(request, response, err => {
         if (err) reject(err);
@@ -2501,13 +2505,52 @@ export class CorporateController {
       });
     });
     p.then(async value => {
-      let excelDatainJson = await this.excel2Service.excelToJson(value.files[0].filepath);
+      let excelDatainJson:any = await this.excel2Service.excelToJson(value.files[0].filepath);
       for (const employeeData of excelDatainJson) {
-        let addExployee = await this.corporateService.addEmployee(employeeData, corporateId);
+        console.log(employeeData);
+        // let addExployee = await this.corporateService.addEmployee(employeeData, corporateId);
+        // sample object
+        // {
+        //   employeeId: 3,
+        //   firstName: 'test fn',
+        //   lastName: 'test ln',
+        //   emailId: 'test3@gmail.com',
+        //   occupation: 'test',
+        //   dateOfHire: 39282,
+        //   sex: 'male',
+        //   city: 'Hyderabad',
+        //   provienceName: 'Ontario',
+        //   familyStatus: 'single',
+        //   phoneNum: 9988765562,
+        //   tier: 1,
+        //   annualIncome: 12345
+        // }
+        let employeeObj:Employee=new Employee();
+        employeeObj.firstName=employeeData.firstName;
+        employeeObj.lastName=employeeData.lastName;
+        employeeObj.annualIncome=employeeData.annualIncome||0;
+        employeeObj.dateOfHire=employeeData.dateOfHire||"";
+        employeeObj.employeeId=employeeData.employeeId;
+        employeeObj.familyStatus=employeeData.familyStatus||'single';
+        employeeObj.provienceName=employeeData.provienceName;
+        let provinceInfo=await this.statesAndProvincesRepository.findOne({where:{name:employeeData.provienceName}})
+        employeeObj.provienceId=provinceInfo?.id || 0;
+        employeeObj.phoneNum=employeeData.phoneNum;
+        employeeObj.tier=employeeData.tier
+        employeeObj.residentIn=employeeData.city
+        employeeObj.emailId=employeeData.emailId
+        employeeObj.occupation=employeeData.occupation
+        employeeObj.sex=employeeData.sex
+        let addExployee = await this.corporateService.addEmployee(employeeObj, corporateId);
+        if(!addExployee){
+        let failedEmployees={'firstName':employeeData.firstName,"lastName":employeeData.lastName};
+        data.push(failedEmployees);
+        }
       }
-
-      // let addingEmployee=await this.corporateService.
-      //  console.log(excelDatainJson);
+      this.response.status(200).send({
+        status:200,message:'ok',data
+      })
+      return this.response;
     })
   }
   @get(CORPORATE.TIER)

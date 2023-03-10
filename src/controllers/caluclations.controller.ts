@@ -1,14 +1,22 @@
 // Uncomment these imports to begin using these cool features!
 
+import { authenticate } from "@loopback/authentication";
+import { authorize } from "@loopback/authorization";
 import { inject, service } from "@loopback/core";
 import { repository } from "@loopback/repository";
 import { param, post, Response, response, RestBindings } from "@loopback/rest";
 import moment from "moment";
+import { basicAuthorization } from "../middlewares/auth.middleware";
 import { Customer } from "../models";
 import { CORPORATE } from "../paths";
 import { BrokerRepository, CustomerRepository } from "../repositories";
 import { Corporate } from "../services";
-
+import * as CONST from '../constants'
+@authenticate('jwt')
+@authorize({
+  allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR],
+  voters: [basicAuthorization]
+})
 // import {inject} from '@loopback/core';
 export class CaluclationsController {
   constructor(

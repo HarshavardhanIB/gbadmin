@@ -1,4 +1,4 @@
 export declare class Excel2Service {
     constructor();
-    excelToJson(filepath: string): Promise<string>;
+    excelToJson(filepath: string): Promise<unknown[]>;
 }

@@ -23,6 +23,7 @@ const paths_1 = require("../paths");
 const messages_1 = require("../messages");
 const storage_helper_1 = require("../storage.helper");
 const constants_1 = require("../constants");
+const authentication_1 = require("@loopback/authentication");
 const authorization_1 = require("@loopback/authorization");
 const auth_middleware_1 = require("../middlewares/auth.middleware");
 const model_extended_1 = require("../model_extended");
@@ -1517,7 +1518,7 @@ let CorporateController = class CorporateController {
                         });
                         return this.response;
                     }
-                    if (corporate.settingsEnableTieredHealthBenefits == 1 && (employeeObj.walletLimit == undefined || employeeObj.walletLimit == 0)) {
+                    if (corporate.settingsEnableTieredHealthBenefits == 1 && (employeeObj.annualIncome == undefined || employeeObj.annualIncome == 0)) {
                         message = MESSAGE.CORPORATE_MSG.TIER_ERROR;
                         this.response.status(201).send({
                             status, message, data, dete: new Date()
@@ -1558,19 +1559,19 @@ let CorporateController = class CorporateController {
                         customerObj.employeeId = employeeObj.employeeId;
                         customerObj.assignerTier = employeeObj.tier;
                         customerObj.dateOfHiring = (0, services_1.moments)(employeeObj.dateOfHire).format(CONST.dateFormat2);
-                        customerObj.annualIncome = employeeObj.walletLimit;
+                        customerObj.annualIncome = employeeObj.annualIncome;
                         let caluclatedTier;
                         if (corporate.settingsEnableTieredHealthBenefits == 1 && (corporate.settingsAllowGroupBenefitsWallet == undefined || corporate.settingsAllowGroupBenefitsWallet == 0)) {
-                            caluclatedTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire, "tier");
+                            caluclatedTier = await this.corporateService.getActualTiers(corporateId, employeeObj.annualIncome, employeeObj.dateOfHire, "tier");
                         }
                         else if ((corporate.settingsEnableTieredHealthBenefits == 0 || corporate.settingsEnableTieredHealthBenefits == undefined) && corporate.settingsAllowGroupBenefitsWallet == 1) {
                             // customerObj.assignerTier = employeeObj.tier;
-                            caluclatedTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire, "wallet");
+                            caluclatedTier = await this.corporateService.getActualTiers(corporateId, employeeObj.annualIncome, employeeObj.dateOfHire, "wallet");
                         }
                         else {
-                            caluclatedTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire, "");
+                            caluclatedTier = await this.corporateService.getActualTiers(corporateId, employeeObj.annualIncome, employeeObj.dateOfHire, "");
                         }
-                        // actualTier = await this.corporateService.getActualTiers(corporateId, employeeObj.walletLimit, employeeObj.dateOfHire,"")
+                        // actualTier = await this.corporateService.getActualTiers(corporateId, employeeObj.annualIncome, employeeObj.dateOfHire,"")
                         caluclatedTier != 0 ? customerObj.actualTier = caluclatedTier : customerObj.actualTier = customerObj.assignerTier;
                         let customer = await this.customerRepository.create(customerObj);
                         let customerContactInfoObj = new models_1.ContactInformation();
@@ -1840,6 +1841,7 @@ let CorporateController = class CorporateController {
         return this.response;
     }
     async uploadEmployeeExcel(corporateId, request, response) {
+        let status, message, data = [];
         let p = new Promise((resolve, reject) => {
             this.handler(request, response, err => {
                 if (err)
@@ -1853,10 +1855,50 @@ let CorporateController = class CorporateController {
         p.then(async (value) => {
             let excelDatainJson = await this.excel2Service.excelToJson(value.files[0].filepath);
             for (const employeeData of excelDatainJson) {
-                let addExployee = await this.corporateService.addEmployee(employeeData, corporateId);
+                console.log(employeeData);
+                // let addExployee = await this.corporateService.addEmployee(employeeData, corporateId);
+                // sample object
+                // {
+                //   employeeId: 3,
+                //   firstName: 'test fn',
+                //   lastName: 'test ln',
+                //   emailId: 'test3@gmail.com',
+                //   occupation: 'test',
+                //   dateOfHire: 39282,
+                //   sex: 'male',
+                //   city: 'Hyderabad',
+                //   provienceName: 'Ontario',
+                //   familyStatus: 'single',
+                //   phoneNum: 9988765562,
+                //   tier: 1,
+                //   annualIncome: 12345
+                // }
+                let employeeObj = new model_extended_1.Employee();
+                employeeObj.firstName = employeeData.firstName;
+                employeeObj.lastName = employeeData.lastName;
+                employeeObj.annualIncome = employeeData.annualIncome || 0;
+                employeeObj.dateOfHire = employeeData.dateOfHire || "";
+                employeeObj.employeeId = employeeData.employeeId;
+                employeeObj.familyStatus = employeeData.familyStatus || 'single';
+                employeeObj.provienceName = employeeData.provienceName;
+                let provinceInfo = await this.statesAndProvincesRepository.findOne({ where: { name: employeeData.provienceName } });
+                employeeObj.provienceId = (provinceInfo === null || provinceInfo === void 0 ? void 0 : provinceInfo.id) || 0;
+                employeeObj.phoneNum = employeeData.phoneNum;
+                employeeObj.tier = employeeData.tier;
+                employeeObj.residentIn = employeeData.city;
+                employeeObj.emailId = employeeData.emailId;
+                employeeObj.occupation = employeeData.occupation;
+                employeeObj.sex = employeeData.sex;
+                let addExployee = await this.corporateService.addEmployee(employeeObj, corporateId);
+                if (!addExployee) {
+                    let failedEmployees = { 'firstName': employeeData.firstName, "lastName": employeeData.lastName };
+                    data.push(failedEmployees);
+                }
             }
-            // let addingEmployee=await this.corporateService.
-            //  console.log(excelDatainJson);
+            this.response.status(200).send({
+                status: 200, message: 'ok', data
+            });
+            return this.response;
         });
     }
     async tierList(corporateId) {
@@ -2959,6 +3001,8 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], CorporateController.prototype, "corporateTiers", null);
 tslib_1.__decorate([
+    authentication_1.authenticate.skip(),
+    authorization_1.authorize.skip(),
     (0, rest_1.post)(paths_1.CORPORATE.EXCEL),
     (0, rest_1.response)(200, {
         description: 'upload the excel file and insert employyes in the database',
@@ -3258,13 +3302,12 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], CorporateController.prototype, "planlevels", null);
 CorporateController = tslib_1.__decorate([
-    (0, rest_1.api)({ basePath: 'admin' })
-    // @authenticate('jwt')
-    // @authorize({
-    //   allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR],
-    //   voters: [basicAuthorization]
-    // })
-    ,
+    (0, rest_1.api)({ basePath: 'admin' }),
+    (0, authentication_1.authenticate)('jwt'),
+    (0, authorization_1.authorize)({
+        allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR],
+        voters: [auth_middleware_1.basicAuthorization]
+    }),
     tslib_1.__param(0, (0, core_1.service)(services_1.HttpService)),
     tslib_1.__param(1, (0, repository_1.repository)(repositories_1.BrokerRepository)),
     tslib_1.__param(2, (0, core_1.inject)(rest_1.RestBindings.Http.RESPONSE)),

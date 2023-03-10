@@ -150,43 +150,82 @@ let Corporate = class Corporate {
         return true;
     }
     async addEmployee(data, corporateId) {
+        var _a, _b, _c;
         try {
             let corporate = await this.BrokerRepository.findById(corporateId);
             if (corporate) {
-                let employeeUserObj = new models_1.Users();
-                employeeUserObj.username = data.emailId;
-                employeeUserObj.role = CONST.USER_ROLE.CUSTOMER;
-                let randomPswrd = await (0, common_functions_1.generateRandomPassword)();
-                employeeUserObj.password = await (0, common_functions_1.encryptPassword)(randomPswrd);
-                employeeUserObj.block = true;
-                employeeUserObj.activation = await (0, common_functions_1.getActivationCode)();
-                employeeUserObj.registrationDate = (0, moment_1.default)().format('YYYY-MM-DD');
-                employeeUserObj.companyId = corporateId;
-                let employeeUser = await this.usersRepository.create(employeeUserObj);
-                let customerObj = new models_1.Customer();
-                customerObj.brokerId = corporateId;
-                //firstname and last should be created in backend level
-                customerObj.firstName = data.firstName;
-                customerObj.lastName = data.lastName;
-                customerObj.gender = data.sex;
-                customerObj.companyName = corporate.name;
-                customerObj.isCorporateAccount = false;
-                customerObj.registrationDate = (0, moment_1.default)().format('YYYY-MM-DD');
-                customerObj.userId = employeeUser.id;
-                let customer = await this.CustomerRepository.create(customerObj);
-                let customerContactInfoObj = new models_1.ContactInformation();
-                customerContactInfoObj.city = data.residentIn;
-                customerContactInfoObj.state = CONST.DEFAULT_COUNTRY.name;
-                customerContactInfoObj.contactType = CONST.USER_ROLE.CUSTOMER;
-                customerContactInfoObj.addressType = CONST.ADDRESS_TYPE.HOME_ADDRESS;
-                customerContactInfoObj.primaryEmail = data.emailId;
-                customerContactInfoObj.primaryPhone = data.phoneNum.toString();
-                customerContactInfoObj.state = data.provienceName;
-                let contcatInfo = await this.ContactInformationRepository.create(customerContactInfoObj);
-                let customerContact = new models_1.CustomerContactInfo();
-                customerContact.customerId = customer.id;
-                customerContact.contactId = customerContact.id;
-                let customerContactInfo = await this.CustomerContactInfoRepository.create(customerContact);
+                let corporateCustomerId = corporate.customers[0].id;
+                if (corporate.settingsEnableTieredHealthBenefits == 1 && (data.tier == undefined || data.tier == 0)) {
+                    return false;
+                }
+                if (corporate.settingsEnableTieredHealthBenefits == 1 && (data.annualIncome == undefined || data.annualIncome == 0)) {
+                    return false;
+                }
+                let userEmailcheck = await this.usersRepository.find({ where: { username: data.emailId } });
+                let customerCheck = await this.CustomerRepository.find({ where: { and: [{ firstName: data.firstName }, { lastName: data.lastName }, { parentId: corporateCustomerId }] } });
+                if (userEmailcheck.length > 0) {
+                    return false;
+                }
+                else if (customerCheck.length > 0) {
+                    return false;
+                }
+                else {
+                    let employeeUserObj = new models_1.Users();
+                    employeeUserObj.username = data.emailId;
+                    employeeUserObj.role = CONST.USER_ROLE.CUSTOMER;
+                    let randomPswrd = await (0, common_functions_1.generateRandomPassword)();
+                    employeeUserObj.password = await (0, common_functions_1.encryptPassword)(randomPswrd);
+                    employeeUserObj.block = true;
+                    employeeUserObj.activation = await (0, common_functions_1.getActivationCode)();
+                    employeeUserObj.registrationDate = (0, moment_1.default)().format('YYYY-MM-DD');
+                    employeeUserObj.companyId = corporateId;
+                    let employeeUser = await this.usersRepository.create(employeeUserObj);
+                    let customerObj = new models_1.Customer();
+                    customerObj.brokerId = corporateId;
+                    customerObj.parentId = corporate.customers[0].id;
+                    customerObj.firstName = data.firstName;
+                    customerObj.lastName = data.lastName;
+                    customerObj.gender = data.sex;
+                    customerObj.companyName = corporate.name;
+                    customerObj.isCorporateAccount = true;
+                    customerObj.registrationDate = (0, moment_1.default)().format('YYYY-MM-DD');
+                    customerObj.userId = employeeUser.id;
+                    customerObj.employeeId = data.employeeId;
+                    customerObj.assignerTier = data.tier;
+                    customerObj.dateOfHiring = (0, common_services_1.moments)(data.dateOfHire).format(CONST.dateFormat2);
+                    customerObj.annualIncome = data.annualIncome;
+                    let caluclatedTier;
+                    if (corporate.settingsEnableTieredHealthBenefits == 1 && (corporate.settingsAllowGroupBenefitsWallet == undefined || corporate.settingsAllowGroupBenefitsWallet == 0)) {
+                        caluclatedTier = await this.getActualTiers(corporateId, data.annualIncome, data.dateOfHire, "tier");
+                    }
+                    else if ((corporate.settingsEnableTieredHealthBenefits == 0 || corporate.settingsEnableTieredHealthBenefits == undefined) && corporate.settingsAllowGroupBenefitsWallet == 1) {
+                        // customerObj.assignerTier = data.tier;
+                        caluclatedTier = await this.getActualTiers(corporateId, data.annualIncome, data.dateOfHire, "wallet");
+                    }
+                    else {
+                        caluclatedTier = await this.getActualTiers(corporateId, data.annualIncome, data.dateOfHire, "");
+                    }
+                    caluclatedTier != 0 ? customerObj.actualTier = caluclatedTier : customerObj.actualTier = customerObj.assignerTier;
+                    let customer = await this.CustomerRepository.create(customerObj);
+                    let customerContactInfoObj = new models_1.ContactInformation();
+                    customerContactInfoObj.apt = (_a = data.apt) !== null && _a !== void 0 ? _a : '';
+                    customerContactInfoObj.line1 = (_b = data.line1) !== null && _b !== void 0 ? _b : '';
+                    customerContactInfoObj.line2 = (_c = data.line2) !== null && _c !== void 0 ? _c : '';
+                    customerContactInfoObj.city = data.residentIn;
+                    customerContactInfoObj.primaryEmail = data.emailId;
+                    customerContactInfoObj.country = CONST.DEFAULT_COUNTRY.name;
+                    customerContactInfoObj.contactType = CONST.USER_ROLE.CUSTOMER;
+                    customerContactInfoObj.addressType = CONST.ADDRESS_TYPE.HOME_ADDRESS;
+                    customerContactInfoObj.primaryPhone = data.phoneNum.toString();
+                    customerContactInfoObj.state = data.provienceName;
+                    console.log(customerContactInfoObj);
+                    let contcatInfo = await this.ContactInformationRepository.create(customerContactInfoObj);
+                    let customerContact = new models_1.CustomerContactInfo();
+                    customerContact.customerId = customer.id;
+                    customerContact.contactId = customerContact.id;
+                    let customerContactInfo = await this.CustomerContactInfoRepository.create(customerContact);
+                    return true;
+                }
                 return true;
             }
             else {

@@ -63,7 +63,6 @@ export class Corporate {
     }
     return returnPropertyName;
   }
-
   async customerBankDetailsRegister(session: any, filenamets: any, ext: any, mimetype: any, customerName: any, fusebillCustomerId: any): Promise<any> {
 
     let message: string, status: string, data: any = {};
@@ -164,41 +163,79 @@ enrollmentDate: "2022-10-01"
   async addEmployee(data: any, corporateId: number) {
     try {
       let corporate: any = await this.BrokerRepository.findById(corporateId);
-      if (corporate) { 
-        let employeeUserObj: Users = new Users();
-        employeeUserObj.username = data.emailId;
-        employeeUserObj.role = CONST.USER_ROLE.CUSTOMER;
-        let randomPswrd = await generateRandomPassword();
-        employeeUserObj.password = await encryptPassword(randomPswrd);
-        employeeUserObj.block = true;
-        employeeUserObj.activation = await getActivationCode();
-        employeeUserObj.registrationDate = moment().format('YYYY-MM-DD');
-        employeeUserObj.companyId = corporateId;
-        let employeeUser: any = await this.usersRepository.create(employeeUserObj);
-        let customerObj: Customer = new Customer();
-        customerObj.brokerId = corporateId;
-        //firstname and last should be created in backend level
-        customerObj.firstName = data.firstName;
-        customerObj.lastName = data.lastName;
-        customerObj.gender = data.sex;
-        customerObj.companyName = corporate.name;
-        customerObj.isCorporateAccount = false;
-        customerObj.registrationDate = moment().format('YYYY-MM-DD');
-        customerObj.userId = employeeUser.id;
-        let customer: any = await this.CustomerRepository.create(customerObj);
-        let customerContactInfoObj: ContactInformation = new ContactInformation();
-        customerContactInfoObj.city = data.residentIn;
-        customerContactInfoObj.state = CONST.DEFAULT_COUNTRY.name;
-        customerContactInfoObj.contactType = CONST.USER_ROLE.CUSTOMER;
-        customerContactInfoObj.addressType = CONST.ADDRESS_TYPE.HOME_ADDRESS;
-        customerContactInfoObj.primaryEmail = data.emailId;
-        customerContactInfoObj.primaryPhone = data.phoneNum.toString();
-        customerContactInfoObj.state = data.provienceName;
-        let contcatInfo: any = await this.ContactInformationRepository.create(customerContactInfoObj);
-        let customerContact: CustomerContactInfo = new CustomerContactInfo();
-        customerContact.customerId = customer.id;
-        customerContact.contactId = customerContact.id;
-        let customerContactInfo = await this.CustomerContactInfoRepository.create(customerContact);
+      if (corporate) {
+        let corporateCustomerId = corporate.customers[0].id;
+        if (corporate.settingsEnableTieredHealthBenefits == 1 && (data.tier == undefined || data.tier == 0)) {
+          return false;
+        }
+        if (corporate.settingsEnableTieredHealthBenefits == 1 && (data.annualIncome == undefined || data.annualIncome == 0)) {
+          return false;
+        }
+        let userEmailcheck = await this.usersRepository.find({ where: { username: data.emailId } });
+        let customerCheck = await this.CustomerRepository.find({ where: { and: [{ firstName: data.firstName }, { lastName: data.lastName }, { parentId: corporateCustomerId }] } })
+        if (userEmailcheck.length > 0) {
+          return false;
+        }
+        else if (customerCheck.length > 0) {
+           return false;
+        }
+        else {
+          let employeeUserObj: Users = new Users();
+          employeeUserObj.username = data.emailId;
+          employeeUserObj.role = CONST.USER_ROLE.CUSTOMER;
+          let randomPswrd = await generateRandomPassword();
+          employeeUserObj.password = await encryptPassword(randomPswrd);
+          employeeUserObj.block = true;
+          employeeUserObj.activation = await getActivationCode();
+          employeeUserObj.registrationDate = moment().format('YYYY-MM-DD');
+          employeeUserObj.companyId = corporateId;
+          let employeeUser: any = await this.usersRepository.create(employeeUserObj);
+          let customerObj: Customer = new Customer();
+          customerObj.brokerId = corporateId;
+          customerObj.parentId = corporate.customers[0].id;
+          customerObj.firstName = data.firstName;
+          customerObj.lastName = data.lastName;
+          customerObj.gender = data.sex;
+          customerObj.companyName = corporate.name;
+          customerObj.isCorporateAccount = true;
+          customerObj.registrationDate = moment().format('YYYY-MM-DD');
+          customerObj.userId = employeeUser.id;
+          customerObj.employeeId = data.employeeId;
+          customerObj.assignerTier = data.tier;
+          customerObj.dateOfHiring = moments(data.dateOfHire).format(CONST.dateFormat2);
+          customerObj.annualIncome = data.annualIncome;
+          let caluclatedTier;
+          if (corporate.settingsEnableTieredHealthBenefits == 1 && (corporate.settingsAllowGroupBenefitsWallet == undefined || corporate.settingsAllowGroupBenefitsWallet == 0)) {
+            caluclatedTier = await this.getActualTiers(corporateId, data.annualIncome, data.dateOfHire, "tier")
+          }
+          else if ((corporate.settingsEnableTieredHealthBenefits == 0 || corporate.settingsEnableTieredHealthBenefits == undefined) && corporate.settingsAllowGroupBenefitsWallet == 1) {
+            // customerObj.assignerTier = data.tier;
+            caluclatedTier = await this.getActualTiers(corporateId, data.annualIncome, data.dateOfHire, "wallet")
+          }
+          else {
+            caluclatedTier = await this.getActualTiers(corporateId, data.annualIncome, data.dateOfHire, "")
+          }
+          caluclatedTier != 0 ? customerObj.actualTier = caluclatedTier : customerObj.actualTier = customerObj.assignerTier;
+          let customer: any = await this.CustomerRepository.create(customerObj);
+          let customerContactInfoObj: ContactInformation = new ContactInformation();
+          customerContactInfoObj.apt = data.apt ?? '';
+          customerContactInfoObj.line1 = data.line1 ?? '';
+          customerContactInfoObj.line2 = data.line2 ?? '';
+          customerContactInfoObj.city = data.residentIn;
+          customerContactInfoObj.primaryEmail = data.emailId;
+          customerContactInfoObj.country = CONST.DEFAULT_COUNTRY.name;
+          customerContactInfoObj.contactType = CONST.USER_ROLE.CUSTOMER;
+          customerContactInfoObj.addressType = CONST.ADDRESS_TYPE.HOME_ADDRESS;
+          customerContactInfoObj.primaryPhone = data.phoneNum.toString();
+          customerContactInfoObj.state = data.provienceName;
+          console.log(customerContactInfoObj);
+          let contcatInfo: any = await this.ContactInformationRepository.create(customerContactInfoObj);
+          let customerContact: CustomerContactInfo = new CustomerContactInfo();
+          customerContact.customerId = customer.id;
+          customerContact.contactId = customerContact.id;
+          let customerContactInfo = await this.CustomerContactInfoRepository.create(customerContact);
+          return true;
+        }
         return true;
       }
       else {
@@ -241,9 +278,9 @@ enrollmentDate: "2022-10-01"
     return dates;
 
   }
-  async getActualTiers(corporateId: number, wallerLimit: number, dateofHire:any,type:any) {
+  async getActualTiers(corporateId: number, wallerLimit: number, dateofHire: any, type: any) {
     console.log(corporateId);
-    if(type=='')
+    if (type == '')
       console.log("empty")
     else
       console.log(type)
@@ -254,9 +291,9 @@ enrollmentDate: "2022-10-01"
     const diffInYears = today.diff(hiredate, 'years');
     console.log(diffInYears);
     let corporateAnnualIncomeTiers = await this.corporateTiersRepository.find({ order: ['annualIncome ASC'], where: { and: [{ brokerId: corporateId }, { tierType: CONST.TIER_TYPE.AI }] } });
-    let corporatelengthOfServiceTiers: any = await this.corporateTiersRepository.find({ where: { and: [{ brokerId: corporateId }, { tierType: CONST.TIER_TYPE.LOS },{toLength:{gt:diffInYears}},{fromLength:{lte:diffInYears}}] } });
+    let corporatelengthOfServiceTiers: any = await this.corporateTiersRepository.find({ where: { and: [{ brokerId: corporateId }, { tierType: CONST.TIER_TYPE.LOS }, { toLength: { gt: diffInYears } }, { fromLength: { lte: diffInYears } }] } });
     // console.log(corporatelengthOfServiceTiers);
-    if(type=="wallet"){
+    if (type == "wallet") {
       console.log(corporateAnnualIncomeTiers);
       if (corporateAnnualIncomeTiers.length > 0) {
         if (corporateAnnualIncomeTiers.length > 1) {
@@ -278,20 +315,20 @@ enrollmentDate: "2022-10-01"
           }
         }
       }
-      else{
-        if(corporateAnnualIncomeTiers.length>0){
+      else {
+        if (corporateAnnualIncomeTiers.length > 0) {
           console.log(corporateAnnualIncomeTiers);
           return corporateAnnualIncomeTiers[0].id;
         }
       }
     }
-    else if(type=="tier"){
-     if(corporatelengthOfServiceTiers.length>0){
+    else if (type == "tier") {
+      if (corporatelengthOfServiceTiers.length > 0) {
         console.log(corporateAnnualIncomeTiers);
         return corporatelengthOfServiceTiers[0].id;
       }
-    }   
-    else{
+    }
+    else {
       if (corporateAnnualIncomeTiers.length > 0) {
         if (corporateAnnualIncomeTiers.length > 1) {
           for (const corporateAnnualIncomeTier of corporateAnnualIncomeTiers) {
@@ -312,8 +349,8 @@ enrollmentDate: "2022-10-01"
           }
         }
       }
-      else{
-        if(corporatelengthOfServiceTiers.length>0){
+      else {
+        if (corporatelengthOfServiceTiers.length > 0) {
           console.log(corporatelengthOfServiceTiers);
           return corporatelengthOfServiceTiers[0].id;
         }
