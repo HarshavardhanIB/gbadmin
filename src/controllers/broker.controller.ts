@@ -156,6 +156,7 @@ export class BrokerController {
           }
         }]
       });
+      console.log(Brokers);
       for (let i = 0; i < Brokers.length; i++) {
         let broker = Brokers[i];
         let EOIStatus, contactStatus, licecncesStatus: any=" ";
@@ -196,6 +197,7 @@ export class BrokerController {
         var status:any= { "broker": broker,"EOIStatus": EOIStatus, "contactStatus": contactStatus };
         status['licecncesStatus']=licecncesStatus;
         brokerList.push(status);
+        console.log(brokerList)
         statusCode = 200;
         message = MESSAGE.BROKER_MSG.BROKERS_PRMARY_DETAILS
       }
@@ -212,7 +214,8 @@ export class BrokerController {
   async brokerDetailsBasedonId(@param.path.number('brokerId') id: number): Promise<any> {    
     // logger.fatal("brokerDetailsBasedonId  ^ broker id:"+id+" ^ "+"Broker details based on broker id  ^"+"broker id :"+id);
     let final: any = [];
-    let responseObject, brokerStatus, status: any;
+    let responseObject,  status: any;
+    var brokerStatus:any;
     try {
       console.log("enter");
       let data: any = await this.brokerRepository.findOne({
@@ -243,7 +246,9 @@ export class BrokerController {
         let today = moment(new Date(), "YYYY-MM-DD").toDate()
         let contactId = data.contactId || 0;
         let brokerEOI: any = await this.brokerEoInsuranceRepository.findOne({ where: { brokerId: id } });
-        !brokerEOI || brokerEOI != Null ? EOIStatus = CONST.NODATA : new Date(brokerEOI.expiryDate) < today ? EOIStatus = CONST.EOI.EXPIRE : EOIStatus = brokerEOI;
+        console.log(brokerEOI);
+        !brokerEOI || brokerEOI == null ? EOIStatus = CONST.NODATA : new Date(brokerEOI.expiryDate) < today ? EOIStatus = CONST.EOI.EXPIRE : EOIStatus = "EOI insurence found";
+        console.log(EOIStatus);
         let licences: any = await this.brokerLicensedStatesAndProvincesRepository.find({ where: { brokerId: id } })
         console.log(licences);
         if (licences.length > 0) {
@@ -1063,7 +1068,7 @@ export class BrokerController {
     console.log(ContactInformation)
     let broker: any = await this.brokerRepository.findOne({ where: { id: id }, fields: { contactId: true } })
     if (broker) {
-      await this.contactInformationRepository.updateAll(broker.contactId, ContactInformation);
+      await this.contactInformationRepository.updateById(broker.contactId, ContactInformation);
       statusCode = 200;
       message = "Contact information updated successfully"
     }
@@ -1155,7 +1160,7 @@ export class BrokerController {
     let brokerEOI = await this.brokerEoInsuranceRepository.find({ where: { brokerId: brokerId } });
     console.log(brokerEOI);
     if (brokerEOI.length > 0) {
-      await this.brokerEoInsuranceRepository.updateAll(BrokerEoInsurance, { where: { brokerId: brokerId } })
+      await this.brokerEoInsuranceRepository.updateAll(BrokerEoInsurance, {  brokerId: brokerId })
       status = 200;
       message = "E&O insurence Updated succesfully"
     }

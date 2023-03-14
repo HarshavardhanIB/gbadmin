@@ -1216,12 +1216,12 @@ export class CorporateController {
           if (parentId != null) {
             const parentDetailsObj: any = {};
             const parentDetails = await this.planLevelRepository.findById(parentId);
-            const subGroups = await this.planLevelRepository.find({ where: { parentId: parentId } });
+            const subGroups = await this.planLevelRepository.find({ where: { parentId: parentId, "published": { "type": "Buffer", "data": [1] } } });
             parentDetailsObj.id = parentDetails.id;
             parentDetailsObj.name = parentDetails.name;
             parentDetailsObj.subGroups = subGroups;
             parentDetails['subGroups'] = subGroups;
-            console.log(parentDetails);
+            // console.log(parentDetails);
             groups.push(parentDetailsObj);
           }
         }
@@ -1830,6 +1830,7 @@ export class CorporateController {
                 }
               }
               const planLevels = await this.insurancePackages.planGroups(pckg.id).find(plansLevelFilter);
+              console.log(planLevels);
               let groups: any = [];
               let subGroups: any = [];
 
@@ -1839,7 +1840,7 @@ export class CorporateController {
                 if (parentId != null) {
                   const parentDetailsObj: any = {};
                   const parentDetails = await this.planLevelRepository.findById(parentId);
-                  const subGroups = await this.planLevelRepository.find({ where: { parentId: parentId } });
+                  const subGroups = await this.planLevelRepository.find({ where: { parentId: parentId,"published": { "type": "Buffer", "data": [1] } } });
                   parentDetailsObj.id = parentDetails.id;
                   parentDetailsObj.name = parentDetails.name;
                   parentDetailsObj.subGroups = subGroups;
@@ -1867,6 +1868,8 @@ export class CorporateController {
                 packagesArray.push(packageObject);
             }
             responsplans.packages = packagesArray;//packages;
+            responsplans['mandatoryPackages']=[1];
+            responsplans['noEmployeePaidPackages']=[1];
             this.response.status(200).send({
               status: '200',
               message: CORPORATE_MSG.REGISTRATION_SUCCESS,
@@ -1940,14 +1943,14 @@ export class CorporateController {
     ) apiRequest: any
   ): Promise<any> {
     let status, message, data: any = {};
-    let failedEntrys: any=[];
-    let successEmployeeCount=0;
+    let failedEntrys: any = [];
+    let successEmployeeCount = 0;
     try {
       // user creation, customer.role=
-      let corporate:any= await this.brokerRepository.findById(corporateId, { include: [{ relation: 'customers' }] });
+      let corporate: any = await this.brokerRepository.findById(corporateId, { include: [{ relation: 'customers' }] });
       console.log(corporate)
       if (corporate) {
-       let corporateCustomerId=corporate.customers[0].id;
+        let corporateCustomerId = corporate.customers[0].id;
         // if (corporate.settingsEnableTieredHealthBenefits == 1 && (apiRequest.tier == undefined || apiRequest.tier == 0)) {
         //   message = MESSAGE.CORPORATE_MSG.TIER_ERROR
         //   this.response.status(201).send({
@@ -1978,13 +1981,13 @@ export class CorporateController {
             return this.response;
           }
           let userEmailcheck = await this.usersRepository.find({ where: { username: employeeObj.emailId } });
-          let customerCheck=await this.customerRepository.find({where:{and:[{firstName:employeeObj.firstName},{lastName:employeeObj.lastName},{parentId:corporateCustomerId}]}})
-          if (userEmailcheck.length>0) {
-            let mailExits={mailId:employeeObj.emailId,firstName:employeeObj.firstName,lastName:employeeObj.lastName,message:'Email already exits'};
+          let customerCheck = await this.customerRepository.find({ where: { and: [{ firstName: employeeObj.firstName }, { lastName: employeeObj.lastName }, { parentId: corporateCustomerId }] } })
+          if (userEmailcheck.length > 0) {
+            let mailExits = { mailId: employeeObj.emailId, firstName: employeeObj.firstName, lastName: employeeObj.lastName, message: 'Email already exits' };
             failedEntrys.push(mailExits);
           }
-          else if(customerCheck.length>0){
-            let customerExits={mailId:employeeObj.emailId,firstName:employeeObj.firstName,lastName:employeeObj.lastName,message:'first name and last name already exits'};
+          else if (customerCheck.length > 0) {
+            let customerExits = { mailId: employeeObj.emailId, firstName: employeeObj.firstName, lastName: employeeObj.lastName, message: 'first name and last name already exits' };
             failedEntrys.push(customerExits);
           }
           else {
@@ -2013,10 +2016,10 @@ export class CorporateController {
             customerObj.dateOfHiring = moments(employeeObj.dateOfHire).format(CONST.dateFormat2);
             customerObj.annualIncome = employeeObj.annualIncome;
             let caluclatedTier;
-            if (corporate.settingsEnableTieredHealthBenefits == 1 && (corporate.settingsAllowGroupBenefitsWallet == undefined||corporate.settingsAllowGroupBenefitsWallet == 0)) {
+            if (corporate.settingsEnableTieredHealthBenefits == 1 && (corporate.settingsAllowGroupBenefitsWallet == undefined || corporate.settingsAllowGroupBenefitsWallet == 0)) {
               caluclatedTier = await this.corporateService.getActualTiers(corporateId, employeeObj.annualIncome, employeeObj.dateOfHire, "tier")
             }
-            else if ((corporate.settingsEnableTieredHealthBenefits == 0 ||corporate.settingsEnableTieredHealthBenefits == undefined) && corporate.settingsAllowGroupBenefitsWallet == 1) {
+            else if ((corporate.settingsEnableTieredHealthBenefits == 0 || corporate.settingsEnableTieredHealthBenefits == undefined) && corporate.settingsAllowGroupBenefitsWallet == 1) {
               // customerObj.assignerTier = employeeObj.tier;
               caluclatedTier = await this.corporateService.getActualTiers(corporateId, employeeObj.annualIncome, employeeObj.dateOfHire, "wallet")
             }
@@ -2044,7 +2047,7 @@ export class CorporateController {
             customerContact.contactId = customerContact.id;
             let customerContactInfo = await this.customerContactInfoRepository.create(customerContact);
             // data['customerId'] = customer.id;
-            successEmployeeCount=successEmployeeCount+1;
+            successEmployeeCount = successEmployeeCount + 1;
           }
         }
         status = 200;
@@ -2061,7 +2064,7 @@ export class CorporateController {
       message = error.message;
     }
     this.response.status(status).send({
-      status, message, data, dete: new Date(),"failedEmployeesList":failedEntrys,"successEmployeeCount":successEmployeeCount
+      status, message, data, dete: new Date(), "failedEmployeesList": failedEntrys, "successEmployeeCount": successEmployeeCount
     })
     return this.response;
   }
@@ -2263,9 +2266,46 @@ export class CorporateController {
               await this.signupFormsPlanLevelMappingRepository.create(signupforPlanLveleMappingObj);
             }
           }
+          let empModelArray = await this.corporateService.modelPropoerties(Employee);
+          let employeeConfig = [];
+          for (let empColumn of empModelArray) {
+            let employee: any = {};
+            if (empColumn == "annualIncome") {
+              if (apiRequest.configuration.wallet) {
+                employee = { display: empColumn, mandatory: true }
+              } else {
+                employee = { display: empColumn, mandatory: false }
+              }
+            }
+            else if (empColumn == "tier") {
+              if (apiRequest.configuration.tier) {
+                employee = { display: empColumn, mandatory: true }
+              } else {
+                employee = { display: empColumn, mandatory: false }
+              }
+            } else if (empColumn == "dateOfHire") {
+              if (apiRequest.configuration.tier && corporate.settingsEnableLengthOfServiceTiers) {
+                employee = { display: empColumn, mandatory: true }
+              } else {
+                employee = { display: empColumn, mandatory: false }
+              }
+            }
+            else if (empColumn == "familyStatus") {
+              employee = { display: empColumn, mandatory: false }
+            }
+            else if (empColumn == "phoneNum") {
+              employee = { display: empColumn, mandatory: false }
+            }
+            else {
+              employee = { display: empColumn, mandatory: true }
+            }
+            employeeConfig.push(employee);
+          }
+          data['employeeKeys']=employeeConfig;
           status = 200;
           message = CORPORATE_MSG.PLANS;
         }
+        
         else {
           status = 201;
           message = "No corporate details found for this corporate id " + corporateId;
@@ -2352,7 +2392,6 @@ export class CorporateController {
       status, message, data
     })
     return this.response;
-
   }
   @post(CORPORATE.TIER)
   async corporateTiers(@param.path.number('corporateId') corporateId: number, @requestBody({
@@ -2494,7 +2533,7 @@ export class CorporateController {
       }
     }
   }) request: any, @inject(RestBindings.Http.RESPONSE) response: Response) {
-    let status,message,data:any=[];
+    let status, message, data: any = [];
     let p = new Promise<any>((resolve, reject) => {
       this.handler(request, response, err => {
         if (err) reject(err);
@@ -2505,7 +2544,7 @@ export class CorporateController {
       });
     });
     p.then(async value => {
-      let excelDatainJson:any = await this.excel2Service.excelToJson(value.files[0].filepath);
+      let excelDatainJson: any = await this.excel2Service.excelToJson(value.files[0].filepath);
       for (const employeeData of excelDatainJson) {
         console.log(employeeData);
         // let addExployee = await this.corporateService.addEmployee(employeeData, corporateId);
@@ -2525,30 +2564,30 @@ export class CorporateController {
         //   tier: 1,
         //   annualIncome: 12345
         // }
-        let employeeObj:Employee=new Employee();
-        employeeObj.firstName=employeeData.firstName;
-        employeeObj.lastName=employeeData.lastName;
-        employeeObj.annualIncome=employeeData.annualIncome||0;
-        employeeObj.dateOfHire=employeeData.dateOfHire||"";
-        employeeObj.employeeId=employeeData.employeeId;
-        employeeObj.familyStatus=employeeData.familyStatus||'single';
-        employeeObj.provienceName=employeeData.provienceName;
-        let provinceInfo=await this.statesAndProvincesRepository.findOne({where:{name:employeeData.provienceName}})
-        employeeObj.provienceId=provinceInfo?.id || 0;
-        employeeObj.phoneNum=employeeData.phoneNum;
-        employeeObj.tier=employeeData.tier
-        employeeObj.residentIn=employeeData.city
-        employeeObj.emailId=employeeData.emailId
-        employeeObj.occupation=employeeData.occupation
-        employeeObj.sex=employeeData.sex
+        let employeeObj: Employee = new Employee();
+        employeeObj.firstName = employeeData.firstName;
+        employeeObj.lastName = employeeData.lastName;
+        employeeObj.annualIncome = employeeData.annualIncome || 0;
+        employeeObj.dateOfHire = employeeData.dateOfHire || "";
+        employeeObj.employeeId = employeeData.employeeId;
+        employeeObj.familyStatus = employeeData.familyStatus || 'single';
+        employeeObj.provienceName = employeeData.provienceName;
+        let provinceInfo = await this.statesAndProvincesRepository.findOne({ where: { name: employeeData.provienceName } })
+        employeeObj.provienceId = provinceInfo?.id || 0;
+        employeeObj.phoneNum = employeeData.phoneNum;
+        employeeObj.tier = employeeData.tier
+        employeeObj.residentIn = employeeData.city
+        employeeObj.emailId = employeeData.emailId
+        employeeObj.occupation = employeeData.occupation
+        employeeObj.sex = employeeData.sex
         let addExployee = await this.corporateService.addEmployee(employeeObj, corporateId);
-        if(!addExployee){
-        let failedEmployees={'firstName':employeeData.firstName,"lastName":employeeData.lastName};
-        data.push(failedEmployees);
+        if (!addExployee) {
+          let failedEmployees = { 'firstName': employeeData.firstName, "lastName": employeeData.lastName };
+          data.push(failedEmployees);
         }
       }
       this.response.status(200).send({
-        status:200,message:'ok',data
+        status: 200, message: 'ok', data
       })
       return this.response;
     })

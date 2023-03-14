@@ -25,7 +25,6 @@ const storage_helper_1 = require("../storage.helper");
 const constants_1 = require("../constants");
 const authentication_1 = require("@loopback/authentication");
 const authorization_1 = require("@loopback/authorization");
-const auth_middleware_1 = require("../middlewares/auth.middleware");
 const model_extended_1 = require("../model_extended");
 const corporate_tiered_plan_levels_repository_1 = require("../repositories/corporate-tiered-plan-levels.repository");
 let fuseBillCustomerCreation = true;
@@ -898,6 +897,10 @@ let CorporateController = class CorporateController {
         });
         return this.response;
     }
+    // @authorize({
+    //   allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR, CONST.USER_ROLE.CORPORATE_ADMINISTRATOR],
+    //   voters: [basicAuthorization]
+    // })
     async validatePlans() {
         let message, status, data = {}, final = {};
         try {
@@ -935,12 +938,12 @@ let CorporateController = class CorporateController {
                     if (parentId != null) {
                         const parentDetailsObj = {};
                         const parentDetails = await this.planLevelRepository.findById(parentId);
-                        const subGroups = await this.planLevelRepository.find({ where: { parentId: parentId } });
+                        const subGroups = await this.planLevelRepository.find({ where: { parentId: parentId, "published": { "type": "Buffer", "data": [1] } } });
                         parentDetailsObj.id = parentDetails.id;
                         parentDetailsObj.name = parentDetails.name;
                         parentDetailsObj.subGroups = subGroups;
                         parentDetails['subGroups'] = subGroups;
-                        console.log(parentDetails);
+                        // console.log(parentDetails);
                         groups.push(parentDetailsObj);
                     }
                 }
@@ -1403,6 +1406,7 @@ let CorporateController = class CorporateController {
                                 }
                             };
                             const planLevels = await this.insurancePackages.planGroups(pckg.id).find(plansLevelFilter);
+                            console.log(planLevels);
                             let groups = [];
                             let subGroups = [];
                             const parentIds = Array.from(new Set(planLevels.map(planLevels => planLevels.parentId)));
@@ -1720,6 +1724,46 @@ let CorporateController = class CorporateController {
                             await this.signupFormsPlanLevelMappingRepository.create(signupforPlanLveleMappingObj);
                         }
                     }
+                    let empModelArray = await this.corporateService.modelPropoerties(model_extended_1.Employee);
+                    let employeeConfig = [];
+                    for (let empColumn of empModelArray) {
+                        let employee = {};
+                        if (empColumn == "annualIncome") {
+                            if (apiRequest.configuration.wallet) {
+                                employee = { display: empColumn, mandatory: true };
+                            }
+                            else {
+                                employee = { display: empColumn, mandatory: false };
+                            }
+                        }
+                        else if (empColumn == "tier") {
+                            if (apiRequest.configuration.tier) {
+                                employee = { display: empColumn, mandatory: true };
+                            }
+                            else {
+                                employee = { display: empColumn, mandatory: false };
+                            }
+                        }
+                        else if (empColumn == "dateOfHire") {
+                            if (apiRequest.configuration.tier && corporate.settingsEnableLengthOfServiceTiers) {
+                                employee = { display: empColumn, mandatory: true };
+                            }
+                            else {
+                                employee = { display: empColumn, mandatory: false };
+                            }
+                        }
+                        else if (empColumn == "familyStatus") {
+                            employee = { display: empColumn, mandatory: false };
+                        }
+                        else if (empColumn == "phoneNum") {
+                            employee = { display: empColumn, mandatory: false };
+                        }
+                        else {
+                            employee = { display: empColumn, mandatory: true };
+                        }
+                        employeeConfig.push(employee);
+                    }
+                    data['employeeKeys'] = employeeConfig;
                     status = 200;
                     message = messages_1.CORPORATE_MSG.PLANS;
                 }
@@ -2626,10 +2670,6 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], CorporateController.prototype, "customerBankVerification", null);
 tslib_1.__decorate([
-    (0, authorization_1.authorize)({
-        allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR, CONST.USER_ROLE.CORPORATE_ADMINISTRATOR],
-        voters: [auth_middleware_1.basicAuthorization]
-    }),
     (0, rest_1.get)(paths_1.CORPORATE.PLANS),
     (0, rest_1.response)(200, {
         description: 'Mixed object of all the specific values needed for form configuration',
@@ -3302,12 +3342,13 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], CorporateController.prototype, "planlevels", null);
 CorporateController = tslib_1.__decorate([
-    (0, rest_1.api)({ basePath: 'admin' }),
-    (0, authentication_1.authenticate)('jwt'),
-    (0, authorization_1.authorize)({
-        allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR],
-        voters: [auth_middleware_1.basicAuthorization]
-    }),
+    (0, rest_1.api)({ basePath: 'admin' })
+    // @authenticate('jwt')
+    // @authorize({
+    //   allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR],
+    //   voters: [basicAuthorization]
+    // })
+    ,
     tslib_1.__param(0, (0, core_1.service)(services_1.HttpService)),
     tslib_1.__param(1, (0, repository_1.repository)(repositories_1.BrokerRepository)),
     tslib_1.__param(2, (0, core_1.inject)(rest_1.RestBindings.Http.RESPONSE)),

@@ -97,13 +97,14 @@ export class PlanLevel extends Entity {
   //   mysql: { columnName: 'published', dataType: 'bit', dataLength: null, dataPrecision: 1, dataScale: null, nullable: 'Y', generated: 0 },
   // })
   // published?: boolean;
-  @property({
-    type: 'Buffer',
-    length: 3,
-    precision: 2,
-    mysql: {columnName: 'published', dataType: 'bit', dataLength: null, dataPrecision: 2, dataScale: null, nullable: 'Y'},
-  })
-  published?: Buffer; //bit-2
+ 
+  @property({    
+     type: 'Buffer',
+      length: 3,
+       precision: 2,
+       mysql: {columnName: 'published', dataType: 'bit', dataLength: null, dataPrecision: 2, dataScale: null, nullable: 'Y'}, 
+     })
+      published?: Buffer; //bit-2
   @property({
     type: 'number',
     precision: 10,

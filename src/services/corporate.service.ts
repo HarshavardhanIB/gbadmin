@@ -10,6 +10,7 @@ import { CUSTOMER_CHEQUES_FOLDER } from '../paths';
 import { encryptPassword, generateRandomPassword, getActivationCode, getFileAttributes } from '../common-functions';
 import { RegistrationServiceService } from './registration-service.service';
 import { AchService } from './ach.service';
+import {Employee}from '../model_extended'
 import { BankCodesRepository, BrokerRepository, ContactInformationRepository, CorporatePaidTieredPlanLevelsRepository, CorporateTiersRepository, CustomerContactInfoRepository, CustomerRepository, FinancialInstitutionsRepository, FinancialInstitutionsRoutingNumbersRepository, InsurancePackagesRepository, InsurancePlansRepository, PlanLevelRepository, PlansAvailabilityRepository, SignupFormsRepository, StatesAndProvincesRepository, UsersRepository } from '../repositories';
 import { FilesController } from '../controllers/files.controller';
 import { FILE_UPLOAD_SERVICE } from '../keys';

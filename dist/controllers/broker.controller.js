@@ -18,8 +18,6 @@ const common_functions_1 = require("../common-functions");
 const authentication_1 = require("@loopback/authentication");
 const validation = tslib_1.__importStar(require("../services/validation.services"));
 const services_1 = require("../services");
-const authorization_1 = require("@loopback/authorization");
-const auth_middleware_1 = require("../middlewares/auth.middleware");
 const moment_1 = tslib_1.__importDefault(require("moment"));
 const paths_2 = require("../paths");
 const broker_admins_repository_1 = require("../repositories/broker-admins.repository");
@@ -29,6 +27,11 @@ const log4js = tslib_1.__importStar(require("log4js"));
 //   categories: { default: { appenders: ["brokerController"], level: "error" } },
 // });
 const logger = log4js.getLogger("broker");
+// @authenticate('jwt')
+// @authorize({
+//   allowedRoles: ['BROKER', 'ADMINISTRATOR'],
+//   voters: [basicAuthorization]
+// })
 let BrokerController = class BrokerController {
     constructor(brokerRepository, brokerLicensedStatesAndProvincesRepository, 
     // @repository(BrokerSignupFormsPlansRepository)
@@ -110,6 +113,7 @@ let BrokerController = class BrokerController {
                         }
                     }]
             });
+            console.log(Brokers);
             for (let i = 0; i < Brokers.length; i++) {
                 let broker = Brokers[i];
                 let EOIStatus, contactStatus, licecncesStatus = " ";
@@ -151,6 +155,7 @@ let BrokerController = class BrokerController {
                 var status = { "broker": broker, "EOIStatus": EOIStatus, "contactStatus": contactStatus };
                 status['licecncesStatus'] = licecncesStatus;
                 brokerList.push(status);
+                console.log(brokerList);
                 statusCode = 200;
                 message = MESSAGE.BROKER_MSG.BROKERS_PRMARY_DETAILS;
             }
@@ -166,7 +171,8 @@ let BrokerController = class BrokerController {
     async brokerDetailsBasedonId(id) {
         // logger.fatal("brokerDetailsBasedonId  ^ broker id:"+id+" ^ "+"Broker details based on broker id  ^"+"broker id :"+id);
         let final = [];
-        let responseObject, brokerStatus, status;
+        let responseObject, status;
+        var brokerStatus;
         try {
             console.log("enter");
             let data = await this.brokerRepository.findOne({
@@ -198,7 +204,9 @@ let BrokerController = class BrokerController {
                 let today = (0, moment_1.default)(new Date(), "YYYY-MM-DD").toDate();
                 let contactId = data.contactId || 0;
                 let brokerEOI = await this.brokerEoInsuranceRepository.findOne({ where: { brokerId: id } });
-                !brokerEOI || brokerEOI != repository_1.Null ? EOIStatus = CONST.NODATA : new Date(brokerEOI.expiryDate) < today ? EOIStatus = CONST.EOI.EXPIRE : EOIStatus = brokerEOI;
+                console.log(brokerEOI);
+                !brokerEOI || brokerEOI == null ? EOIStatus = CONST.NODATA : new Date(brokerEOI.expiryDate) < today ? EOIStatus = CONST.EOI.EXPIRE : EOIStatus = "EOI insurence found";
+                console.log(EOIStatus);
                 let licences = await this.brokerLicensedStatesAndProvincesRepository.find({ where: { brokerId: id } });
                 console.log(licences);
                 if (licences.length > 0) {
@@ -673,7 +681,7 @@ let BrokerController = class BrokerController {
         console.log(ContactInformation);
         let broker = await this.brokerRepository.findOne({ where: { id: id }, fields: { contactId: true } });
         if (broker) {
-            await this.contactInformationRepository.updateAll(broker.contactId, ContactInformation);
+            await this.contactInformationRepository.updateById(broker.contactId, ContactInformation);
             statusCode = 200;
             message = "Contact information updated successfully";
         }
@@ -720,7 +728,7 @@ let BrokerController = class BrokerController {
         let brokerEOI = await this.brokerEoInsuranceRepository.find({ where: { brokerId: brokerId } });
         console.log(brokerEOI);
         if (brokerEOI.length > 0) {
-            await this.brokerEoInsuranceRepository.updateAll(BrokerEoInsurance, { where: { brokerId: brokerId } });
+            await this.brokerEoInsuranceRepository.updateAll(BrokerEoInsurance, { brokerId: brokerId });
             status = 200;
             message = "E&O insurence Updated succesfully";
         }
@@ -3704,11 +3712,6 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], BrokerController.prototype, "brokerDisclouserUpdate", null);
 BrokerController = tslib_1.__decorate([
-    (0, authentication_1.authenticate)('jwt'),
-    (0, authorization_1.authorize)({
-        allowedRoles: ['BROKER', 'ADMINISTRATOR'],
-        voters: [auth_middleware_1.basicAuthorization]
-    }),
     tslib_1.__param(0, (0, repository_1.repository)(repositories_1.BrokerRepository)),
     tslib_1.__param(1, (0, repository_1.repository)(repositories_1.BrokerLicensedStatesAndProvincesRepository)),
     tslib_1.__param(2, (0, repository_1.repository)(repositories_1.SignupFormsPlanLevelMappingRepository)),
