@@ -25,6 +25,7 @@ const storage_helper_1 = require("../storage.helper");
 const constants_1 = require("../constants");
 const authentication_1 = require("@loopback/authentication");
 const authorization_1 = require("@loopback/authorization");
+const auth_middleware_1 = require("../middlewares/auth.middleware");
 const model_extended_1 = require("../model_extended");
 const corporate_tiered_plan_levels_repository_1 = require("../repositories/corporate-tiered-plan-levels.repository");
 let fuseBillCustomerCreation = true;
@@ -897,10 +898,6 @@ let CorporateController = class CorporateController {
         });
         return this.response;
     }
-    // @authorize({
-    //   allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR, CONST.USER_ROLE.CORPORATE_ADMINISTRATOR],
-    //   voters: [basicAuthorization]
-    // })
     async validatePlans() {
         let message, status, data = {}, final = {};
         try {
@@ -1414,7 +1411,7 @@ let CorporateController = class CorporateController {
                                 if (parentId != null) {
                                     const parentDetailsObj = {};
                                     const parentDetails = await this.planLevelRepository.findById(parentId);
-                                    const subGroups = await this.planLevelRepository.find({ where: { parentId: parentId } });
+                                    const subGroups = await this.planLevelRepository.find({ where: { parentId: parentId, "published": { "type": "Buffer", "data": [1] } } });
                                     parentDetailsObj.id = parentDetails.id;
                                     parentDetailsObj.name = parentDetails.name;
                                     parentDetailsObj.subGroups = subGroups;
@@ -1441,6 +1438,8 @@ let CorporateController = class CorporateController {
                                 packagesArray.push(packageObject);
                         }
                         responsplans.packages = packagesArray; //packages;
+                        responsplans['mandatoryPackages'] = [1];
+                        responsplans['noEmployeePaidPackages'] = [1];
                         this.response.status(200).send({
                             status: '200',
                             message: messages_1.CORPORATE_MSG.REGISTRATION_SUCCESS,
@@ -1667,10 +1666,10 @@ let CorporateController = class CorporateController {
                     signupFormData.link = await this.checkAndGenerateNewFormLink(link, corporate.userId);
                     let aliasLink = "/" + ((_a = corporate.name) === null || _a === void 0 ? void 0 : _a.toLowerCase().split(" ")[0]);
                     signupFormData.alias = aliasLink;
-                    signupFormData.name = CONST.SIGNUP_FORM.CUSTOM;
+                    signupFormData.name = corporate.name + " Insurance Enrollment form";
                     signupFormData.description = CONST.signupForm.description;
                     signupFormData.title = CONST.signupForm.title;
-                    signupFormData.formType = CONST.signupForm.formType;
+                    signupFormData.formType = CONST.SIGNUP_FORM.CUSTOM;
                     signupFormData.keywords = CONST.signupForm.keywords;
                     signupFormData.inelligibilityPeriod = CONST.signupForm.ineligibilityPeriod;
                     signupFormData.published = CONST.signupForm.published;
@@ -1730,36 +1729,53 @@ let CorporateController = class CorporateController {
                         let employee = {};
                         if (empColumn == "annualIncome") {
                             if (apiRequest.configuration.wallet) {
-                                employee = { display: empColumn, mandatory: true };
+                                employee = { display: 'Annaul Income', key: empColumn, mandatory: true };
                             }
                             else {
-                                employee = { display: empColumn, mandatory: false };
+                                employee = { display: 'Annaul Income', key: empColumn, mandatory: false };
                             }
                         }
                         else if (empColumn == "tier") {
                             if (apiRequest.configuration.tier) {
-                                employee = { display: empColumn, mandatory: true };
+                                employee = { display: 'Tier', key: empColumn, mandatory: true };
                             }
                             else {
-                                employee = { display: empColumn, mandatory: false };
+                                employee = { display: 'Tier', key: empColumn, mandatory: false };
                             }
                         }
                         else if (empColumn == "dateOfHire") {
                             if (apiRequest.configuration.tier && corporate.settingsEnableLengthOfServiceTiers) {
-                                employee = { display: empColumn, mandatory: true };
+                                employee = { display: 'Date of Hire', key: empColumn, mandatory: true };
                             }
                             else {
-                                employee = { display: empColumn, mandatory: false };
+                                employee = { display: 'Date of Hire', key: empColumn, mandatory: false };
                             }
                         }
                         else if (empColumn == "familyStatus") {
-                            employee = { display: empColumn, mandatory: false };
+                            employee = { display: 'Family Status', key: empColumn, mandatory: false };
                         }
                         else if (empColumn == "phoneNum") {
-                            employee = { display: empColumn, mandatory: false };
+                            employee = { display: 'Phone No', key: empColumn, mandatory: false };
                         }
                         else {
-                            employee = { display: empColumn, mandatory: true };
+                            if (empColumn == 'employeeId')
+                                employee = { display: 'Employee ID', key: empColumn, mandatory: true };
+                            if (empColumn == 'firstName')
+                                employee = { display: 'First Name', key: empColumn, mandatory: true };
+                            if (empColumn == 'lastName')
+                                employee = { display: 'Last Name', key: empColumn, mandatory: true };
+                            if (empColumn == 'emailId')
+                                employee = { display: 'Email ID', key: empColumn, mandatory: true };
+                            if (empColumn == 'occupation')
+                                employee = { display: 'Occupation', key: empColumn, mandatory: true };
+                            if (empColumn == 'sex')
+                                employee = { display: 'Sex', key: empColumn, mandatory: true };
+                            if (empColumn == 'residentIn')
+                                employee = { display: 'Resident in', key: empColumn, mandatory: true };
+                            if (empColumn == 'provienceId')
+                                employee = { display: 'Provience Id', key: empColumn, mandatory: true };
+                            if (empColumn == 'provienceName')
+                                employee = { display: 'Provience Name', key: empColumn, mandatory: true };
                         }
                         employeeConfig.push(employee);
                     }
@@ -1779,7 +1795,7 @@ let CorporateController = class CorporateController {
             status = 201;
             message = MESSAGE.ERRORS.someThingwentWrong;
         }
-        this.response.status(409).send({
+        this.response.status(status).send({
             status,
             message,
             data,
@@ -2670,6 +2686,10 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], CorporateController.prototype, "customerBankVerification", null);
 tslib_1.__decorate([
+    (0, authorization_1.authorize)({
+        allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR, CONST.USER_ROLE.CORPORATE_ADMINISTRATOR],
+        voters: [auth_middleware_1.basicAuthorization]
+    }),
     (0, rest_1.get)(paths_1.CORPORATE.PLANS),
     (0, rest_1.response)(200, {
         description: 'Mixed object of all the specific values needed for form configuration',
@@ -3342,13 +3362,12 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:returntype", Promise)
 ], CorporateController.prototype, "planlevels", null);
 CorporateController = tslib_1.__decorate([
-    (0, rest_1.api)({ basePath: 'admin' })
-    // @authenticate('jwt')
-    // @authorize({
-    //   allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR],
-    //   voters: [basicAuthorization]
-    // })
-    ,
+    (0, rest_1.api)({ basePath: 'admin' }),
+    (0, authentication_1.authenticate)('jwt'),
+    (0, authorization_1.authorize)({
+        allowedRoles: [CONST.USER_ROLE.ADMINISTRATOR],
+        voters: [auth_middleware_1.basicAuthorization]
+    }),
     tslib_1.__param(0, (0, core_1.service)(services_1.HttpService)),
     tslib_1.__param(1, (0, repository_1.repository)(repositories_1.BrokerRepository)),
     tslib_1.__param(2, (0, core_1.inject)(rest_1.RestBindings.Http.RESPONSE)),

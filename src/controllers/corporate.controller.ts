@@ -2209,10 +2209,10 @@ export class CorporateController {
           signupFormData.link = await this.checkAndGenerateNewFormLink(link, corporate.userId)
           let aliasLink = "/" + corporate.name?.toLowerCase().split(" ")[0]
           signupFormData.alias = aliasLink
-          signupFormData.name = CONST.SIGNUP_FORM.CUSTOM;
+          signupFormData.name = corporate.name+" Insurance Enrollment form"
           signupFormData.description = CONST.signupForm.description
           signupFormData.title = CONST.signupForm.title
-          signupFormData.formType = CONST.signupForm.formType
+          signupFormData.formType = CONST.SIGNUP_FORM.CUSTOM;
           signupFormData.keywords = CONST.signupForm.keywords
           signupFormData.inelligibilityPeriod = CONST.signupForm.ineligibilityPeriod
           signupFormData.published = CONST.signupForm.published
@@ -2272,33 +2272,50 @@ export class CorporateController {
             let employee: any = {};
             if (empColumn == "annualIncome") {
               if (apiRequest.configuration.wallet) {
-                employee = { display: empColumn, mandatory: true }
+                employee = { display:'Annaul Income',key: empColumn, mandatory: true }
               } else {
-                employee = { display: empColumn, mandatory: false }
+                employee = { display:'Annaul Income',key: empColumn, mandatory: false }
               }
             }
             else if (empColumn == "tier") {
               if (apiRequest.configuration.tier) {
-                employee = { display: empColumn, mandatory: true }
+                employee = { display:'Tier',key: empColumn, mandatory: true }
               } else {
-                employee = { display: empColumn, mandatory: false }
+                employee = { display:'Tier',key: empColumn, mandatory: false }
               }
             } else if (empColumn == "dateOfHire") {
               if (apiRequest.configuration.tier && corporate.settingsEnableLengthOfServiceTiers) {
-                employee = { display: empColumn, mandatory: true }
+                employee = { display:'Date of Hire',key: empColumn, mandatory: true }
               } else {
-                employee = { display: empColumn, mandatory: false }
+                employee = { display:'Date of Hire',key: empColumn, mandatory: false }
               }
             }
             else if (empColumn == "familyStatus") {
-              employee = { display: empColumn, mandatory: false }
+              employee = { display:'Family Status',key: empColumn, mandatory: false }
             }
             else if (empColumn == "phoneNum") {
-              employee = { display: empColumn, mandatory: false }
+              employee = { display:'Phone No',key: empColumn, mandatory: false }
             }
             else {
-              employee = { display: empColumn, mandatory: true }
-            }
+              if(empColumn=='employeeId')
+                employee = { display:'Employee ID',key: empColumn, mandatory: true }
+              if(empColumn=='firstName')  
+                employee = { display:'First Name',key: empColumn, mandatory: true }
+              if(empColumn=='lastName')
+                employee = { display:'Last Name',key: empColumn, mandatory: true }
+              if(empColumn=='emailId')  
+                employee = { display:'Email ID',key: empColumn, mandatory: true }
+              if(empColumn=='occupation')
+                employee = { display:'Occupation',key: empColumn, mandatory: true }
+              if(empColumn=='sex')  
+                employee = { display:'Sex',key: empColumn, mandatory: true }
+              if(empColumn=='residentIn')
+                employee = { display:'Resident in',key: empColumn, mandatory: true }
+              if(empColumn=='provienceId')  
+                employee = { display:'Provience Id',key: empColumn, mandatory: true }  
+              if(empColumn=='provienceName')  
+                employee = { display:'Provience Name',key: empColumn, mandatory: true }  
+              }
             employeeConfig.push(employee);
           }
           data['employeeKeys']=employeeConfig;
@@ -2317,7 +2334,7 @@ export class CorporateController {
       status = 201;
       message = MESSAGE.ERRORS.someThingwentWrong
     }
-    this.response.status(409).send({
+    this.response.status(status).send({
       status,
       message,
       data,
